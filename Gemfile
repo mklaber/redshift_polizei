@@ -16,4 +16,9 @@ gem 'activerecord4-redshift-adapter', github: 'aamine/activerecord4-redshift-ada
 
 group :development do
   gem 'thin'
+  gem 'capistrano', '~> 2.15.5' # syntax has totally changed from 2.x to 3.x
+end
+
+group :staging, :production do
+  gem 'passenger'
 end
