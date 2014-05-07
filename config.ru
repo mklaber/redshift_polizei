@@ -2,7 +2,7 @@ $: << File.join(File.dirname(__FILE__), 'app')
 
 require 'sinatra'
 require 'erubis'
-require 'home'
+require 'app'
  
 #set :environment, :production
 set :mail_options, {
@@ -25,4 +25,4 @@ Tilt.register Tilt::ErubisTemplate, "html.erb"
 disable :run
 set :views, "#{settings.root}/app/views"
 
-run HomeApp
+run Polizei

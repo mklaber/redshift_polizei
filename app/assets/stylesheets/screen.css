@@ -1,0 +1,21 @@
+body {
+  padding-top: 50px;
+  font-family:'Lato',sans-serif;
+  color: #333333;
+  background-color: #f5f5f6;
+}
+h1, h2, h3 {
+  font-weight: 300;
+  color: #000000;
+  line-height: 45px;
+}
+input, textarea, label {
+  margin: 2px 0;
+}
+img {
+  border: none;
+}
+p {
+  line-height: 25px;
+  color: #555555;
+}
