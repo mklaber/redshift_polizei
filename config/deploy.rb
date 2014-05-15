@@ -23,21 +23,25 @@ set :deploy_to,       "/amg/app/#{APP_NAME}"
 set :shared_path,     "#{deploy_to}/shared"
 set :user,            "deploy"
 set :runner,          "deploy"
+set :keep_releases,   5
+set :yaml_files,      [] #['application','database']
 set :use_sudo,        false 
 default_run_options[:pty] = true
 set :ssh_options, {:forward_agent => true,
                    :keys => [File.join(ENV["HOME"], ".ssh", "id_rsa")]}
 
-
-task :production do
+task :staging do
   set :rails_env, "staging"
-  set :branch, "stable"
-  role :all,  "www-staging.analyticsmediagroup.com"
-  role :app,  "www-staging.analyticsmediagroup.com"
-  role :web,  "www-staging.analyticsmediagroup.com"
-  role :db,   "www-staging.analyticsmediagroup.com", :primary => true
+  set :branch, "master"
+  role :all,  "staging.amg.tv"
+  role :app,  "staging.amg.tv"
+  role :web,  "staging.amg.tv"
+  role :db,   "staging.amg.tv", :primary => true
   #role :cron, "www-staging.analyticsmediagroup.com"
 end
+
+before "deploy:migrate", "config:setup"
+after "deploy:update_code", "config:setup"
 
 namespace :deploy do
   [:start, :stop].each do |t|
@@ -51,6 +55,14 @@ namespace :deploy do
   
   task :migrate, :roles => :app do
     run "rake db:migrate RAILS_ENV=#{rails_env}"
+  end
+end
+
+namespace :config do
+  task :setup do
+    yaml_files.each do |file|
+      run "cp #{deploy_to}/shared/config/#{file}.yml #{release_path}/config/#{file}.yml"
+    end
   end
 end
 

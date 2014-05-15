@@ -14,3 +14,7 @@ Running
 To get a console
 ---------------------
 `tux`
+
+View at
+---------------------
+http://localhost:9393/
