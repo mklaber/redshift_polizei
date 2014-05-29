@@ -15,7 +15,7 @@ class Polizei < Sinatra::Application
     serve '/javascripts',    from: 'assets/javascripts'   # Optional
     serve '/stylesheets',    from: 'assets/stylesheets'   # Optional
     serve '/images',         from: 'assets/images'        # Optional
-    serve '/fonts',         from: 'assets/fonts'        # Optional
+    # serve '/fonts',         from: 'assets/fonts'        # Optional
 
     # The second parameter defines where the compressed version will be served.
     # (Note: that parameter is optional, AssetPack will figure it out.)
