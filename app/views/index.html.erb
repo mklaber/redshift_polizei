@@ -1,21 +1,25 @@
 <h2 name="queries" id="queries">Queries</h2>
 
-<table class="table table-striped">
-  <tr>
-    <% @queries.first.keys.each do |header| %>
-      <th><%= h header %></th>
-    <% end %>
-  </tr>
-  <% @queries.each do |row| %>
+<% if @queries.present? %>
+  <table class="table table-striped">
     <tr>
-      <% row.values.each do |value| %>
-        <td>
-          <%= h value %>
-        </td>
+      <% @queries.first.keys.each do |header| %>
+        <th><%= h header %></th>
       <% end %>
-    </tr >
-  <% end %>
-</table>
+    </tr>
+    <% @queries.each do |row| %>
+      <tr>
+        <% row.values.each do |value| %>
+          <td>
+            <%= h value %>
+          </td>
+        <% end %>
+      </tr >
+    <% end %>
+  </table>
+<% else %>
+  <h3>That's weird, there don't appear to be any queries running.</h3>
+<% end %>
 
 
 <h2 name="tables" id="tables">Tables</h2>
