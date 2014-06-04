@@ -3,7 +3,7 @@
 <table class="table table-striped">
   <tr>
     <% @queries.first.keys.each do |header| %>
-      <td><%= h header %></td>
+      <th><%= h header %></th>
     <% end %>
   </tr>
   <% @queries.each do |row| %>
@@ -23,7 +23,7 @@
 <table class="table table-striped">
   <tr>
     <% @tables.first.keys.each do |header| %>
-      <td><%= h header %></td>
+      <th><%= h header %></th>
     <% end %>
   </tr>
   <% @tables.each do |row| %>

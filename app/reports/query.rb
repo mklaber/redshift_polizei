@@ -13,7 +13,7 @@ module Reports
       sql = <<-SQL
         select userid as user_id, user_name as username, status, starttime as start_time, duration, query
         from stv_recents
-        where username <> 'rdsdb'
+        where username <> 'rdsdb' and username <> 'polizei_bot'
         order by status <> 'Running', starttime desc ;
       SQL
       @result = self.class.connection.select_all(self.class.sanitize([sql, @options]))
@@ -25,7 +25,7 @@ module Reports
           datediff('seconds', convert_timezone('EDT',starttime), getdate()) as duration, "text" as query
         from SVV_QUERY_INFLIGHT as query
         inner join pg_catalog.pg_user as users on users.usesysid = query.userid
-        where username <> 'rdsdb'
+        where username <> 'rdsdb' and username <> 'polizei_bot'
         order by starttime desc ;
       SQL
       @result = self.class.connection.select_all(self.class.sanitize([sql, @options]))

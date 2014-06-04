@@ -41,7 +41,8 @@ class Polizei < Sinatra::Application
   
   get '/' do
     query_report = Reports::Query.new
-    @queries = query_report.inflight.to_hash + query_report.recents.to_hash
+    # @queries = query_report.inflight.to_hash + query_report.recents.to_hash
+    @queries = query_report.recents.to_hash
     
     tables_report = Reports::Table.new
     @tables = tables_report.result
