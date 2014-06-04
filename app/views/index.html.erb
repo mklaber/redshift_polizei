@@ -3,14 +3,14 @@
 <table class="table table-striped">
   <tr>
     <% @queries.first.keys.each do |header| %>
-      <td><%= header %></td>
+      <td><%= h header %></td>
     <% end %>
   </tr>
   <% @queries.each do |row| %>
     <tr>
       <% row.values.each do |value| %>
         <td>
-          <%= value %>
+          <%= h value %>
         </td>
       <% end %>
     </tr >
@@ -23,14 +23,14 @@
 <table class="table table-striped">
   <tr>
     <% @tables.first.keys.each do |header| %>
-      <td><%= header %></td>
+      <td><%= h header %></td>
     <% end %>
   </tr>
   <% @tables.each do |row| %>
     <tr>
       <% row.values.each do |value| %>
         <td>
-          <%= value %>
+          <%= h value %>
         </td>
       <% end %>
     </tr >
