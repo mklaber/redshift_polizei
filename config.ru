@@ -3,8 +3,9 @@ $: << File.join(File.dirname(__FILE__), 'app')
 require 'sinatra'
 require 'erubis'
 require 'app'
- 
-#set :environment, :production
+
+Dir.glob('./app/{models,reports}/*.rb').each { |file| require file }
+
 set :mail_options, {
                       :from => 'no-reply@analyticsmediagroup.com',
                       :via => :smtp,
@@ -19,7 +20,6 @@ set :mail_options, {
                       }
                     }
 
-#Tilt.register Tilt::ERBTemplate, 'html.erb'
 Tilt.register Tilt::ErubisTemplate, "html.erb"
 
 disable :run

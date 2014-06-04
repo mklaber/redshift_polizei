@@ -10,6 +10,7 @@ gem 'sanitize'
 
 gem 'pg'
 gem 'activerecord'
+gem 'sinatra-activerecord'
 gem 'activerecord4-redshift-adapter', github: 'aamine/activerecord4-redshift-adapter'
 
 group :development do
