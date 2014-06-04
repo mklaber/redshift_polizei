@@ -1,14 +1,17 @@
 # home.rb
 require 'sinatra'
 require 'sinatra/assetpack'
+require "sinatra/activerecord"
 require 'monkey_patches'
 require 'helpers'
 require 'pony'
 require 'sanitize'
+require 'pg'
 
 class Polizei < Sinatra::Application
   set :root, File.dirname(__FILE__)
   register Sinatra::AssetPack
+  #register Sinatra::ActiveRecordExtension
   enable :sessions
 
   assets do
@@ -37,6 +40,12 @@ class Polizei < Sinatra::Application
   end
   
   get '/' do
+    query_report = Reports::Query.new
+    @queries = query_report.inflight.to_hash + query_report.recents.to_hash
+    
+    tables_report = Reports::Table.new
+    @tables = tables_report.result
+    
     erb :index, :locals => { :name => :home }
   end
   

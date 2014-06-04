@@ -1,2 +1,38 @@
-<h2>Hello, World!</h2>
-<%= img '/images/dumbledore.jpg', width: '50%' %>
+<h2 name="queries" id="queries">Queries</h2>
+
+<table class="table table-striped">
+  <tr>
+    <% @queries.first.keys.each do |header| %>
+      <td><%= header %></td>
+    <% end %>
+  </tr>
+  <% @queries.each do |row| %>
+    <tr>
+      <% row.values.each do |value| %>
+        <td>
+          <%= value %>
+        </td>
+      <% end %>
+    </tr >
+  <% end %>
+</table>
+
+
+<h2 name="tables" id="tables">Tables</h2>
+
+<table class="table table-striped">
+  <tr>
+    <% @tables.first.keys.each do |header| %>
+      <td><%= header %></td>
+    <% end %>
+  </tr>
+  <% @tables.each do |row| %>
+    <tr>
+      <% row.values.each do |value| %>
+        <td>
+          <%= value %>
+        </td>
+      <% end %>
+    </tr >
+  <% end %>
+</table>

@@ -1,0 +1,7 @@
+development:
+  adapter: redshift
+  host: analytics-dw-1.analyticsmediagroup.net
+  database: amg
+  port: 5439
+  username: username
+  password: password
