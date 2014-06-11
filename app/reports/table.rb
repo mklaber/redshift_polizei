@@ -11,8 +11,15 @@ module Reports
   
     def result
       sql = <<-SQL
-        select * from statistics.tables_report
-        order by size_in_mb desc;
+      SELECT c.schemaname as schema, c.tablename as table, c.tableid, c.size_in_mb, a.attname as sortkey, b.attname as distkey,
+      c.has_col_encoding, c.pct_skew_across_slices, c.pct_slices_populated FROM statistics.tables_report c 
+      left join 
+      (select attname,attrelid from pg_attribute where attsortkeyord is true) as a
+      on c.tableid = a.attrelid
+      left join
+      (select attname,attrelid from pg_attribute where attisdistkey is true) as b
+      on c.tableid = b.attrelid
+      order by c.size_in_mb desc;
       SQL
       @result = self.class.connection.select_all(self.class.sanitize([sql, @options]))
     end
