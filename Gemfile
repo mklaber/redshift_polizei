@@ -12,6 +12,7 @@ gem 'pg'
 gem 'activerecord'
 gem 'sinatra-activerecord'
 gem 'activerecord4-redshift-adapter', github: 'aamine/activerecord4-redshift-adapter'
+gem 'actionview'  # formatting decimals to be 2 places
 
 group :development do
   gem 'shotgun'
