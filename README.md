@@ -7,6 +7,8 @@ Sinatra app for monitoring a Redshift cluster. Built using [Twitter Bootstrap](h
 Setup
 ---------------------
 `bundle install`
+'go to config folder.  copy database.sample.yaml into a file called database.yml'
+'edit login credentials in database.yml to get database access'
 
 Running
 ---------------------

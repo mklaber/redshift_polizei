@@ -8,7 +8,7 @@ module Reports
       # this includes dealing with start_date, end_date
       @options = self.class.filter(unsanitized_options)
     end 
-  
+  	
     def result
       sql = <<-SQL
         select * from statistics.tables_report
@@ -16,6 +16,6 @@ module Reports
       SQL
       @result = self.class.connection.select_all(self.class.sanitize([sql, @options]))
     end
-  
+  	
   end
 end
