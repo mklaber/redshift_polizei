@@ -41,14 +41,20 @@ class Polizei < Sinatra::Application
   end
   
   get '/' do
-    query_report = Reports::Query.new
+    
+	query_report = Reports::Query.new
     # @queries = query_report.inflight.to_hash + query_report.recents.to_hash
     @queries = query_report.recents.to_hash
     
     tables_report = Reports::Table.new
     @tables = tables_report.result
     
+	permissions_report = Reports::Permission.new
+	@permissions = permissions_report.result 
+	@permission_headers = ["Table", "Select Access", "All Access"]
+	
     erb :index, :locals => { :name => :home }
+  	
   end
   
   not_found do

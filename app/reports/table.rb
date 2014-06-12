@@ -8,7 +8,7 @@ module Reports
       # this includes dealing with start_date, end_date
       @options = self.class.filter(unsanitized_options)
     end 
-  
+  	
     def result
       sql = <<-SQL
       SELECT c.schemaname as schema, c.tablename as table, c.tableid, c.size_in_mb, 
@@ -26,6 +26,6 @@ module Reports
       SQL
       @result = self.class.connection.select_all(self.class.sanitize([sql, @options]))
     end
-  
+  	
   end
 end
