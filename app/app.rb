@@ -48,11 +48,6 @@ class Polizei < Sinatra::Application
     # @queries = query_report.inflight.to_hash + query_report.recents.to_hash
     @queries = query_report.recents.to_hash
     
-	permissions_report = Reports::Permission.new
-	@permissions = permissions_report.result 
-	@permission_headers = ["Table", "Select Access", "All Access"]
-	
-  	
     erb :index, :locals => { :name => :home }
   	
   end
@@ -63,7 +58,13 @@ class Polizei < Sinatra::Application
     
   end
     
-  
+  get '/permissions' do
+	  permissions_report = Reports::Permission.new
+	  @permissions = permissions_report.result 
+	  @permission_headers = ["Table", "Select Access", "All Access"]
+	  erb :permissions
+  end
+
   not_found do
     @error = 'This is nowhere to be found.'
     erb :error
