@@ -7,6 +7,8 @@ require 'helpers'
 require 'pony'
 require 'sanitize'
 require 'pg'
+require 'action_view'
+include ActionView::Helpers::NumberHelper
 
 class Polizei < Sinatra::Application
   set :root, File.dirname(__FILE__)
@@ -46,16 +48,21 @@ class Polizei < Sinatra::Application
     # @queries = query_report.inflight.to_hash + query_report.recents.to_hash
     @queries = query_report.recents.to_hash
     
-    tables_report = Reports::Table.new
-    @tables = tables_report.result
-    
 	permissions_report = Reports::Permission.new
 	@permissions = permissions_report.result 
 	@permission_headers = ["Table", "Select Access", "All Access"]
 	
+  	
     erb :index, :locals => { :name => :home }
   	
   end
+  get '/tables' do
+    tables_report = Reports::Table.new
+    @tables = tables_report.result
+    erb :tables
+    
+  end
+    
   
   not_found do
     @error = 'This is nowhere to be found.'
