@@ -49,6 +49,14 @@
 				<% else %>
 					</td>
 				<% end %>
+			<% elsif key == "has_col_encoding" %>
+				<% if value == "1" %>
+					<td><%= h "yes" %></td>
+				<% else %>
+					<td><%= h "no" %></td>
+				<% end %>
+			<% elsif key == "pct_skew_across_slices" %>
+				<td><%= h number_with_precision(value, :precision=> 2) %></td>
 			<% else %>
 				<td><%= h value %></td>
 			<% end %>
