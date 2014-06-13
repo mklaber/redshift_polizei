@@ -9,6 +9,10 @@ require 'sanitize'
 require 'pg'
 require 'action_view'
 include ActionView::Helpers::NumberHelper
+require 'will_paginate'
+require 'will_paginate/active_record'
+require 'will_paginate/view_helpers/sinatra'
+include WillPaginate::Sinatra::Helpers
 
 class Polizei < Sinatra::Application
   set :root, File.dirname(__FILE__)
@@ -49,20 +53,20 @@ class Polizei < Sinatra::Application
     @queries = query_report.recents.to_hash
     
     erb :index, :locals => { :name => :home }
-    
   end
+  
   get '/tables' do
     tables_report = Reports::Table.new
     @tables = tables_report.result
-    erb :tables
-    
+#    @tables = Reports::Table.paginate(:page => params[:page], :per_page => 5)
+    erb :tables, :locals => { :name => :tables }
   end
     
   get '/permissions' do
     permissions_report = Reports::Permission.new
     @permissions = permissions_report.result 
     @permission_headers = ["Table", "Select Access", "All Access"]
-    erb :permissions
+    erb :permissions, :locals => { :name => :permissions }
   end
 
   not_found do

@@ -3,17 +3,19 @@
 <% if @queries.present? %>
   <table class="table table-striped">
     <tr>
-      <% @queries.first.keys.each do |header| %>
-        <th><%= h header %></th>
-      <% end %>
-    </tr>
+    <th>User</th>
+    <th>Status</th>
+    <th>Start time</th>
+    <th>Duration</th>
+    <th>Query</th>
+  </tr>
     <% @queries.each do |row| %>
       <tr>
-        <% row.values.each do |value| %>
-          <td>
-            <%= h value %>
-          </td>
-        <% end %>
+    <td><%= row['username'] %> <small>(<%= row['user_id'] %>)</small></td>
+    <td><%= row['status'] %></td>
+    <td><%= row['start_time'] %></td>
+    <td><%= row['duration'] %></td>
+    <td><%= row['query'] %></td>
       </tr >
     <% end %>
   </table>

@@ -1,42 +1,27 @@
 <h2 name="tables" id="tables">Tables</h2>
 
 <table class="table table-striped">
-    <tr>
-      <% @tables.first.keys.each do |header| %>
-    <% if header == "sort_key_1"%>
-      <th><%= h "sort key"%></th>
-    <% elsif header != "sort_key_2" and header != "sort_key_3"%>
-          <th><%= h header.tr("_", " ") %></th>
-    <% end %>
-      <% end %>
+
+  <tr>
+    <th> Schema </th>
+    <th> Table </th>
+    <th> Size in MB </th>
+    <th> Sort Key </th>
+    <th> Distribution Key </th>
+    <th> Column Encoding </th>
+    <th> Pct Skew Across Slices </th>
+    <th> Pct Slices Populated </th>
     </tr>
   <% @tables.each do |row| %>
     <tr>
-    <% row.each do |key, value| %>
-      <% if key == "sort_key_1"%>
-        <td><%= h value %>
-      <% elsif key == "sort_key_2"%>
-        <% if value %>
-          , <%= h value %>
-        <% end %>
-      <% elsif key == "sort_key_3"%>
-        <% if value %>
-         , <%= h value %></td>
-        <% else %>
-          </td>
-        <% end %>
-      <% elsif key == "has_col_encoding" %>
-        <% if value == "1" %>
-          <td><%= h "yes" %></td>
-        <% else %>
-          <td><%= h "no" %></td>
-        <% end %>
-      <% elsif key == "pct_skew_across_slices" %>
-        <td><%= h number_with_precision(value, :precision=> 2) %></td>
-      <% else %>
-        <td><%= h value %></td>
-      <% end %>
-    <% end %>
+      <td><%= h row['schema'] %></td>
+      <td><%= h row['table'] %><p></p><small>(<%=row['tableid']%>)</small></td>
+      <td><%= h row['size_in_mb'] %></td>
+      <td><%= h row['sort_key_1']%><%= row['sort_key_2'] ? ', ' : '' %><%= row['sort_key_2']%><%= row['sort_key_3'] ? ', ' : '' %><%= row['sort_key_3']%></td>
+      <td><%= h row['dist_key'] %></td>
+      <td><%= h row['has_col_encoding']=='1' ? 'yes' : 'no'%></td>
+      <td><%= h number_with_precision(row['pct_skew_across_slices'], :precision=> 2) %></td>
+      <td><%= h row['pct_slices_populated'] %></td>
     </tr >
   <% end %>
 </table>
