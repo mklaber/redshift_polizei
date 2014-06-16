@@ -1,0 +1,31 @@
+<h2 name="permissions" id="permissions">Permissions</h2>
+<table class="table table-striped">
+  <tr>
+    <% @permission_headers.each do |header| %>
+      <th><%= header %></th>
+    <% end %>
+  </tr>
+  
+  <% @permissions.each do |perm| %>
+    <tr>
+		<td>
+            <%= perm[0] %>
+        </td>
+		<td>
+		  <% perm[1]["all"].each do |user| %>		
+            <%= user + ", "%>
+		  <% end %>
+		</td>
+    	<td>
+          <% perm[1]["select"].each do |user| %>
+            <%= user + ", " %>
+          <% end %>
+        </td>
+	</tr >
+  <% end %>
+</table>
+
+
+
+
+

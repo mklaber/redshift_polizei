@@ -7,6 +7,7 @@ require 'helpers'
 require 'pony'
 require 'sanitize'
 require 'pg'
+require 'action_view'
 
 class Polizei < Sinatra::Application
   include ActionView::Helpers::NumberHelper
@@ -43,20 +44,23 @@ class Polizei < Sinatra::Application
   end
 
   get '/' do
-
     query_report = Reports::Query.new
     # @queries = query_report.inflight.to_hash + query_report.recents.to_hash
     @queries = query_report.recents.to_hash
-
+    erb :index, :locals => { :name => :home }
+  	
+  end
+  get '/tables' do
     tables_report = Reports::Table.new
     @tables = tables_report.result
-
-    permissions_report = Reports::Permission.new
-    @permissions = permissions_report.result 
-    @permission_headers = ["Table", "Select Access", "All Access"]
-
-    erb :index, :locals => { :name => :home }
-
+    erb :tables
+  end
+    
+  get '/permissions' do
+	  permissions_report = Reports::Permission.new
+	  @permissions = permissions_report.result 
+	  @permission_headers = ["Table", "Select Access", "All Access"]
+	  erb :permissions
   end
 
   not_found do
