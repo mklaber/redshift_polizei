@@ -49,12 +49,7 @@ class Polizei < Sinatra::Application
   end
 
   get '/' do
-<<<<<<< HEAD
     query_report = Reports::Query.new
-=======
-    
-  query_report = Reports::Query.new
->>>>>>> 7d1970d12f802c90ab272d754aa0ae2e7f57c6ed
     # @queries = query_report.inflight.to_hash + query_report.recents.to_hash
     @queries = query_report.recents.to_hash
     erb :index, :locals => { :name => :home }
@@ -63,12 +58,10 @@ class Polizei < Sinatra::Application
   get '/tables' do
     tables_report = Reports::Table.new
     @tables = tables_report.result
-<<<<<<< HEAD
     erb :tables
-=======
+
 #    @tables = Reports::Table.paginate(:page => params[:page], :per_page => 5)
-    erb :tables, :locals => { :name => :tables }
->>>>>>> 7d1970d12f802c90ab272d754aa0ae2e7f57c6ed
+#    erb :tables, :locals => { :name => :tables }
   end
     
   get '/permissions' do
