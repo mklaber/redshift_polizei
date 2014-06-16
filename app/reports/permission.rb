@@ -15,7 +15,10 @@ module Reports
       sql = <<-SQL
 		select u.usename, t.schemaname, t.tablename, 
 		has_table_privilege(u.usename, t.schemaname || '.' || t.tablename, 'select') as has_select, 
-		has_table_privilege(u.usename, t.schemaname || '.' || t.tablename, 'delete') as has_all
+		has_table_privilege(u.usename, t.schemaname || '.' || t.tablename, 'insert') as has_insert,
+		has_table_privilege(u.usename, t.schemaname || '.' || t.tablename, 'update') as has_update,
+		has_table_privilege(u.usename, t.schemaname || '.' || t.tablename, 'delete') as has_delete,
+		has_table_privilege(u.usename, t.schemaname || '.' || t.tablename, 'references') as has_references
 		FROM pg_user u, pg_tables t;       
       SQL
       perms = self.class.connection.select_all(self.class.sanitize([sql, @options]))
@@ -26,23 +29,39 @@ module Reports
 		
 		tablename = perm["tablename"]
 		username = perm["usename"]
+		
 		select = perm["has_select"]
-		all = perm["has_all"]
+		insert = perm["has_insert"]
+        update = perm["has_update"]
+        delete = perm["has_delete"]
+        references = perm["has_references"]
 		
 		if result[tablename] == nil
 			result[tablename] = Hash.new
-			result[tablename]["all"] = Set.new
-			result[tablename]["select"] = Set.new 
+			result[tablename]["select"] = Set.new
+			result[tablename]["update"] = Set.new
+            result[tablename]["references"] = Set.new
+            result[tablename]["delete"] = Set.new
+			result[tablename]["insert"] = Set.new
 		end
 		
 		if select == "t"
 			result[tablename]["select"].add(username)
 		end
-		if all == "t"
-			result[tablename]["all"].add(username)
-		end
+		if insert == "t"
+            result[tablename]["insert"].add(username)
+        end 
+        if update == "t"
+            result[tablename]["update"].add(username)
+        end 
+		if delete == "t"
+            result[tablename]["delete"].add(username)
+        end 
+		if references == "t"
+            result[tablename]["references"].add(username)
+        end 
 		
-	  end	  
+	  end
       @result = result  
 	end
   end

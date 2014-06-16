@@ -9,6 +9,11 @@ require 'sanitize'
 require 'pg'
 require 'action_view'
 
+#require 'will_paginate'
+#require 'will_paginate/active_record'
+#require 'will_paginate/view_helpers/sinatra'
+#include WillPaginate::Sinatra::Helpers
+
 class Polizei < Sinatra::Application
   include ActionView::Helpers::NumberHelper
   
@@ -44,23 +49,40 @@ class Polizei < Sinatra::Application
   end
 
   get '/' do
+<<<<<<< HEAD
     query_report = Reports::Query.new
+=======
+    
+  query_report = Reports::Query.new
+>>>>>>> 7d1970d12f802c90ab272d754aa0ae2e7f57c6ed
     # @queries = query_report.inflight.to_hash + query_report.recents.to_hash
     @queries = query_report.recents.to_hash
     erb :index, :locals => { :name => :home }
-  	
   end
+  
   get '/tables' do
     tables_report = Reports::Table.new
     @tables = tables_report.result
+<<<<<<< HEAD
     erb :tables
+=======
+#    @tables = Reports::Table.paginate(:page => params[:page], :per_page => 5)
+    erb :tables, :locals => { :name => :tables }
+>>>>>>> 7d1970d12f802c90ab272d754aa0ae2e7f57c6ed
   end
     
   get '/permissions' do
-	  permissions_report = Reports::Permission.new
-	  @permissions = permissions_report.result 
-	  @permission_headers = ["Table", "Select Access", "All Access"]
-	  erb :permissions
+	
+	permissions_report = Reports::Permission.new
+    @permissions = permissions_report.result
+	@permission_types = ["select", "insert", "update", "delete", "references"]
+	
+	if params["table_name"] != nil and params["permission_type"] != nil
+		table_name, p_type = params["table_name"], params["permission_type"]
+		@permissions[table_name][p_type].sort.to_json
+	else
+    	erb :permissions, :locals => { :name => :permissions }
+  	end
   end
 
   not_found do

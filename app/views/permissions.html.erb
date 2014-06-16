@@ -1,29 +1,43 @@
 <h2 name="permissions" id="permissions">Permissions</h2>
-<table class="table table-striped">
-  <tr>
-    <% @permission_headers.each do |header| %>
-      <th><%= header %></th>
-    <% end %>
-  </tr>
-  
-  <% @permissions.each do |perm| %>
-    <tr>
-		<td>
-            <%= perm[0] %>
-        </td>
-		<td>
-		  <% perm[1]["all"].each do |user| %>		
-            <%= user + ", "%>
-		  <% end %>
-		</td>
-    	<td>
-          <% perm[1]["select"].each do |user| %>
-            <%= user + ", " %>
-          <% end %>
-        </td>
-	</tr >
-  <% end %>
+
+<table>
+<tr>
+	<td>
+		Table Name
+	</td>
+	<td>
+		<select id="table_name_dd" style="margin-left: 15px">
+			<% @permissions.keys.sort.each do |table| %>
+				<option value= <%= table %> >
+					<%= table %>
+				</option>
+			<% end %>
+		</select>
+	</td>
+</tr>
+<tr>
+	<td>
+		Permission Type
+	</td>
+	<td>  
+		<select id="permission_type_dd" style="margin-left: 15px">
+    		<% @permission_types.sort.each do |p_type| %>
+        	<option value= <%= p_type %> >
+            	<%= p_type %>
+        	</option>
+    	<% end %>
+		</select>
+	</td>
+</tr>
 </table>
+
+<button style="margin-top: 20px; margin-bottom: 20px;" onClick="viewPermissionChange();">Get User Permissions</button>
+
+<br>
+Here are the users with access on this table:
+<br>
+
+<div id="users_with_access"></div>
 
 
 

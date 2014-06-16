@@ -11,4 +11,8 @@ helpers do
     Rack::Utils.escape_html(text)
   end
     
+  def current?(path='')
+    request.path_info=='/'+path ? 'current': nil
+  end
+
 end

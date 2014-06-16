@@ -24,9 +24,9 @@
         </div>
         <div class="collapse navbar-collapse">
           <ul class="nav navbar-nav">
-            <li class=current? "active":"disabled"><a href="/#queries">Queries</a></li>
-            <li class=current? "active":"disabled"><a href="/tables">Tables</a></li>
-            <li class=current? "active":"disabled"><a href="/permissions">Permissions</a></li>
+            <li class="<%= 'active' if name == :home %>"><a href="/#queries">Queries</a></li>
+            <li class="<%= 'active' if name == :tables %>"><a href="/tables">Tables</a></li>
+            <li class="<%= 'active' if name == :permissions %>"><a href="/permissions">Permissions</a></li>
           </ul>
         </div><!--/.nav-collapse -->
       </div>
