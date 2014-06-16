@@ -9,10 +9,11 @@ require 'sanitize'
 require 'pg'
 require 'action_view'
 include ActionView::Helpers::NumberHelper
-require 'will_paginate'
-require 'will_paginate/active_record'
-require 'will_paginate/view_helpers/sinatra'
-include WillPaginate::Sinatra::Helpers
+
+#require 'will_paginate'
+#require 'will_paginate/active_record'
+#require 'will_paginate/view_helpers/sinatra'
+#include WillPaginate::Sinatra::Helpers
 
 class Polizei < Sinatra::Application
   set :root, File.dirname(__FILE__)
@@ -63,10 +64,17 @@ class Polizei < Sinatra::Application
   end
     
   get '/permissions' do
-    permissions_report = Reports::Permission.new
-    @permissions = permissions_report.result 
-    @permission_headers = ["Table", "Select Access", "All Access"]
-    erb :permissions, :locals => { :name => :permissions }
+	
+	permissions_report = Reports::Permission.new
+    @permissions = permissions_report.result
+	@permission_types = ["select", "insert", "update", "delete", "references"]
+	
+	if params["table_name"] != nil and params["permission_type"] != nil
+		table_name, p_type = params["table_name"], params["permission_type"]
+		@permissions[table_name][p_type].sort.to_json
+	else
+    	erb :permissions, :locals => { :name => :permissions }
+  	end
   end
 
   not_found do
