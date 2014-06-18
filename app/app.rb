@@ -8,6 +8,7 @@ require 'pony'
 require 'sanitize'
 require 'pg'
 require 'action_view'
+require 'coderay'
 
 #require 'will_paginate'
 #require 'will_paginate/active_record'
@@ -52,6 +53,7 @@ class Polizei < Sinatra::Application
     query_report = Reports::Query.new
     # @queries = query_report.inflight.to_hash + query_report.recents.to_hash
     @queries = query_report.recents.to_hash
+    puts @queries.first["query"]
     erb :index, :locals => { :name => :home }
   end
   
