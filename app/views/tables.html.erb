@@ -3,25 +3,54 @@
 <table class="table table-striped">
 
   <tr>
-    <th> Schema </th>
-    <th> Table </th>
-    <th> Size in MB </th>
-    <th> Sort Key </th>
-    <th> Distribution Key </th>
-    <th> Column Encoding </th>
-    <th> Pct Skew Across Slices </th>
-    <th> Pct Slices Populated </th>
-    </tr>
+    <th>Schema</th>
+    <th>Table <small>(table ID)</small></th>
+    <th>Size in MB</th>
+    <th>Sort Keys</th>
+    <th>Distribution Key</th>
+    <th>Column Encoding</th>
+    <th>% Skew Across Slices <small>(lower better)</small></th>
+    <th>% Slices Populated <small>(higher better)</small</th>
+  </tr>
   <% @tables.each do |row| %>
     <tr>
       <td><%= h row['schema'] %></td>
-      <td><%= h row['table'] %><p></p><small>(<%=row['tableid']%>)</small></td>
-      <td><%= h row['size_in_mb'] %></td>
-      <td><%= h row['sort_key_1']%><%= row['sort_key_2'] ? ', ' : '' %><%= row['sort_key_2']%><%= row['sort_key_3'] ? ', ' : '' %><%= row['sort_key_3']%></td>
-      <td><%= h row['dist_key'] %></td>
-      <td><%= h row['has_col_encoding']=='1' ? 'yes' : 'no'%></td>
-      <td><%= h number_with_precision(row['pct_skew_across_slices'], :precision=> 2) %></td>
-      <td><%= h row['pct_slices_populated'] %></td>
+      <td><%= h row['table'] %> <small class="secondary">(<%=row['tableid']%>)</small></td>
+      <td nowrap="nowrap"><%= size_formatted row['size_in_mb'].to_i %></td>
+      <td>
+        <% if row['sort_keys'].present? %>
+          <%= row['sort_keys'].collect{|k|
+                "<span class='label label-#{(k == row['sort_keys'].first ? 'primary' : 'info')}'>#{k}</span>"
+              }.join(', ') %>
+        <% else %>
+          <span class="label label-danger">None!</span>
+        <% end %>
+      </td>
+      <td>
+        <% if row['dist_key'].present? %>
+          <% if row['dist_key'] == row['sort_keys'].first %>
+            <span class='label label-primary'><%= h row['dist_key'] %></span>
+          <% else %>
+            <span class='label label-default'><%= h row['dist_key'] %></span>
+          <% end %>
+        <% else %>
+          <span class="label label-danger">None!</span>
+        <% end %>
+      </td>
+      <td>
+        <% if row['has_col_encoding']=='1' %>
+          <span class='label label-success'>Yes</span>
+        <% else %>
+          <span class="label label-danger">No</span>
+        <% end %>
+      </td>
+      <td>
+        <span class='label label-<%= row['pct_skew_across_slices'].to_f > 100.0 ? 'danger' : 'success' %>'><%= 
+          h number_with_precision(row['pct_skew_across_slices'], :precision=> 1) %>%</span>
+      </td>
+      <td>
+        <span class='label label-<%= row['pct_slices_populated'].to_f < 50.0 ? 'danger' : 'success' %>'>
+      <%= h row['pct_slices_populated'] %></td>
     </tr >
   <% end %>
 </table>

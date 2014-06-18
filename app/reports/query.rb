@@ -14,6 +14,7 @@ module Reports
         select userid as user_id, user_name as username, status, starttime as start_time, duration, query
         from stv_recents
         where username <> 'rdsdb' and username <> 'polizei_bot'
+          and query <> 'show search_path' and query <> 'SELECT 1'
         order by status <> 'Running', starttime desc ;
       SQL
       @result = self.class.connection.select_all(self.class.sanitize([sql, @options]))
@@ -26,6 +27,7 @@ module Reports
         from SVV_QUERY_INFLIGHT as query
         inner join pg_catalog.pg_user as users on users.usesysid = query.userid
         where username <> 'rdsdb' and username <> 'polizei_bot'
+          and query <> 'show search_path' and query <> 'SELECT 1'
         order by starttime desc ;
       SQL
       @result = self.class.connection.select_all(self.class.sanitize([sql, @options]))

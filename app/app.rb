@@ -55,7 +55,7 @@ class Polizei < Sinatra::Application
   get '/tables' do
     tables_report = Reports::Table.new
     @tables = tables_report.result
-    erb :tables
+    erb :tables, :locals => { :name => :tables }
     #    @tables = Reports::Table.paginate(:page => params[:page], :per_page => 5)
     #    erb :tables, :locals => { :name => :tables }
   end
