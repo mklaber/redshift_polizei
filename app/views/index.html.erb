@@ -15,7 +15,7 @@
         <td><%= row['status'] %></td>
         <td><%= row['start_time'] %></td>
         <td><%= row['duration'] %></td>
-        <td><%= row['query'] %></td>
+        <td><%= CodeRay.scan(row['query'], :sql).div(:line_numbers => :table)  %></td>
       </tr >
     <% end %>
   </table>
