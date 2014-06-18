@@ -11,7 +11,7 @@ require 'action_view'
 
 class Polizei < Sinatra::Application
   include ActionView::Helpers::NumberHelper
-  
+
   set :root, File.dirname(__FILE__)
   register Sinatra::AssetPack
   #register Sinatra::ActiveRecordExtension
@@ -49,27 +49,26 @@ class Polizei < Sinatra::Application
     @queries = query_report.recents.to_hash
     erb :index, :locals => { :name => :home }
   end
-  
+
   get '/tables' do
     tables_report = Reports::Table.new
     @tables = tables_report.result
     erb :tables
-#    @tables = Reports::Table.paginate(:page => params[:page], :per_page => 5)
-    erb :tables, :locals => { :name => :tables }
+    #    @tables = Reports::Table.paginate(:page => params[:page], :per_page => 5)
+    #    erb :tables, :locals => { :name => :tables }
   end
-    
+
   get '/permissions' do
-	
-	permissions_report = Reports::Permission.new
+    permissions_report = Reports::Permission.new
     @permissions = permissions_report.result
-	@permission_types = ["select", "insert", "update", "delete", "references"]
-	
-	if params["table_name"] != nil and params["permission_type"] != nil
-		table_name, p_type = params["table_name"], params["permission_type"]
-		@permissions[table_name][p_type].sort.to_json
-	else
-    	erb :permissions, :locals => { :name => :permissions }
-  	end
+    @permission_types = ["select", "insert", "update", "delete", "references"]
+
+    if params["table_name"] != nil and params["permission_type"] != nil
+      table_name, p_type = params["table_name"], params["permission_type"]
+      @permissions[table_name][p_type].sort.to_json
+    else
+      erb :permissions, :locals => { :name => :permissions }
+    end
   end
 
   not_found do

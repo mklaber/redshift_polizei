@@ -1,3 +1,5 @@
-# Rakefile
-require "./app"
-require "sinatra/activerecord/rake"
+$: << File.join(File.dirname(__FILE__), 'app')
+
+require 'bundler'
+Bundler.require
+require './app/app'

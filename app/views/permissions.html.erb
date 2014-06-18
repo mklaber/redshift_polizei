@@ -1,34 +1,34 @@
 <h2 name="permissions" id="permissions">Permissions</h2>
 
 <table>
-<tr>
-	<td>
-		Table Name
-	</td>
-	<td>
-		<select id="table_name_dd" style="margin-left: 15px">
-			<% @permissions.keys.sort.each do |table| %>
-				<option value= <%= table %> >
-					<%= table %>
-				</option>
-			<% end %>
-		</select>
-	</td>
-</tr>
-<tr>
-	<td>
-		Permission Type
-	</td>
-	<td>  
-		<select id="permission_type_dd" style="margin-left: 15px">
-    		<% @permission_types.sort.each do |p_type| %>
-        	<option value= <%= p_type %> >
-            	<%= p_type %>
-        	</option>
-    	<% end %>
-		</select>
-	</td>
-</tr>
+  <tr>
+    <td>
+      Table Name
+    </td>
+    <td>
+      <select id="table_name_dd" style="margin-left: 15px">
+        <% @permissions.keys.sort.each do |table| %>
+        <option value= <%= table %> >
+          <%= table %>
+        </option>
+        <% end %>
+      </select>
+    </td>
+  </tr>
+  <tr>
+    <td>
+      Permission Type
+    </td>
+    <td>  
+      <select id="permission_type_dd" style="margin-left: 15px">
+        <% @permission_types.sort.each do |p_type| %>
+        <option value= <%= p_type %> >
+          <%= p_type %>
+        </option>
+        <% end %>
+      </select>
+    </td>
+  </tr>
 </table>
 
 <button style="margin-top: 20px; margin-bottom: 20px;" onClick="viewPermissionChange();">Get User Permissions</button>
