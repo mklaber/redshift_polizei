@@ -7,14 +7,22 @@
       <th>Status</th>
       <th>Start time</th>
       <th>Duration</th>
+      <th>PID</th>
       <th>Query</th>
     </tr>
     <% @queries.each do |row| %>
       <tr>
         <td><%= row['username'] %> <small>(<%= row['user_id'] %>)</small></td>
-        <td><%= row['status'] %></td>
+        <td>
+          <% if row['status'] =~ /Done/ %>
+            <span class="label label-success">Done</span>
+          <% else %>
+            <span class="label label-default"><%= row['status'] %></span>
+          <% end %>
+        </td>
         <td><%= row['start_time'] %></td>
         <td><%= row['duration'] %></td>
+        <td><%= row['pid'] %></td>
         <td><%= CodeRay.scan(row['query'], :sql).div(:line_numbers => :table)  %></td>
       </tr >
     <% end %>

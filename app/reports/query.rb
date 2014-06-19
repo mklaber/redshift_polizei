@@ -11,7 +11,7 @@ module Reports
   
     def recents
       sql = <<-SQL
-        select userid as user_id, user_name as username, status, starttime as start_time, duration, query
+        select userid as user_id, user_name as username, status, starttime as start_time, duration, pid, query
         from stv_recents
         where username <> 'rdsdb' and username <> 'polizei_bot'
           and query <> 'show search_path' and query <> 'SELECT 1'
@@ -23,9 +23,9 @@ module Reports
     def inflight
       sql = <<-SQL
         select userid as user_id, usename as username, 'In Flight'::varchar as status, starttime as start_time,
-          datediff('seconds', convert_timezone('EDT',starttime), getdate()) as duration, "text" as query
-        from SVV_QUERY_INFLIGHT as query
-        inner join pg_catalog.pg_user as users on users.usesysid = query.userid
+          datediff('seconds', convert_timezone('EDT',starttime), getdate()) as duration, pid, "text" as query
+        from SVV_QUERY_INFLIGHT as inflight_queries
+        inner join pg_catalog.pg_user as users on users.usesysid = inflight_queries.userid
         where username <> 'rdsdb' and username <> 'polizei_bot'
           and query <> 'show search_path' and query <> 'SELECT 1'
         order by starttime desc ;
