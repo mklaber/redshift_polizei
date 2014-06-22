@@ -1,44 +1,125 @@
 <h2 name="permissions" id="permissions">Permissions</h2>
 
-<table>
-<tr>
-	<td>
-		Table Name
-	</td>
-	<td>
-		<select id="table_name_dd" style="margin-left: 15px">
-			<% @permissions.keys.sort.each do |table| %>
-				<option value= <%= table %> >
-					<%= table %>
-				</option>
-			<% end %>
-		</select>
-	</td>
-</tr>
-<tr>
-	<td>
-		Permission Type
-	</td>
-	<td>  
-		<select id="permission_type_dd" style="margin-left: 15px">
-    		<% @permission_types.sort.each do |p_type| %>
-        	<option value= <%= p_type %> >
-            	<%= p_type %>
-        	</option>
-    	<% end %>
-		</select>
-	</td>
-</tr>
-</table>
+<ul id="navigation">
+    <li id="users" class="selected"><a href="javascript:void(0);">Users</a></li>
+    <li id="groups"><a href="javascript:void(0);">Groups</a></li>
+    <li id="tables"><a href="javascript:void(0);">Tables</a></li>
+</ul>
 
-<button style="margin-top: 20px; margin-bottom: 20px;" onClick="viewPermissionChange();">Get User Permissions</button>
+<div class="permissions_content">
+    <br>
+    <div id="users">
+        <p><i>Select a user and a permission type to view all tables they have access to</i></p>
+        <table>
+            <tr>
+                <td>
+                    User:
+                </td>
+                <td>
+                    <select class="permissions_dd" id="users_dd">
+                        <% @users.each do |user| %>
+                            <option id= "<%= user %>">
+                                <%= user %>
+                            </option>
+                        <% end %>
+                    </select>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    Permission Type:
+                </td>
+                <td>
+                    <select class="permissions_dd" id="users_permissions_dd">
+                        <% @p_types.each do |p_type| %>
+                            <option id="<%= p_type %>">
+                                <%= p_type %>
+                            </option>
+                        <% end %>
+                    </select>
+                </td>
+            </tr>
+        </table>
+        <button id="users" class="permissions_button">Get Permissions</button>
+    </div>
+    
+    <div id="groups">
+        <p><i>Select a group and a permission type to view all tables the group has access to</i></p>
+        <table>
+            <tr>
+                <td>
+                    Group:
+                </td>
+                <td>
+                    <select class="permissions_dd" id="groups_dd">
+                        <% @groups.each do |group| %>
+                            <option id="<%= group %>">
+                                <%= group %>
+                            </option>
+                        <% end %>
+                    </select>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    Permission Type:
+                </td>
+                <td>
+                    <select class="permissions_dd" id="groups_permissions_dd">
+                        <% @p_types.each do |p_type| %>
+                            <option id="<%= p_type %>">
+                                <%= p_type %>
+                            </option>
+                        <% end %>
+                    </select>
+                </td>
+            </tr>
+        </table>
+        <button id="groups" class="permissions_button">Get Permissions</button>
+    </div>
 
-<br>
-Here are the users with access on this table:
-<br>
+    <div id="tables">
+        
+        <p><i>Select a table and permission type to view all users and groups with access to it</i></p>
+        <table>
+            <tr>
+                <td>
+                    Table:
+                </td>
+                <td>
+                    <select class="permissions_dd" id="tables_dd">
+                        <% @tables.each do |table| %>
+                            <option id= "<%= table %>" >
+                                <%= table %>
+                            </option>
+                        <% end %>
+                    </select>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    Permission Type:
+                </td>
+                <td>
+                    <select class="permissions_dd" id="tables_permissions_dd">
+                        <% @p_types.each do |p_type| %>
+                            <option id="<%= p_type %>">
+                                <%= p_type %>
+                            </option>
+                        <% end %>
+                    </select>
+                </td>
+            </tr>
+        </table>
+        <button id="tables" class="permissions_button">Get Permissions</button>
+    </div>
+    
+    <br>
+    <div id='access_results'>
+        <i>Access Results</i>
+    </div>
 
-<div id="users_with_access"></div>
-
+</div>
 
 
 

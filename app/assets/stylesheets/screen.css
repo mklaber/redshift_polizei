@@ -19,3 +19,59 @@ p {
   line-height: 25px;
   color: #555555;
 }
+
+
+
+ul#navigation {
+    padding: 0px;
+    margin: 0px 0px;
+    list-style: none;
+    display: table;
+    border: 1px solid black;
+}
+
+ul#navigation li {
+    float: left;
+}
+
+ul#navigation li a {
+    padding: 10px;
+    border: 1px solid black;
+    font-weight: bold;
+    text-decoration: none;
+    display: block;
+}
+
+ul#navigation li.selected {
+    border-bottom: none;
+    background-color: yellow;
+}
+
+div.permissions_content {
+    display: table;
+    border: 1px solid black;
+    margin-bottom: 20px;
+}
+
+div.permissions_content div {
+    display: none;
+    margin-left: 20px;
+    margin-right: 20px;
+    margin-bottom: 20px;
+}
+
+div.permissions_content div:first-child {
+    display: block;
+}
+
+div.permissions_content table tr td{
+    padding-bottom: 10px;
+}
+
+select.permissions_dd {
+    margin-left: 20px;
+}
+
+
+
+

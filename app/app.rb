@@ -53,7 +53,6 @@ class Polizei < Sinatra::Application
     query_report = Reports::Query.new
     # @queries = query_report.inflight.to_hash + query_report.recents.to_hash
     @queries = query_report.recents.to_hash
-    puts @queries.first["query"]
     erb :index, :locals => { :name => :home }
   end
   
@@ -69,16 +68,34 @@ class Polizei < Sinatra::Application
   get '/permissions' do
 	
 	permissions_report = Reports::Permission.new
-    @permissions = permissions_report.result
-	@permission_types = ["select", "insert", "update", "delete", "references"]
-	
-	if params["table_name"] != nil and params["permission_type"] != nil
-		table_name, p_type = params["table_name"], params["permission_type"]
-		@permissions[table_name][p_type].sort.to_json
-	else
-    	erb :permissions, :locals => { :name => :permissions }
-  	end
+    @users, @groups, @tables = permissions_report.result
+    @p_types = ["select", "insert", "update", "delete", "references"]
+    erb :permissions, :locals => { :name => :permissions }
+    
   end
+
+  get '/permissions/tables' do
+    
+    schemaname, tablename = params[:value].split("-->")
+    permission_type = params[:permission_type]
+    permissions_report = Reports::Permission.new
+    @result = permissions_report.get_users_with_access(schemaname, tablename, permission_type)
+    @result.to_json    
+    
+  end
+    
+  get '/permissions/users' do
+    
+    username = params[:value]
+    permission_type = params[:permission_type]
+    permissions_report = Reports::Permission.new
+    @result = permissions_report.get_tables_for_user(username, permission_type)
+    @result.to_json    
+    
+  end
+
+
+
 
   not_found do
     @error = 'This is nowhere to be found.'

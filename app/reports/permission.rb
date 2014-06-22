@@ -1,4 +1,5 @@
 module Reports
+  
   class Permission < Base
   
     attr_reader :options
@@ -10,59 +11,83 @@ module Reports
     end 
   	
     def result
-	  
-	  #We grab the select and all permissions for every pair of user and table
-      sql = <<-SQL
-		select u.usename, t.schemaname, t.tablename, 
-		has_table_privilege(u.usename, t.schemaname || '.' || t.tablename, 'select') as has_select, 
-		has_table_privilege(u.usename, t.schemaname || '.' || t.tablename, 'insert') as has_insert,
-		has_table_privilege(u.usename, t.schemaname || '.' || t.tablename, 'update') as has_update,
-		has_table_privilege(u.usename, t.schemaname || '.' || t.tablename, 'delete') as has_delete,
-		has_table_privilege(u.usename, t.schemaname || '.' || t.tablename, 'references') as has_references
-		FROM pg_user u, pg_tables t;       
-      SQL
-      perms = self.class.connection.select_all(self.class.sanitize([sql, @options]))
-	  
-	  #For each table, find all users with select and all privileges	  
-	  result = Hash.new
-	  perms.each do |perm|
-		
-		tablename = perm["tablename"]
-		username = perm["usename"]
-		
-		select = perm["has_select"]
-		insert = perm["has_insert"]
-        update = perm["has_update"]
-        delete = perm["has_delete"]
-        references = perm["has_references"]
-		
-		if result[tablename] == nil
-			result[tablename] = Hash.new
-			result[tablename]["select"] = Set.new
-			result[tablename]["update"] = Set.new
-            result[tablename]["references"] = Set.new
-            result[tablename]["delete"] = Set.new
-			result[tablename]["insert"] = Set.new
-		end
-		
-		if select == "t"
-			result[tablename]["select"].add(username)
-		end
-		if insert == "t"
-            result[tablename]["insert"].add(username)
-        end 
-        if update == "t"
-            result[tablename]["update"].add(username)
-        end 
-		if delete == "t"
-            result[tablename]["delete"].add(username)
-        end 
-		if references == "t"
-            result[tablename]["references"].add(username)
-        end 
-		
-	  end
-      @result = result  
-	end
+	    
+        users, groups, tables = [], [], []
+
+        user_sql = <<-SQL
+            SELECT u.usename FROM pg_user u;
+        SQL
+        
+        table_sql = <<-SQL
+            SELECT t.schemaname, t.tablename FROM pg_tables t;
+        SQL
+        
+        group_sql = <<-SQL
+            SELECT groname FROM pg_group;
+        SQL
+        
+        users_as_dicts = self.class.connection.select_all(self.class.sanitize([user_sql, @options])) 
+        users_as_dicts.each do |use_dict|
+            users.append(use_dict["usename"])
+        end
+
+        tables_as_dicts = self.class.connection.select_all(self.class.sanitize([table_sql, @options]))
+        tables_as_dicts.each do |table_dict|
+            tables.append(table_dict["schemaname"] + "-->" + table_dict["tablename"])
+        end
+        
+        groups_as_dicts = self.class.connection.select_all(self.class.sanitize([group_sql, @options]))
+        groups_as_dicts.each do |group_dict|
+            groups.append(group_dict["groname"])
+        end
+        
+        @result = [users.sort, groups.sort, tables.sort]
+	
+    end
+
+    def get_users_with_access(schemaname, tablename, permission_type)
+        
+        sql = <<-SQL
+            SELECT u.usename 
+            FROM pg_user u, pg_tables t
+            WHERE t.tablename='#{tablename}'
+            AND
+            t.schemaname='#{schemaname}'
+            AND
+            has_table_privilege(u.usename, '#{schemaname}' || '.' || '#{tablename}', '#{permission_type}') = 't';
+        SQL
+        
+        result = []
+        users = self.class.connection.select_all(self.class.sanitize([sql, @options]))
+        users.each do |user|
+            result.append(user["usename"])
+        end
+        @result = result.sort
+        
+    end
+
+    def get_tables_for_user(username, permission_type)
+        
+        sql = <<-SQL
+            SELECT t.schemaname, t.tablename 
+            FROM pg_user u, pg_tables t
+            WHERE u.usename='#{username}'
+            AND
+            has_table_privilege('#{username}', t.schemaname || '.' || t.tablename, '#{permission_type}') = 't';
+        SQL
+        
+        result = []
+        tables = self.class.connection.select_all(self.class.sanitize([sql, @options]))
+        tables.each do |table|
+            result.append(table["schemaname"] + "  -->  "  + table["tablename"])
+        end
+        @result = result.sort
+        
+    end
+
+
+
+    
+    
   end
 end
