@@ -20,6 +20,7 @@ p {
   color: #555555;
 }
 
+
 ul#navigation {
     padding: 0px;
     margin: 0px 0px;
@@ -39,9 +40,12 @@ ul#navigation li a {
     display: block;
 }
 
+ul#navigation li.selected a {
+    color: white;
+}
+
 ul#navigation li.selected {
     border-bottom: none;
-    background-color: yellow;
 }
 
 div.permissions_content {

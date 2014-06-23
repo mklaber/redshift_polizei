@@ -7,8 +7,10 @@ $(document).ready(function() {
     //the correct menu to pop up on screen
     $('ul#navigation li').click(
         function() {
+            $('ul#navigation li.selected').removeClass('bg-primary');
             $('ul#navigation li.selected').removeClass('selected');
             $(this).addClass('selected');
+            $(this).addClass('bg-primary');
             var id = $(this).attr('id');
             $('div.permissions_content div').hide();
             $('div#'+id).show();
