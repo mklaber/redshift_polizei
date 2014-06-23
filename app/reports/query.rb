@@ -11,6 +11,11 @@ module Reports
   
     def recents
       sql = <<-SQL
+        --select queries.userid as user_id, users.usename as username, starttime as start_time, endtime as end_time,
+        --sequence, type, (endtime - starttime) as duration, pid, "text" as query
+        --from SVL_STATEMENTTEXT as queries
+        --inner join pg_user as users on queries.userid = users.usesysid
+      
         select userid as user_id, user_name as username, status, starttime as start_time, duration, pid, query
         from stv_recents
         where username <> 'rdsdb' and username <> 'polizei_bot'
