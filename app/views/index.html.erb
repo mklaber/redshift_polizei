@@ -16,14 +16,14 @@
         <td>
           <% if row['status'] =~ /Done/ %>
             <span class="label label-success">Done</span>
-          <% elsif row['duration'].to_i < 0 %>
-            <span class="label label-warning">Cancelled?</span>
+          <% #elsif row['duration'].to_i < 0 %>
+            <% #<span class="label label-warning">Cancelled?</span> %>
           <% else %>
             <span class="label label-default"><%= row['status'] %></span>
           <% end %>
         </td>
         <td><%= row['start_time'] %></td>
-        <td><%= row['duration'] %></td>
+        <td><%= row['duration'] %>s</td>
         <td><%= row['pid'].to_i < 0 ? 'n/a' :  row['pid'] %></td>
         <td><%= CodeRay.scan(row['query'].rstrip.lstrip, :sql).div(:line_numbers => :table)  %></td>
       </tr >
