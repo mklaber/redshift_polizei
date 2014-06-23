@@ -11,8 +11,15 @@ helpers do
     Rack::Utils.escape_html(text)
   end
     
-  def current?(path='')
-    request.path_info=='/'+path ? 'current': nil
+  def size_formatted(mb)
+    mb_f = mb.to_f
+    if mb_f > 1048576 # > 1 TB
+      "#{number_with_precision((mb_f / 1048576.0), :precision=> 2)} TB"
+    elsif mb_f > 1024
+      "#{number_with_precision((mb_f / 1024.0), :precision=> 2)} GB"
+    else
+      "#{mb} MB"
+    end
   end
 
 end

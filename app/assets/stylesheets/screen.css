@@ -20,14 +20,11 @@ p {
   color: #555555;
 }
 
-
-
 ul#navigation {
     padding: 0px;
     margin: 0px 0px;
     list-style: none;
     display: table;
-    border: 1px solid black;
 }
 
 ul#navigation li {
@@ -60,10 +57,6 @@ div.permissions_content div {
     margin-bottom: 20px;
 }
 
-div.permissions_content div:first-child {
-    display: block;
-}
-
 div.permissions_content table tr td{
     padding-bottom: 10px;
 }
@@ -73,5 +66,6 @@ select.permissions_dd {
 }
 
 
-
-
+.secondary {
+  color: #999;
+}

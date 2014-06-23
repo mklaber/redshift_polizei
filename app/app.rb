@@ -10,14 +10,9 @@ require 'pg'
 require 'action_view'
 require 'coderay'
 
-#require 'will_paginate'
-#require 'will_paginate/active_record'
-#require 'will_paginate/view_helpers/sinatra'
-#include WillPaginate::Sinatra::Helpers
-
 class Polizei < Sinatra::Application
   include ActionView::Helpers::NumberHelper
-  
+
   set :root, File.dirname(__FILE__)
   register Sinatra::AssetPack
   #register Sinatra::ActiveRecordExtension
@@ -55,23 +50,22 @@ class Polizei < Sinatra::Application
     @queries = query_report.recents.to_hash
     erb :index, :locals => { :name => :home }
   end
-  
+
   get '/tables' do
     tables_report = Reports::Table.new
     @tables = tables_report.result
-    erb :tables
-
-#    @tables = Reports::Table.paginate(:page => params[:page], :per_page => 5)
-#    erb :tables, :locals => { :name => :tables }
+    erb :tables, :locals => { :name => :tables }
+    #    @tables = Reports::Table.paginate(:page => params[:page], :per_page => 5)
+    #    erb :tables, :locals => { :name => :tables }
   end
-    
+
   get '/permissions' do
 	
 	permissions_report = Reports::Permission.new
     @users, @groups, @tables = permissions_report.result
     @p_types = ["select", "insert", "update", "delete", "references"]
     erb :permissions, :locals => { :name => :permissions }
-    
+  
   end
 
   get '/permissions/tables' do
