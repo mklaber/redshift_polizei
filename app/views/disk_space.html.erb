@@ -1,0 +1,30 @@
+<h2>Disk Space Usage</h2>
+
+<table class="table table-striped">
+    
+    <thead>
+    <tr>
+        <th>Node</th>
+        <th>Used</th>
+        <th>Capacity</th>
+        <th>Usage %</th>
+    </tr>
+    </thead>
+    
+    <% @disks.each do |disk| %>
+        <tr>
+            <td><%= disk["node"] %></td>
+            <td><%= disk["used"] %></td>
+            <td><%= disk["capacity"] %></td>
+            <td><%= "%" + "%.2f" % (100 * disk["used"].to_f / disk["capacity"].to_f) %></td>
+        </tr>
+    <% end %>
+    
+    <tr class="danger">
+        <td>Total: </td>
+        <td><%= @disks.map { |d| d["used"].to_i}.sum %></td>
+        <td><%= @disks.map { |d| d["capacity"].to_i}.sum %></td>
+        <td><%= "%" + "%.2f" % (100 * @disks.map { |d| d["used"].to_f}.sum / @disks.map { |d| d["capacity"].to_f}.sum)  %></td>
+    </tr>
+    
+</table>

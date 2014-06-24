@@ -51,6 +51,15 @@ class Polizei < Sinatra::Application
     erb :index, :locals => { :name => :home }
   end
 
+  get '/disk_space' do
+    
+    disk_space_report = Reports::DiskSpace.new
+    @disks = disk_space_report.get_disk_space_info
+    puts @disks
+    erb :disk_space, :locals => {:name => :disk_space}
+    
+  end
+
   get '/tables' do
     tables_report = Reports::Table.new
     @tables = tables_report.result
@@ -86,7 +95,7 @@ class Polizei < Sinatra::Application
     @result.to_json    
     
   end
-  
+   
   not_found do
     @error = 'This is nowhere to be found.'
     erb :error
