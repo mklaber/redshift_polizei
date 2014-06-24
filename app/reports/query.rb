@@ -52,7 +52,7 @@ module Reports
           'username' => query_parts.first['username'].try(:strip),
           'status' => query_parts.first['status'],
           'start_time' => DateTime.parse(query_parts.first['start_time']),
-          'end_time' => DateTime.parse(query_parts.first['end_time']),
+          'end_time' => (DateTime.parse(query_parts.first['end_time']) unless query_parts.first['end_time'].nil?),
           'duration' => ( 
             (
               ((DateTime.parse(query_parts.first['end_time']) - DateTime.parse(query_parts.first['start_time'])) * 24 * 60 * 60).to_f.round(2)
