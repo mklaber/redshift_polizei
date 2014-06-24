@@ -21,6 +21,11 @@ p {
 }
 
 
+.CodeRay div {
+    text-overflow: clip;
+    max-width: 400px;
+}
+
 ul#navigation {
     padding: 0px;
     margin: 0px 0px;

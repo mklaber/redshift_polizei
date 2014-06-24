@@ -25,7 +25,7 @@
         <td><%= row['start_time'] %></td>
         <td><%= row['duration'] %>s</td>
         <td><%= row['pid'].to_i < 0 ? 'n/a' :  row['pid'] %></td>
-        <td><%= CodeRay.scan(row['query'].rstrip.lstrip, :sql).div(:line_numbers => :table)  %></td>
+        <td><%= CodeRay.scan(row['query'].rstrip.lstrip, :sql).div()  %></td>
       </tr >
     <% end %>
   </table>
