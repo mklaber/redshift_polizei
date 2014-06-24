@@ -45,49 +45,63 @@ module Reports
 	
     end
 
-    def get_users_with_access(schemaname, tablename, permission_type)
+    def get_users_with_access(schemaname, tablename)
         
+        #We want to find all access types every user has for the specified schema + table
         sql = <<-SQL
-            SELECT u.usename 
-            FROM pg_user u, pg_tables t
-            WHERE t.tablename='#{tablename}'
-            AND
-            t.schemaname='#{schemaname}'
-            AND
-            has_table_privilege(u.usename, '#{schemaname}' || '.' || '#{tablename}', '#{permission_type}') = 't';
+            SELECT u.usename AS value,
+            has_table_privilege(u.usename, '#{schemaname}' || '.' || '#{tablename}', 'select') AS has_select,    
+            has_table_privilege(u.usename, '#{schemaname}' || '.' || '#{tablename}', 'delete') AS has_delete,
+            has_table_privilege(u.usename, '#{schemaname}' || '.' || '#{tablename}', 'update') AS has_update,
+            has_table_privilege(u.usename, '#{schemaname}' || '.' || '#{tablename}', 'references') AS has_references,
+            has_table_privilege(u.usename, '#{schemaname}' || '.' || '#{tablename}', 'insert') AS has_insert
+            FROM pg_user u;
         SQL
         
-        result = []
-        users = self.class.connection.select_all(self.class.sanitize([sql, @options]))
-        users.each do |user|
-            result.append(user["usename"])
-        end
-        @result = result.sort
+        #We want to grab the sql results and map t --> "Yes" and f --> "No"
+        keys = ["has_select", "has_delete", "has_update", "has_references", "has_insert"]
+        results = self.class.connection.select_all(self.class.sanitize([sql, @options]))
+        results.each do |result|
+            keys.each do |key|
+                if result[key] == "t"
+                    result[key] = "Yes"
+                else
+                    result[key] = "No"
+                end
+            end
+        end    
+        @results = results.sort_by { |r| r["value"] }
         
     end
 
-    def get_tables_for_user(username, permission_type)
+    def get_tables_for_user(username)
         
+        #We want to grab all the tables and the permissions the specified user has to them
         sql = <<-SQL
-            SELECT t.schemaname, t.tablename 
-            FROM pg_user u, pg_tables t
-            WHERE u.usename='#{username}'
-            AND
-            has_table_privilege('#{username}', t.schemaname || '.' || t.tablename, '#{permission_type}') = 't';
+            SELECT t.schemaname || '-->' || t.tablename AS value,
+            has_table_privilege('#{username}', t.schemaname || '.' || t.tablename, 'select') AS has_select,    
+            has_table_privilege('#{username}', t.schemaname || '.' || t.tablename, 'delete') AS has_delete,
+            has_table_privilege('#{username}', t.schemaname || '.' || t.tablename, 'update') AS has_update,
+            has_table_privilege('#{username}', t.schemaname || '.' || t.tablename, 'references') AS has_references,
+            has_table_privilege('#{username}', t.schemaname || '.' || t.tablename, 'insert') AS has_insert
+            FROM pg_tables t
         SQL
         
-        result = []
-        tables = self.class.connection.select_all(self.class.sanitize([sql, @options]))
-        tables.each do |table|
-            result.append(table["schemaname"] + "  -->  "  + table["tablename"])
-        end
-        @result = result.sort
+        #We want to grab the sql results and map t --> "Yes" and f --> "No"
+        keys = ["has_select", "has_delete", "has_update", "has_references", "has_insert"]
+        results = self.class.connection.select_all(self.class.sanitize([sql, @options]))
+        results.each do |result|
+            keys.each do |key|
+                if result[key] == "t"
+                    result[key] = "Yes"
+                else
+                    result[key] = "No"
+                end
+            end
+        end    
+        @results = results.sort_by { |r| r["value"] }
         
     end
-
-
-
-    
-    
+        
   end
 end

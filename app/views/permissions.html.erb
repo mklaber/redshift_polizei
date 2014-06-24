@@ -9,7 +9,7 @@
 <div class="permissions_content">
     <br>
     <div id="users">
-        <p><i>Select a user and a permission type to view all tables they have access to</i></p>
+        <p><b>Select a user to view all tables they have access to</b></p>
         <table>
             <tr>
                 <td>
@@ -25,26 +25,12 @@
                     </select>
                 </td>
             </tr>
-            <tr>
-                <td>
-                    Permission Type:
-                </td>
-                <td>
-                    <select class="permissions_dd" id="users_permissions_dd">
-                        <% @p_types.each do |p_type| %>
-                            <option id="<%= p_type %>">
-                                <%= p_type %>
-                            </option>
-                        <% end %>
-                    </select>
-                </td>
-            </tr>
         </table>
         <button id="users" class="permissions_button">Get Permissions</button>
     </div>
     
     <div id="groups">
-        <p><i>Select a group and a permission type to view all tables the group has access to</i></p>
+        <p><b>Select a group to view all tables the group has access to</b></p>
         <table>
             <tr>
                 <td>
@@ -60,27 +46,13 @@
                     </select>
                 </td>
             </tr>
-            <tr>
-                <td>
-                    Permission Type:
-                </td>
-                <td>
-                    <select class="permissions_dd" id="groups_permissions_dd">
-                        <% @p_types.each do |p_type| %>
-                            <option id="<%= p_type %>">
-                                <%= p_type %>
-                            </option>
-                        <% end %>
-                    </select>
-                </td>
-            </tr>
         </table>
         <button id="groups" class="permissions_button">Get Permissions</button>
     </div>
 
     <div id="tables">
         
-        <p><i>Select a table and permission type to view all users and groups with access to it</i></p>
+        <p><b>Select a table to view all users and groups with access to it</b></p>
         <table>
             <tr>
                 <td>
@@ -96,27 +68,13 @@
                     </select>
                 </td>
             </tr>
-            <tr>
-                <td>
-                    Permission Type:
-                </td>
-                <td>
-                    <select class="permissions_dd" id="tables_permissions_dd">
-                        <% @p_types.each do |p_type| %>
-                            <option id="<%= p_type %>">
-                                <%= p_type %>
-                            </option>
-                        <% end %>
-                    </select>
-                </td>
-            </tr>
         </table>
         <button id="tables" class="permissions_button">Get Permissions</button>
     </div>
     
     <br>
     <div id='access_results'>
-        <i>Access Results</i>
+        <b>Access Results</b>
     </div>
 
 </div>

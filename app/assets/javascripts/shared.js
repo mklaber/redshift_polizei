@@ -28,25 +28,49 @@ $(document).ready(function() {
             
             var id = $(this).attr('id');
             var selected = $('#'+id+'_dd option:selected').attr('id');
-            var permissionType = $('#'+id+'_permissions_dd option:selected').attr('id');
             var results = $('div#access_results');
             results.show();
             
             $.ajax({
                 type: 'GET',
                 url: '/permissions/' + id,
-                data: { "value": selected, "permission_type": permissionType },
+                data: { "value": selected },
                 beforeSend:function(){
                     results.html('<br>Loading....<br><br>'); 
                 },
                 success:function(data) {
+                    
+                    //Lets parse the json object and remove any old results
                     data = JSON.parse(data);
                     results.empty();
-                    results.append('<p><b>Here are the results: </b></p><ul>');
-                    for(var i = 0; i < data.length; i++) {
-                        results.append("<li>"+data[i]);
+                    
+                    //We create our nifty table to hold results
+                    var table = document.createElement("table");
+                    $(table).addClass("table table-striped");
+                    
+                    //We create the column headers first
+                    var p_types = ["Delete", "Select", "Insert", "References", "Update"];
+                    var new_row = "<tr><td>Value</td>" ;
+                    for(var i = 0; i < p_types.length; i++) {
+                        new_row = new_row + "<td>" + p_types[i] + "</td>";           
                     }
-                    results.append('</ul>');  
+                    new_row = new_row + "</tr>";
+                    $(table).append(new_row);
+                    
+                    //Now we append the results of our query
+                    for(var i = 0; i < data.length; i++) {
+                        new_row = "<tr>";
+                        new_row = new_row + "<td>" + data[i]["value"] + "</td>";
+                        new_row = new_row + "<td>" + data[i]["has_delete"] + "</td>";
+                        new_row = new_row + "<td>" + data[i]["has_select"] + "</td>";
+                        new_row = new_row + "<td>" + data[i]["has_insert"] + "</td>";
+                        new_row = new_row + "<td>" + data[i]["has_references"] + "</td>";
+                        new_row = new_row + "<td>" + data[i]["has_update"] + "</td>";
+                        new_row = new_row + "</tr>";
+                        $(table).append(new_row);
+                    }
+                    
+                    results.append(table);  
                 }
             });
 	});

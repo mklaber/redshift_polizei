@@ -40,7 +40,7 @@ class Polizei < Sinatra::Application
     ]
     js_compression  :jsmin       # Optional
     css_compression :simple      # Optional
-
+    
     prebuild true
   end
 
@@ -65,15 +65,15 @@ class Polizei < Sinatra::Application
     @users, @groups, @tables = permissions_report.result
     @p_types = ["select", "insert", "update", "delete", "references"]
     erb :permissions, :locals => { :name => :permissions }
-  
+    
   end
 
   get '/permissions/tables' do
     
     schemaname, tablename = params[:value].split("-->")
-    permission_type = params[:permission_type]
     permissions_report = Reports::Permission.new
-    @result = permissions_report.get_users_with_access(schemaname, tablename, permission_type)
+    @result = permissions_report.get_users_with_access(schemaname, tablename)
+    puts @result
     @result.to_json    
     
   end
@@ -81,16 +81,12 @@ class Polizei < Sinatra::Application
   get '/permissions/users' do
     
     username = params[:value]
-    permission_type = params[:permission_type]
     permissions_report = Reports::Permission.new
-    @result = permissions_report.get_tables_for_user(username, permission_type)
+    @result = permissions_report.get_tables_for_user(username)
     @result.to_json    
     
   end
-
-
-
-
+  
   not_found do
     @error = 'This is nowhere to be found.'
     erb :error
