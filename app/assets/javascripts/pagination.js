@@ -1,10 +1,9 @@
-//All the JS here basically handles page navigation for tables
-//that have a bunch of rows
-$(document).ready(function() {
-       
+//This function will paginate everything with the class "paginateMe"  
+function paginate_stuff() {
+        
     //This will bring us to the correct page in the table
     function goToPage(pageNumber) {
-        $('.table tr:not(:has(th))').hide();
+        $('.paginateMe tr:not(:has(th))').hide();
         var startIndex = (pageNumber-1)*rowLimit;
         for(var i = startIndex; i < startIndex + rowLimit; i++) {
             $(tableRows[i]).show();
@@ -16,7 +15,7 @@ $(document).ready(function() {
     var rowLimit = 10;    
     
     //We want to limit the number of rows we see in a table
-    var tableRows = $('.table tr:not(:has(th))');
+    var tableRows = $('.paginateMe tr:not(:has(th))');
     for(var i = 0; i < tableRows.length; i++) {
         if(i >= rowLimit) {
             $(tableRows[i]).hide();
@@ -32,7 +31,7 @@ $(document).ready(function() {
     pageTabs = pageTabs + "<a class='pageNav' id='oneForward' href='javascript:void(0);'> > </a>";
     pageTabs = pageTabs + "<a class='pageNav' id='fullForward' href='javascript:void(0);'> >> </a>";
     pageTabs = pageTabs + "</div>";
-    $('.table').after(pageTabs);
+    $('.paginateMe').after(pageTabs);
     
     //We now add the onclick listeners so each pagination arrow does it's thing
     $(".pageTabber a").click(function() {
@@ -56,8 +55,7 @@ $(document).ready(function() {
         goToPage(currentPage);
         $(".pageTabber #pageNumber").text(currentPage);    
     });
-    
-});
+} 
 
 
 

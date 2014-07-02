@@ -1,6 +1,6 @@
 <h2 name="tables" id="tables">Tables</h2>
 
-<table class="table table-striped">
+<table class="table paginateMe table-bordered table-hover">
 
   <tr>
     <th>Schema</th>
@@ -13,7 +13,7 @@
     <th>% Slices Populated <small>(higher better)</small</th>
   </tr>
   <% @tables.each do |row| %>
-    <tr>
+    <tr class="active">
       <td><%= h row['schema'] %></td>
       <td><%= h row['table'] %> <small class="secondary">(<%=row['tableid']%>)</small></td>
       <td nowrap="nowrap"><%= size_formatted row['size_in_mb'].to_i %></td>
