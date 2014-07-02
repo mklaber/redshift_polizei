@@ -32,7 +32,7 @@
                 <td><%= secs + " seconds"%></td>
             <% end %>
         <% else %>
-            <td></td>
+            <td>Unknown</td>
         <% end %>
         <td><%= row['pid'].to_i < 0 ? 'n/a' :  row['pid'] %></td>
         <td><%= CodeRay.scan(row['query'].rstrip.lstrip, :sql).div()  %></td>
