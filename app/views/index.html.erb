@@ -1,7 +1,7 @@
 <h2 name="queries" id="queries">Queries</h2>
 
 <% if @queries.present? %>
-  <table class="table table-striped">
+  <table class="table table-bordered table-hover">
     <tr>
       <th>User</th>
       <th>Status</th>
@@ -11,7 +11,7 @@
       <th>Query</th>
     </tr>
     <% @queries.each do |row| %>
-      <tr>
+      <tr class="active">
         <td><%= row['username'] %> <small>(<%= row['user_id'] %>)</small></td>
         <td>
           <% if row['status'] =~ /Done/ %>
@@ -22,8 +22,18 @@
             <span class="label label-default"><%= row['status'] %></span>
           <% end %>
         </td>
-        <td><%= row['start_time'] %></td>
-        <td><%= row['duration'] %>s</td>
+        
+        <td><%= row['start_time'].strftime("%m-%d-%Y") + " at " + row['start_time'].strftime("%l:%M %p") %></td>
+        <% if row['duration'] != nil %>
+            <% mins, secs = (Time.mktime(0)+row['duration']).strftime("%-M,%-S").split(",") %>
+            <% if mins.to_i != 0 %>
+                <td><%= mins + " minutes,  " + secs + " seconds" %></td>
+            <% else %>
+                <td><%= secs + " seconds"%></td>
+            <% end %>
+        <% else %>
+            <td></td>
+        <% end %>
         <td><%= row['pid'].to_i < 0 ? 'n/a' :  row['pid'] %></td>
         <td><%= CodeRay.scan(row['query'].rstrip.lstrip, :sql).div()  %></td>
       </tr >
@@ -32,3 +42,7 @@
 <% else %>
   <h3>That's weird, there don't appear to be any queries running.</h3>
 <% end %>
+
+
+
+
