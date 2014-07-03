@@ -29,14 +29,16 @@ class Polizei < Sinatra::Application
     js :application, '/javascripts/application.js', [
       '/javascripts/lib/jquery-1.10.2.min.js',
       '/javascripts/lib/bootstrap.min.js',
-      '/javascripts/shared.js'
+      '/javascripts/shared.js',
+      '/javascripts/pagination.js'
     ]
     css :application, '/stylesheets/application.css', [
       '/stylesheets/lib/bootstrap.min.css',
       '/stylesheets/lib/font-awesome.min.css',
       '/stylesheets/lib/font-awesome.min.css',
       '/stylesheets/lib/animations.css',
-      '/stylesheets/screen.css'
+      '/stylesheets/screen.css',
+      '/stylesheets/tablePageNavigation.css'
     ]
     js_compression  :jsmin       # Optional
     css_compression :simple      # Optional
@@ -55,7 +57,6 @@ class Polizei < Sinatra::Application
     
     disk_space_report = Reports::DiskSpace.new
     @disks = disk_space_report.get_disk_space_info
-    puts @disks
     erb :disk_space, :locals => {:name => :disk_space}
     
   end

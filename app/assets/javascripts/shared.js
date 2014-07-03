@@ -18,7 +18,7 @@ $(document).ready(function() {
             $('div#access_results').show();
         }
     );
-    
+       
     //Whenever we click the get permissions button, we send an ajax request to
     //get 1) users with permissions to a table 
     //or 2) tables that a user has access to
@@ -46,20 +46,20 @@ $(document).ready(function() {
                     
                     //We create our nifty table to hold results
                     var table = document.createElement("table");
-                    $(table).addClass("table table-striped");
+                    $(table).addClass("table paginateMe table-bordered table-hover");
                     
                     //We create the column headers first
                     var p_types = ["Delete", "Select", "Insert", "References", "Update"];
                     var new_row = "<tr><td>Value</td>" ;
                     for(var i = 0; i < p_types.length; i++) {
-                        new_row = new_row + "<td>" + p_types[i] + "</td>";           
+                        new_row = new_row + "<th>" + p_types[i] + "</th>";           
                     }
                     new_row = new_row + "</tr>";
                     $(table).append(new_row);
                     
                     //Now we append the results of our query
                     for(var i = 0; i < data.length; i++) {
-                        new_row = "<tr>";
+                        new_row = "<tr class='active'>";
                         new_row = new_row + "<td>" + data[i]["value"] + "</td>";
                         new_row = new_row + "<td>" + data[i]["has_delete"] + "</td>";
                         new_row = new_row + "<td>" + data[i]["has_select"] + "</td>";
@@ -70,8 +70,13 @@ $(document).ready(function() {
                         $(table).append(new_row);
                     }
                     
-                    results.append(table);  
+                    results.append(table);
+                    paginate_stuff();  
                 }
             });
 	});
+    
+    //Want to ensure long tables with the class paginateMe are paginated
+    paginate_stuff();
+    
 });

@@ -21,10 +21,13 @@ p {
 }
 
 
+
 .CodeRay div {
     text-overflow: clip;
     max-width: 400px;
 }
+
+
 
 ul#navigation {
     padding: 0px;
@@ -59,7 +62,7 @@ div.permissions_content {
     margin-bottom: 20px;
 }
 
-div.permissions_content div {
+div.permissions_content div.tabbedMenuContent {
     display: none;
     margin-left: 20px;
     margin-right: 20px;
@@ -73,6 +76,17 @@ div.permissions_content table tr td{
 select.permissions_dd {
     margin-left: 20px;
 }
+
+
+tr.total {
+    font-weight: bold;
+}
+
+
+
+
+
+
 
 
 .secondary {
