@@ -9,10 +9,11 @@ require 'sanitize'
 require 'pg'
 require 'action_view'
 require 'coderay'
+require 'date'
 
 class Polizei < Sinatra::Application
   include ActionView::Helpers::NumberHelper
-
+  
   set :root, File.dirname(__FILE__)
   register Sinatra::AssetPack
   #register Sinatra::ActiveRecordExtension
