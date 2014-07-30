@@ -1,5 +1,8 @@
 $(document).ready(function() {
     
+    //We enable table sorting
+    $('#myTables').tablesorter();
+    
     //We want the first tab in the permissions page to be on by default
     $('div#users').show();
     

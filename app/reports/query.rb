@@ -45,6 +45,7 @@ module Reports
         
       SQL
       result = self.class.connection.select_all(self.class.sanitize([sql, @options]))
+      
       result.chunk {|r| "#{r['pid']}#{r['start_time']}" }.collect do |query_grouping, query_parts|
         {
           'source' => query_parts.first['source'],

@@ -1,18 +1,25 @@
 //This function will paginate everything with the class "paginateMe"  
 function paginate_stuff() {
     
-    //This will bring us to the correct page in the table
-    function goToPage(pageNumber) {
-        $('.paginateMe tr:not(:has(th))').hide();
-        var startIndex = (pageNumber-1)*rowLimit;
-        for(var i = startIndex; i < startIndex + rowLimit; i++) {
-            $(tableRows[i]).show();
-        }
-    }
-    
     //We need to keep track of which page we're on and set a limit to number of rows per page
     var currentPage = 1;
     var rowLimit = 10;    
+    
+    //In the case of a page refresh, we merely want to update the pagination results and nothing else
+    if(arguments.length > 0 && arguments[0] == true) {
+        goToPage(currentPage);
+        return;
+    }
+    
+    //This will bring us to the correct page in the table
+    function goToPage(pageNumber) {
+        $('.paginateMe tr:not(:has(th))').hide();
+        var rows = $('.paginateMe tr:not(:has(th))');
+        var startIndex = (pageNumber-1)*rowLimit;
+        for(var i = startIndex; i < startIndex + rowLimit; i++) {
+            $(rows[i]).show();
+        }
+    }
     
     //We want to limit the number of rows we see in a table
     var tableRows = $('.paginateMe tr:not(:has(th))');
