@@ -35,7 +35,9 @@
             <td>Unknown</td>
         <% end %>
         <td><%= row['pid'].to_i < 0 ? 'n/a' :  row['pid'] %></td>
-        <td><%= CodeRay.scan(row['query'].rstrip.lstrip, :sql).div()  %></td>
+        <td>
+            <%= CodeRay.scan(row['query'], :sql).div()  %>
+        </td>
       </tr >
     <% end %>
   </table>

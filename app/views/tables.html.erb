@@ -1,22 +1,24 @@
 <h2 name="tables" id="tables">Tables</h2>
 
-<table class="table paginateMe table-bordered table-hover">
-
+<table id="myTables" class="table tablesorter paginateMe table-bordered table-hover">
+  <thead>
   <tr>
     <th>Schema</th>
     <th>Table <small>(table ID)</small></th>
-    <th>Size in MB</th>
+    <th>Size in GB</th>
     <th>Sort Keys</th>
     <th>Distribution Key</th>
     <th>Column Encoding</th>
     <th>% Skew Across Slices <small>(lower better)</small></th>
     <th>% Slices Populated <small>(higher better)</small</th>
   </tr>
+  </thead>
+  <tbody>
   <% @tables.each do |row| %>
     <tr class="active">
       <td><%= h row['schema'] %></td>
       <td><%= h row['table'] %> <small class="secondary">(<%=row['tableid']%>)</small></td>
-      <td nowrap="nowrap"><%= size_formatted row['size_in_mb'].to_i %></td>
+      <td nowrap="nowrap"><%= (row['size_in_mb'].to_i / 1000.0).round(2) %></td>
       <td>
         <% if row['sort_keys'].present? %>
           <%= row['sort_keys'].collect{|k|
@@ -53,4 +55,11 @@
       <%= h row['pct_slices_populated'] %></td>
     </tr >
   <% end %>
+  </tbody>
 </table>
+
+
+
+
+
+

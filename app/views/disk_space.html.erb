@@ -1,6 +1,6 @@
 <h2>Disk Space Usage</h2>
 
-<table class="table table-striped">
+<table class="table table-bordered table-hover">
     
     <thead>
     <tr>
@@ -11,8 +11,10 @@
     </tr>
     </thead>
     
+    <tbody>
+    
     <% @disks.each do |disk| %>
-        <tr>
+        <tr class="active">
             <td><%= disk["node"] %></td>
             <td><%= disk["used"] %></td>
             <td><%= disk["capacity"] %></td>
@@ -20,11 +22,12 @@
         </tr>
     <% end %>
     
-    <tr class="danger">
+    <tr class="total success">
         <td>Total: </td>
         <td><%= @disks.map { |d| d["used"].to_i}.sum %></td>
         <td><%= @disks.map { |d| d["capacity"].to_i}.sum %></td>
         <td><%= "%" + "%.2f" % (100 * @disks.map { |d| d["used"].to_f}.sum / @disks.map { |d| d["capacity"].to_f}.sum)  %></td>
     </tr>
     
+    </tbody>
 </table>
