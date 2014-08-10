@@ -3,6 +3,14 @@ $(document).ready(function() {
     //We enable table sorting
     $('#myTables').tablesorter();
     
+    //We want the headers on tables to change color when hovered over if its sortable
+    $('.headerClickable').hover(function() {
+        $( this ).addClass('success');
+        }, function() {
+        $( this ).removeClass('success');
+        }
+    );
+
     //We want the first tab in the permissions page to be on by default
     $('div#users').show();
     
