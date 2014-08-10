@@ -31,10 +31,6 @@ class Polizei < Sinatra::Application
       '/javascripts/lib/bootstrap.min.js',
       '/javascripts/shared.js',
       '/javascripts/pagination.js',
-      #'/javascripts/JQuery-File-Upload-9.5.8/js/jquery.fileupload.js',
-      #'/javascripts/JQuery-File-Upload-9.5.8/js/jquery.iframe-transport.js',
-      '/javascripts/JQuery-File-Upload-9.5.8/js/*',
-      '/javascripts/JQuery-File-Upload-9.5.8/js/vendor/jquery.ui.widget.js',
       '/javascripts/jquery.tablesorter.js'
     ]
     css :application, '/stylesheets/application.css', [
