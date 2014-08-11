@@ -32,7 +32,12 @@
                 <td><%= secs + " seconds"%></td>
             <% end %>
         <% else %>
-            <td>Unknown</td>
+        <td>
+          <% seconds = Time.now - row['start_time'] %>
+          <div><%= seconds.to_i.to_s + " seconds" %></div>
+          <div>(running)</div>
+          <% minutes = seconds / 60 %>
+        </td>
         <% end %>
         <td><%= row['pid'].to_i < 0 ? 'n/a' :  row['pid'] %></td>
         <td>
