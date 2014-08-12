@@ -33,8 +33,14 @@
             <% end %>
         <% else %>
         <td>
-          <% seconds = Time.now - row['start_time'] %>
-          <div><%= seconds.to_i.to_s + " seconds" %></div>
+          <% total_seconds = Time.now - row['start_time'] %>
+          <% minutes = (total_seconds/60).to_i %>
+          <% seconds = (total_seconds % 60).to_i %>
+          <% if minutes != 0 %>
+            <div><%= minutes.to_s + " minutes,  " + seconds.to_s + " seconds" %></div>
+          <% else %>
+            <div><%= seconds.to_s + " seconds"%></div>
+          <% end %>
           <div>(running)</div>
           <% minutes = seconds / 60 %>
         </td>
