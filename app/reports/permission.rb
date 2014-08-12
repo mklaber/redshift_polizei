@@ -84,7 +84,7 @@ module Reports
         
         #We want to grab all the tables and the permissions the specified user has to them
         sql = <<-SQL
-            SELECT t.schemaname || '-->' || t.tablename AS value,
+            SELECT t.schemaname || '.' || t.tablename AS value,
             has_table_privilege('#{username}', t.schemaname || '.' || t.tablename, 'select') AS has_select,    
             has_table_privilege('#{username}', t.schemaname || '.' || t.tablename, 'delete') AS has_delete,
             has_table_privilege('#{username}', t.schemaname || '.' || t.tablename, 'update') AS has_update,

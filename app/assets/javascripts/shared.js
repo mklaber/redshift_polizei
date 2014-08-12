@@ -71,13 +71,13 @@ $(document).ready(function() {
                     //Now we append the results of our query
                     for(var i = 0; i < data.length; i++) {
                         new_row = "<tr class='active'>";
-                        new_row = new_row + "<td>" + data[i]["value"] + "</td>";
-                        new_row = new_row + "<td>" + data[i]["has_delete"] + "</td>";
-                        new_row = new_row + "<td>" + data[i]["has_select"] + "</td>";
-                        new_row = new_row + "<td>" + data[i]["has_insert"] + "</td>";
-                        new_row = new_row + "<td>" + data[i]["has_references"] + "</td>";
-                        new_row = new_row + "<td>" + data[i]["has_update"] + "</td>";
-                        new_row = new_row + "</tr>";
+                        new_row += "<td>" + data[i]["value"] + "</td>";
+                        new_row += "<td>" + data[i]["has_delete"] + "</td>";
+                        new_row += "<td>" + data[i]["has_select"] + "</td>";
+                        new_row += "<td>" + data[i]["has_insert"] + "</td>";
+                        new_row += "<td>" + data[i]["has_references"] + "</td>";
+                        new_row += "<td>" + data[i]["has_update"] + "</td>";
+                        new_row += "</tr>";
                         $(table).append(new_row);
                     }
                     
