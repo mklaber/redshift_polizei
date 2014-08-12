@@ -85,3 +85,10 @@ tr.total {
 .secondary {
   color: #999;
 }
+
+
+.headerClickable {
+  cursor: pointer;
+}
+
+
