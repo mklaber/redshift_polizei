@@ -55,7 +55,13 @@ module Reports
             has_table_privilege(u.usename, '#{schemaname}' || '.' || '#{tablename}', 'update') AS has_update,
             has_table_privilege(u.usename, '#{schemaname}' || '.' || '#{tablename}', 'references') AS has_references,
             has_table_privilege(u.usename, '#{schemaname}' || '.' || '#{tablename}', 'insert') AS has_insert
-            FROM pg_user u;
+            FROM pg_user u
+            WHERE has_table_privilege(u.usename, '#{schemaname}' || '.' || '#{tablename}', 'select') = true
+                OR has_table_privilege(u.usename, '#{schemaname}' || '.' || '#{tablename}', 'delete') = true
+                OR has_table_privilege(u.usename, '#{schemaname}' || '.' || '#{tablename}', 'update') = true
+                OR has_table_privilege(u.usename, '#{schemaname}' || '.' || '#{tablename}', 'references') = true
+                OR has_table_privilege(u.usename, '#{schemaname}' || '.' || '#{tablename}', 'insert') = true
+                ;
         SQL
         
         #We want to grab the sql results and map t --> "Yes" and f --> "No"
@@ -85,6 +91,12 @@ module Reports
             has_table_privilege('#{username}', t.schemaname || '.' || t.tablename, 'references') AS has_references,
             has_table_privilege('#{username}', t.schemaname || '.' || t.tablename, 'insert') AS has_insert
             FROM pg_tables t
+            WHERE (has_table_privilege('#{username}', t.schemaname || '.' || t.tablename, 'select') = true
+                OR has_table_privilege('#{username}', t.schemaname || '.' || t.tablename, 'delete') = true
+                OR has_table_privilege('#{username}', t.schemaname || '.' || t.tablename, 'update') = true
+                OR has_table_privilege('#{username}', t.schemaname || '.' || t.tablename, 'references') = true
+                OR has_table_privilege('#{username}', t.schemaname || '.' || t.tablename, 'insert') = true)
+                AND t.schemaname != 'pg_catalog';
         SQL
         
         #We want to grab the sql results and map t --> "Yes" and f --> "No"
