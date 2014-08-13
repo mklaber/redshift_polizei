@@ -91,7 +91,7 @@ class Polizei < Sinatra::Application
     schemaname, tablename = params[:value].split("-->")
     permissions_report = Reports::Permission.new
     @result = permissions_report.get_users_with_access(schemaname, tablename)
-    puts @result
+    @result = @result.select{ |r| r.has_value?("Yes") }
     @result.to_json    
     
   end
@@ -101,6 +101,7 @@ class Polizei < Sinatra::Application
     username = params[:value]
     permissions_report = Reports::Permission.new
     @result = permissions_report.get_tables_for_user(username)
+    @result = @result.select{ |r| r.has_value?("Yes") }
     @result.to_json    
     
   end
