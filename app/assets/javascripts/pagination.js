@@ -71,7 +71,6 @@ function paginate_stuff() {
         pageTabs = pageTabs + "<li class='disabled'><a class='arrowNav' id='oneBack' href='javascript:void(0);'> < </a></li>";
         
         if(numPages > pageLimit) {
-            isLotsPages = true;
             for(var i = 1; i <= pageLimit; i++) {
                 if(i == 1) {
                     pageTabs = pageTabs + "<li class='active'>";
@@ -157,30 +156,46 @@ function paginate_stuff() {
         syncPageNavs();
     }
     
+    //Makes all the pageTabs inactive.  Useful for refreshes
+    function cleanPageTabs() {
+        var pageTabs = $(".pageTab").get();
+        $(pageTabs[0]).parent().attr("class", "active");
+        for(var i = 1; i < pageTabs.length; i++) {
+            $(pageTabs[i]).parent().attr("class", "");
+        }
+    }
+
     //We need to keep track of which page we're on and set a limit to number of rows per page
     var currentPage = 1;
     var rowLimit = 20;    
     var pageLimit = 10;    
     var isLotsPages = false;    
     
-    //In the case of a page refresh, we merely want to update the pagination results and nothing else
-    if(arguments.length > 0 && arguments[0] == true) {
-        goToPage(2, 1);
-        return;
-    }
-    
     //We want to limit the number of rows we see in a table
     var tableRows = $('.paginateMe tr:not(:has(th))');
+    var numPages = Math.ceil(tableRows.length /rowLimit);
+    if(numPages > pageLimit) isLotsPages = true    
+    
     for(var i = 0; i < tableRows.length; i++) {
         if(i >= rowLimit) {
             $(tableRows[i]).hide();
         }
     }
     
+    //We do this in case of a refresh (ie.  when the rows get sorted by tablesorter)
+    if(arguments.length > 0 && arguments[0] == true) {
+        cleanPageTabs();
+        $(".pageTab").unbind();
+        $(".arrowNav").unbind();
+        $(".pageTab").click(pageTabClickListener);
+        $(".arrowNav").click(arrowClickListener);
+        goToPage(2, 1);
+        return;
+    }
+    
     //Add a navigation bar at the bottom
     //Display a tab for each page if number of pages < page limit
     //Otherwise, show 3 tabs before and after current page
-    var numPages = Math.ceil(tableRows.length /rowLimit);
     var pageTabs = createPageNavigation(numPages);
     $('.paginateMe').after(pageTabs);
     $(".paginateMe").before(pageTabs);
