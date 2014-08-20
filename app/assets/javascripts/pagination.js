@@ -44,19 +44,23 @@ function paginate_stuff() {
     //As an example, if you are pn page 1, the left arrows should not be active
     function updateArrows(pageNumber) {
         //We disable the page navigators if we reach either edge of the results
-        if(pageNumber == 1) {
+        var isFirstPage = (pageNumber == 1);
+        var isLastPage = (pageNumber == numPages);
+        if(isFirstPage) {
             $("li:has(a#oneBack)").attr("class", "disabled");
             $("li:has(a#fullBack)").attr("class", "disabled");
+        } else {
+            $("li:has(a#oneBack)").attr("class", "");
+            $("li:has(a#fullBack)").attr("class", "");
+        }
+        if(isLastPage) {
+            $("li:has(a#oneFront)").attr("class", "disabled");
+            $("li:has(a#fullFront)").attr("class", "disabled");
+        } else {
             $("li:has(a#oneFront)").attr("class", "");
             $("li:has(a#fullFront)").attr("class", "");
         }
-        else if(pageNumber == numPages) {
-            $("li:has(a#oneBack)").attr("class", "");
-            $("li:has(a#fullBack)").attr("class", "");
-            $("li:has(a#oneFront)").attr("class", "disabled");
-            $("li:has(a#fullFront)").attr("class", "disabled");
-        }
-        else {
+        if(!isFirstPage && !isLastPage) {
             $("li:has(a#oneBack)").attr("class", "");
             $("li:has(a#fullBack)").attr("class", "");
             $("li:has(a#oneFront)").attr("class", "");
@@ -203,6 +207,7 @@ function paginate_stuff() {
     //Add onclick listeners
     $(".pageTab").click(pageTabClickListener);
     $(".arrowNav").click(arrowClickListener);
+    updateArrows(currentPage);
 } 
 
 
