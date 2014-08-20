@@ -49,8 +49,11 @@ class Polizei < Sinatra::Application
 
   get '/' do
     query_report = Reports::Query.new
-    # @queries = query_report.inflight.to_hash + query_report.recents.to_hash
     @queries = query_report.result
+    #We want to strip out block comments before passing it on to the view
+    @queries.each do |q|
+      q["query"] = q["query"].gsub(/(\/\*).+(\*\/)/, '')      
+    end
     erb :index, :locals => { :name => :home }
   end
 
