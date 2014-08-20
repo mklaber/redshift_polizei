@@ -1,5 +1,21 @@
 <h2 name="tables" id="tables">Tables</h2>
 
+<form class="form-inline pull-right" method="GET" action="/tables">
+  <div class="form-group">
+    <label class="control-label" for="table_search">Table</label>
+    <select class="form-control" name="table_search">
+      <% @table_names.each do |tn| %>
+        <% if @prev_table == tn %>
+          <option selected><%= tn %></option>
+        <% else %>
+          <option><%= tn %></option>
+        <% end %>
+      <% end %>
+    </select>
+    <button type="submit" class="btn btn-default">Search</button>
+  </div>
+</form>
+
 <table id="myTables" class="table tablesorter paginateMe table-bordered table-hover">
   <thead>
   <tr>

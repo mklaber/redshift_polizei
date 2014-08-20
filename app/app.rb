@@ -66,15 +66,20 @@ class Polizei < Sinatra::Application
   end
     
   get '/upload_data' do
-    
     erb :upload_data, :locals => {:name => :disk_space}
-    
   end
-
-
+  
   get '/tables' do
     tables_report = Reports::Table.new
     @tables = tables_report.result
+    @table_names = ["Any"] + @tables.map{ |t| t["table"] }.uniq.sort!
+    if params.has_key?("table_search")
+      table = params["table_search"]
+      @tables = @tables.select{ |t| t["table"] == params["table_search"] } unless table=="Any"
+      @prev_table = table
+    else
+      @prev_table = "Any"
+    end
     erb :tables, :locals => { :name => :tables }
     #    @tables = Reports::Table.paginate(:page => params[:page], :per_page => 5)
     #    erb :tables, :locals => { :name => :tables }
