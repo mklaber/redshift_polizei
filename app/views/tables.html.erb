@@ -2,16 +2,12 @@
 
 <form class="form-inline pull-right" method="GET" action="/tables">
   <div class="form-group">
-    <label class="control-label" for="table_search">Table</label>
-    <select class="form-control" name="table_search">
-      <% @table_names.each do |tn| %>
-        <% if @prev_table == tn %>
-          <option selected><%= tn %></option>
-        <% else %>
-          <option><%= tn %></option>
-        <% end %>
-      <% end %>
-    </select>
+    <label class="sr-only" for="table_search">Search For Table</label>
+    <% if @prev_table != "Any" %>
+      <input type="text" class="form-control" name="table_search" id="table_search" placeholder="Search For Table" value="<%= @prev_table %>"></input>
+    <% else %>
+      <input type="text" class="form-control" name="table_search" id="table_search" placeholder="Search For Table"></input>
+    <% end %>
     <button type="submit" class="btn btn-default">Search</button>
   </div>
 </form>

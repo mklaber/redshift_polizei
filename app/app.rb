@@ -75,7 +75,7 @@ class Polizei < Sinatra::Application
     @table_names = ["Any"] + @tables.map{ |t| t["table"] }.uniq.sort!
     if params.has_key?("table_search")
       table = params["table_search"]
-      @tables = @tables.select{ |t| t["table"] == params["table_search"] } unless table=="Any"
+      @tables = @tables.select{ |t| t["table"].include?(table) } unless table=="Any"
       @prev_table = table
     else
       @prev_table = "Any"
