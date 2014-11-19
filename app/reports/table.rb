@@ -1,14 +1,6 @@
 module Reports
   class Table < Base
-  
-    attr_reader :options
-  
-    def initialize(unsanitized_options = {})
-      # Ensure options are valid
-      # this includes dealing with start_date, end_date
-      @options = self.class.filter(unsanitized_options)
-    end 
-  	
+
     def result
       sql = <<-SQL
       SELECT c.schemaname as schema, c.tablename as table, c.tableid, c.size_in_mb, 
@@ -26,13 +18,13 @@ module Reports
       left join pg_attribute as dist_key_attr on dist_key_attr.attrelid = c.tableid and dist_key_attr.attisdistkey is true
       order by c.size_in_mb desc;
       SQL
-      @result = self.class.connection.select_all(self.class.sanitize([sql, @options]))
+      @result = self.select_all(sql)
       @result.each do |row|
         row['sort_keys'] = []
         row.keys.select{|k| /^sort_key_[0-9]+$/ =~ k }.each{|k| row['sort_keys'] << row[k] if row[k].present? }        
       end
       @result
     end
-  	
+
   end
 end

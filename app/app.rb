@@ -1,4 +1,3 @@
-
 require 'sinatra/assetpack'
 require "sinatra/activerecord"
 require 'monkey_patches'

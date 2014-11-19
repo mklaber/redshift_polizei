@@ -1,14 +1,5 @@
 module Reports
-  
   class DiskSpace < Base
-  
-    attr_reader :options
-    
-    def initialize(unsanitized_options = {})
-      # Ensure options are valid
-      # this includes dealing with start_date, end_date
-      @options = self.class.filter(unsanitized_options)
-    end 
   	
     def get_disk_space_info
         
@@ -20,7 +11,7 @@ module Reports
             ORDER BY 1;
         SQL
         
-        @results = self.class.connection.select_all(self.class.sanitize([sql, @options]))
+        @results = self.select_all(self.class.sanitize([sql, @options]))
         
     end
     

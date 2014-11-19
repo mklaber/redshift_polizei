@@ -1,14 +1,6 @@
 module Reports
   class Query < Base
   
-    attr_reader :options
-  
-    def initialize(unsanitized_options = {})
-      # Ensure options are valid
-      # this includes dealing with start_date, end_date
-      @options = self.class.filter(unsanitized_options)
-    end 
-  
     def result
       sql = <<-SQL
         (select 'SVL_STATEMENTTEXT' as "source", queries.userid as user_id, users.usename as username, 'Done' as status,
@@ -35,7 +27,7 @@ module Reports
          order by "source", start_time desc, sequence asc
         
       SQL
-      result = self.class.connection.select_all(self.class.sanitize([sql, @options]))
+      result = self.select_all(sql)
       result.chunk {|r| "#{r['pid']}#{r['start_time']}" }.collect do |query_grouping, query_parts|
         {
           'source' => query_parts.first['source'],
