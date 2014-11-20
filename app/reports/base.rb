@@ -1,32 +1,39 @@
 module Reports
   class Base
-
-    def initialize(attributes={})
-      attributes && attributes.each do |name, value|
-        send("#{name}=", value) if respond_to? name.to_sym 
+      def self.inspect
+        "#<#{self.to_s}>"
       end
-    end
 
     public
-      def self.inspect
-        "#<#{ self.to_s} #{ self.attributes.collect{ |e| ":#{ e }" }.join(', ') }>"
-      end
-
       def select_all(sql, *args)
-        self.class.select_all(sql, *args)
+        return self.class.check_cache(sql, *args)
       end
 
       def self.select_all(sql, *args)
-        sanitized_sql = self.sanitize(sql, *args)
-        self.connection.select_all(sanitized_sql)
+        return self.check_cache(sql, *args)
       end
 
     private
-      def self.connection
-        ActiveRecord::Base.connection
+      def self.cache
+        Caches::BaseCache.cache
       end
 
-      def self.sanitize(a, *args)
+      def self.uncached_query(sql, *args)
+        sanitized_sql = self.sanitize_sql(sql, *args)
+        ActiveRecord::Base.connection.select_all(sanitized_sql)
+      end
+
+      def self.check_cache(sql, *args)
+        sanitized_sql = self.sanitize_sql(sql, *args)
+        cache_item = cache.get(sql)
+        if cache_item.nil?
+          data = self.uncached_query(sanitized_sql)
+          cache_item = cache.put(sql, data)
+        end
+        return cache_item
+      end
+
+      def self.sanitize_sql(a, *args)
         # if a single array was passed, use this array as sanitization arguments
         if args.size == 1 && args[0].is_a?(Array)
           placeholder_values = args[0]

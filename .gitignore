@@ -35,5 +35,6 @@ build/
 
 **/.DS_Store
 config/database.yml
+config/cache.yml
 *.swp
 **.swp

@@ -8,6 +8,7 @@ require 'pg'
 require 'action_view'
 require 'coderay'
 require 'date'
+require 'aws'
 
 class Polizei < Sinatra::Application
   include ActionView::Helpers::NumberHelper
