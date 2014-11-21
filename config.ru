@@ -4,8 +4,6 @@ require 'sinatra'
 require 'erubis'
 require 'app'
 
-Dir.glob('./app/{models,reports,caches}/*.rb').sort.each { |file| require file }
-
 set :mail_options, {
                       :from => 'no-reply@analyticsmediagroup.com',
                       :via => :smtp,

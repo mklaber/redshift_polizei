@@ -12,10 +12,12 @@ module Caches
     end
 
     def exists?(sql)
+      return false if not self.enabled
       self.get(sql).exists?
     end
 
     def get(sql)
+      return nil if not self.enabled
       hq = build_hash(sql)
       cache_item = table.items[hq]
       if not cache_item.exists?

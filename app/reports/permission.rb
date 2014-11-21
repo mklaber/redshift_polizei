@@ -1,32 +1,37 @@
 module Reports
   class Permission < Base
 
-    def result
+    def run
+      users, groups, tables = self.result
+      users.each  { |user| self.get_tables_for_user(user) }
+      tables.each do |table|
+        table_parts = table.split("-->")
+        self.get_users_with_access(table_parts[0], table_parts[1])
+      end
+    end
 
+    def result
       users, groups, tables = [], [], []
 
       user_sql = <<-SQL
         SELECT u.usename FROM pg_user u;
       SQL
-
-      table_sql = <<-SQL
-        SELECT t.schemaname, t.tablename FROM pg_tables t;
-      SQL
-
-      group_sql = <<-SQL
-        SELECT groname FROM pg_group;
-      SQL
-
       users_as_dicts = self.select_all(user_sql)
       users_as_dicts.each do |use_dict|
         users.append(use_dict["usename"])
       end
 
+      table_sql = <<-SQL
+        SELECT t.schemaname, t.tablename FROM pg_tables t;
+      SQL
       tables_as_dicts = self.select_all(table_sql)
       tables_as_dicts.each do |table_dict|
         tables.append(table_dict["schemaname"] + "-->" + table_dict["tablename"])
       end
 
+      group_sql = <<-SQL
+        SELECT groname FROM pg_group;
+      SQL
       groups_as_dicts = self.select_all(group_sql)
       groups_as_dicts.each do |group_dict|
         groups.append(group_dict["groname"])

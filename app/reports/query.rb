@@ -1,7 +1,7 @@
 module Reports
   class Query < Base
   
-    def result
+    def run
       sql = <<-SQL
         (select 'SVL_STATEMENTTEXT' as "source", queries.userid as user_id, users.usename as username, 'Done' as status,
          starttime as start_time, endtime as end_time, "sequence", pid, type, "text" as query

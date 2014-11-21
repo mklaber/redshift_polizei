@@ -1,8 +1,7 @@
 module Reports
   class DiskSpace < Base
   	
-    def get_disk_space_info
-        
+    def run
         #We want to query disk space information for all the nodes
         sql = <<-SQL
             SELECT owner AS node, sum(used) AS used, sum(capacity) AS capacity
@@ -11,9 +10,7 @@ module Reports
             ORDER BY 1;
         SQL
         
-        @results = self.select_all(self.class.sanitize([sql, @options]))
-        
+        @results = self.select_all(sql)
     end
-    
   end
 end

@@ -4,6 +4,16 @@ module Caches
     def initialize(options = {})
       raise NotImplementedError
     end
+    def disable
+      @enabled = false
+    end
+    def enable
+      @enabled = true
+    end
+    def enabled
+      return true if @enabled.nil?
+      @enabled
+    end
     def exists?(sql)
       raise NotImplementedError
     end

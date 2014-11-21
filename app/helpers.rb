@@ -1,3 +1,5 @@
+require 'sinatra'
+
 helpers do
   
   def link_to(body, url = nil, html_options = {})

@@ -1,14 +1,4 @@
-require 'sinatra/assetpack'
-require "sinatra/activerecord"
-require 'monkey_patches'
-require 'helpers'
-require 'pony'
-require 'sanitize'
-require 'pg'
-require 'action_view'
-require 'coderay'
-require 'date'
-require 'aws'
+require './app/main'
 
 class Polizei < Sinatra::Application
   include ActionView::Helpers::NumberHelper
@@ -49,7 +39,7 @@ class Polizei < Sinatra::Application
 
   get '/' do
     query_report = Reports::Query.new
-    @queries = query_report.result
+    @queries = query_report.run
     #We want to strip out block comments before passing it on to the view
     @queries.each do |q|
       q["query"] = q["query"].gsub(/(\/\*).+(\*\/)/, '')      
@@ -58,11 +48,9 @@ class Polizei < Sinatra::Application
   end
 
   get '/disk_space' do
-    
     disk_space_report = Reports::DiskSpace.new
-    @disks = disk_space_report.get_disk_space_info
+    @disks = disk_space_report.run
     erb :disk_space, :locals => {:name => :disk_space}
-    
   end
     
   get '/upload_data' do
@@ -71,7 +59,7 @@ class Polizei < Sinatra::Application
   
   get '/tables' do
     tables_report = Reports::Table.new
-    @tables = tables_report.result
+    @tables = tables_report.run
     @table_names = ["Any"] + @tables.map{ |t| t["table"] }.uniq.sort!
     if params.has_key?("table_search")
       table = params["table_search"]
@@ -86,32 +74,26 @@ class Polizei < Sinatra::Application
   end
 
   get '/permissions' do
-	
-	permissions_report = Reports::Permission.new
+    permissions_report = Reports::Permission.new
     @users, @groups, @tables = permissions_report.result
     @p_types = ["select", "insert", "update", "delete", "references"]
     erb :permissions, :locals => { :name => :permissions }
-    
   end
 
   get '/permissions/tables' do
-    
     schemaname, tablename = params[:value].split("-->")
     permissions_report = Reports::Permission.new
     @result = permissions_report.get_users_with_access(schemaname, tablename)
     @result = @result.select{ |r| r.has_value?("Yes") }
-    @result.to_json    
-    
+    @result.to_json
   end
     
   get '/permissions/users' do
-    
     username = params[:value]
     permissions_report = Reports::Permission.new
     @result = permissions_report.get_tables_for_user(username)
     @result = @result.select{ |r| r.has_value?("Yes") }
-    @result.to_json    
-    
+    @result.to_json
   end
    
   not_found do
@@ -126,5 +108,4 @@ class Polizei < Sinatra::Application
 
   # start the server if ruby file executed directly
   run! if app_file == $0
-
 end

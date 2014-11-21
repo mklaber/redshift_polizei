@@ -1,10 +1,14 @@
 module Reports
   class Base
-      def self.inspect
-        "#<#{self.to_s}>"
-      end
+    def self.inspect
+      "#<#{self.to_s}>"
+    end
 
     public
+      def run
+        raise NotImplementedError
+      end
+
       def select_all(sql, *args)
         return self.class.check_cache(sql, *args)
       end

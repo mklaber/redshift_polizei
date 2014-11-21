@@ -1,7 +1,7 @@
 module Reports
   class Table < Base
 
-    def result
+    def run
       sql = <<-SQL
       SELECT c.schemaname as schema, c.tablename as table, c.tableid, c.size_in_mb, 
       sort_key_1_attr.attname as sort_key_1,
