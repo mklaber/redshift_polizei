@@ -10,17 +10,19 @@ module Reports
       raise NotImplementedError
     end
 
-    def select_all(sql, *args)
-      return self.class.select_all(sql, *args)
+    def redshift_select_all(sql, *args)
+      return self.class.redshift_select_all(sql, *args)
     end
 
     def sanitize_sql(sql, *args)
       return self.class.sanitize_sql(sql, *args)
     end
 
-    def self.select_all(sql, *args)
+    def self.redshift_select_all(sql, *args)
       sanitized_sql = self.sanitize_sql(sql, *args)
-      ActiveRecord::Base.connection.select_all(sanitized_sql)
+      Octopus.using(:redshift) do
+        ActiveRecord::Base.connection.select_all(sanitized_sql)
+      end
     end
 
     def self.sanitize_sql(a, *args)

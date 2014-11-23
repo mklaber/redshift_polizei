@@ -17,7 +17,7 @@ module Reports
         SELECT u.usename FROM pg_user u;
       SQL
       users_as_dicts = cache(user_sql, expires: 30) do
-        self.select_all(user_sql)
+        self.redshift_select_all(user_sql)
       end
       users_as_dicts.each do |use_dict|
         users.append(use_dict["usename"])
@@ -27,7 +27,7 @@ module Reports
         SELECT t.schemaname, t.tablename FROM pg_tables t;
       SQL
       tables_as_dicts = cache(table_sql, expires: 30) do
-        self.select_all(table_sql)
+        self.redshift_select_all(table_sql)
       end
       tables_as_dicts.each do |table_dict|
         tables.append(table_dict["schemaname"] + "-->" + table_dict["tablename"])
@@ -37,7 +37,7 @@ module Reports
         SELECT groname FROM pg_group;
       SQL
       groups_as_dicts = cache(group_sql, expires: 30) do
-        self.select_all(group_sql)
+        self.redshift_select_all(group_sql)
       end
       groups_as_dicts.each do |group_dict|
         groups.append(group_dict["groname"])
@@ -68,7 +68,7 @@ module Reports
       #We want to grab the sql results and map t --> "Yes" and f --> "No"
       keys = ["has_select", "has_delete", "has_update", "has_references", "has_insert"]
       results = cache(sql, expires: 30) do
-        self.select_all(sql)
+        self.redshift_select_all(sql)
       end
       results.each do |result|
         keys.each do |key|
@@ -104,7 +104,7 @@ module Reports
       #We want to grab the sql results and map t --> "Yes" and f --> "No"
       keys = ["has_select", "has_delete", "has_update", "has_references", "has_insert"]
       results = cache(sql, expires: 30) do
-        self.select_all(sql)
+        self.redshift_select_all(sql)
       end
       results.each do |result|
         keys.each do |key|

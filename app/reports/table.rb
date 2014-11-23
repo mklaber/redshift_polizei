@@ -21,7 +21,7 @@ module Reports
       )
 
       @result = cache(sql, expires: 30) do
-        self.select_all(sql)
+        self.redshift_select_all(sql)
       end
       @result.each do |row|
         row['sort_keys'] = []

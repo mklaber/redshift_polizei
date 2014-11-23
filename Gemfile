@@ -1,12 +1,16 @@
 source 'https://rubygems.org'
 
 gem 'sinatra'
+gem 'omniauth-google-oauth2'
+gem 'mail' # mail address parsing
 gem 'rack_csrf'
 gem 'erubis'
 gem 'sinatra-assetpack' # asset pipeline management
 
 gem 'activerecord'
 gem 'sinatra-activerecord'
+gem 'ar-octopus'
+gem 'pg'
 gem 'activerecord4-redshift-adapter', github: 'aamine/activerecord4-redshift-adapter'
 gem 'coderay'
 gem 'actionview' # formatting decimals to be 2 places

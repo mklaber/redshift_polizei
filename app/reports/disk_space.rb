@@ -12,7 +12,7 @@ module Reports
       )
 
       @results = cache(sql, expires: 30) do
-        self.select_all(sql)
+        self.redshift_select_all(sql)
       end
     end
   end

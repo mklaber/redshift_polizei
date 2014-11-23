@@ -24,10 +24,15 @@
         </div>
         <div class="collapse navbar-collapse">
           <ul class="nav navbar-nav">
+            <% if logged_in? %>
             <li class="<%= 'active' if (defined?(name) && name == :home) %>"><a href="/#queries">Queries</a></li>
             <li class="<%= 'active' if (defined?(name) && name == :tables) %>"><a href="/tables">Tables</a></li>
             <li class="<%= 'active' if (defined?(name) && name == :permissions) %>"><a href="/permissions">Permissions</a></li>
             <li class="<%= 'active' if (defined?(name) && name == :disk_space) %>"><a href="/disk_space">Disk Space</a></li>
+            <li><a href="/logout">Logout</a></li>
+            <% else %>
+            <li><a href="/login">Login</a></li>
+            <% end %>
         </ul>
         </div><!--/.nav-collapse -->
       </div>
