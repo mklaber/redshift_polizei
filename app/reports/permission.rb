@@ -16,7 +16,9 @@ module Reports
       user_sql = <<-SQL
         SELECT u.usename FROM pg_user u;
       SQL
-      users_as_dicts = self.select_all(user_sql)
+      users_as_dicts = cache(user_sql, expires: 30) do
+        self.select_all(user_sql)
+      end
       users_as_dicts.each do |use_dict|
         users.append(use_dict["usename"])
       end
@@ -24,7 +26,9 @@ module Reports
       table_sql = <<-SQL
         SELECT t.schemaname, t.tablename FROM pg_tables t;
       SQL
-      tables_as_dicts = self.select_all(table_sql)
+      tables_as_dicts = cache(table_sql, expires: 30) do
+        self.select_all(table_sql)
+      end
       tables_as_dicts.each do |table_dict|
         tables.append(table_dict["schemaname"] + "-->" + table_dict["tablename"])
       end
@@ -32,7 +36,9 @@ module Reports
       group_sql = <<-SQL
         SELECT groname FROM pg_group;
       SQL
-      groups_as_dicts = self.select_all(group_sql)
+      groups_as_dicts = cache(group_sql, expires: 30) do
+        self.select_all(group_sql)
+      end
       groups_as_dicts.each do |group_dict|
         groups.append(group_dict["groname"])
       end
@@ -57,10 +63,13 @@ module Reports
           OR has_table_privilege(u.usename, '%s' || '.' || '%s', 'insert') = true
           ;
       SQL
+      sql = self.sanitize_sql(sql, [schemaname, tablename] * 10)
 
       #We want to grab the sql results and map t --> "Yes" and f --> "No"
       keys = ["has_select", "has_delete", "has_update", "has_references", "has_insert"]
-      results = self.select_all(sql, [schemaname, tablename] * 10)
+      results = cache(sql, expires: 30) do
+        self.select_all(sql)
+      end
       results.each do |result|
         keys.each do |key|
           if result[key] == "t"
@@ -90,10 +99,13 @@ module Reports
           OR has_table_privilege('%s', t.schemaname || '.' || t.tablename, 'insert') = true)
           AND t.schemaname != 'pg_catalog';
       SQL
+      sql = self.sanitize_sql(sql, [username] * 10)
 
       #We want to grab the sql results and map t --> "Yes" and f --> "No"
       keys = ["has_select", "has_delete", "has_update", "has_references", "has_insert"]
-      results = self.select_all(sql, [username] * 10)
+      results = cache(sql, expires: 30) do
+        self.select_all(sql)
+      end
       results.each do |result|
         keys.each do |key|
           if result[key] == "t"

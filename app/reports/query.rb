@@ -2,7 +2,7 @@ module Reports
   class Query < Base
   
     def run
-      sql = <<-SQL
+      sql = self.sanitize_sql(<<-SQL
         (select 'SVL_STATEMENTTEXT' as "source", queries.userid as user_id, users.usename as username, 'Done' as status,
          starttime as start_time, endtime as end_time, "sequence", pid, type, "text" as query
         from SVL_STATEMENTTEXT as queries
@@ -27,7 +27,11 @@ module Reports
          order by "source", start_time desc, sequence asc
         
       SQL
-      result = self.select_all(sql)
+      )
+
+      result = cache(sql, expires: 30) do
+        self.select_all(sql)
+      end
       result.chunk {|r| "#{r['pid']}#{r['start_time']}" }.collect do |query_grouping, query_parts|
         {
           'source' => query_parts.first['source'],

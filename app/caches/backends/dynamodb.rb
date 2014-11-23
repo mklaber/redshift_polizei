@@ -1,3 +1,6 @@
+require 'aws'
+require 'time'
+
 module Caches
   class DynamoDBCache < BaseCache
     def initialize(options = {})
@@ -11,24 +14,27 @@ module Caches
       @table.hash_key = [:id, :string]
     end
 
-    def exists?(sql)
+    def exists?(id, options={})
       return false if not self.enabled
-      self.get(sql).exists?
+      self.get(id).exists?
     end
 
-    def get(sql)
+    def get(id, options={})
       return nil if not self.enabled
-      hq = build_hash(sql)
+      hq = build_hash(id)
       cache_item = table.items[hq]
       if not cache_item.exists?
         return nil
       end
+      return nil if self.expired?(cache_item.attributes[:expires], options)
       cache2cash(cache_item)
     end
 
-    def put(sql, data)
-      hq = build_hash(sql)
-      cache_item = table.items.create(id: hq, sql: sql, data: data.to_json)
+    def put(id, data, options={})
+      hq = build_hash(id)
+      cache_data = { id: hq, id_plain: id, data: data.to_json }
+      cache_data[:expires] = self.expires(options) if options.has_key?(:expires)
+      cache_item = table.items.create(cache_data)
       cache2cash(cache_item)
     end
 
@@ -40,7 +46,7 @@ module Caches
       end
 
       def cache2cash(cache_item)
-        JSON.parse(cache_item.attributes[:data])
+        JSON.load(cache_item.attributes[:data])
       end
   end
 end

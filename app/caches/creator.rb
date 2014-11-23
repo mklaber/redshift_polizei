@@ -1,4 +1,9 @@
+require 'yaml'
+
 module Caches
+  ##
+  # internal class to build instances of cache
+  #
   module Creator
     def self.included(base)
       base.extend(ClassMethods)
@@ -33,6 +38,7 @@ module Caches
           end
           # build cache instance
           if env_config['type'] == 'dynamodb'
+            require_relative 'backends/dynamodb'
             DynamoDBCache.new(env_config)
           else
             raise ArgumentError, "Unsupported cache type #{env_config['type']}"

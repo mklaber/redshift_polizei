@@ -1,5 +1,25 @@
 require './app/main'
 
+DEFAULT_REPORT_NAMESPACE = 'Reports::'
+
+def get_report_class(name)
+  report = nil
+  begin
+    # try to get by name directly
+    report = name.constantize
+  rescue NameError
+    # if couldn't be found, try default namespace
+    begin
+      report = (DEFAULT_REPORT_NAMESPACE + name).constantize
+    rescue NameError
+      # ignore this, original error will be raised
+    end
+    # reraise error if couldn't be fixed
+    raise if report.nil?
+  end
+  return report
+end
+
 def renew_all_reports
   renew_reports(nil)
 end
@@ -15,6 +35,9 @@ def renew_reports(reports)
     # query reports data making it override the cache
     reports.each do |report|
       begin
+        # get the class of the report, if name is given
+        report = get_report_class(report) if report.is_a?(String)
+        # run the report
         report.new.run
       rescue NotImplementedError
         p "Error running report #{report}"
@@ -28,5 +51,5 @@ def renew_reports(reports)
 end
 
 if __FILE__ == $0
-  renew_reports([Reports::DiskSpace, Reports::Table])
+  renew_reports(ARGV)
 end

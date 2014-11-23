@@ -2,7 +2,7 @@ module Reports
   class Table < Base
 
     def run
-      sql = <<-SQL
+      sql = self.sanitize_sql(<<-SQL
       SELECT c.schemaname as schema, c.tablename as table, c.tableid, c.size_in_mb, 
       sort_key_1_attr.attname as sort_key_1,
       sort_key_2_attr.attname as sort_key_2,
@@ -18,7 +18,11 @@ module Reports
       left join pg_attribute as dist_key_attr on dist_key_attr.attrelid = c.tableid and dist_key_attr.attisdistkey is true
       order by c.size_in_mb desc;
       SQL
-      @result = self.select_all(sql)
+      )
+
+      @result = cache(sql, expires: 30) do
+        self.select_all(sql)
+      end
       @result.each do |row|
         row['sort_keys'] = []
         row.keys.select{|k| /^sort_key_[0-9]+$/ =~ k }.each{|k| row['sort_keys'] << row[k] if row[k].present? }        
