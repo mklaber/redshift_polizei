@@ -38,5 +38,6 @@ config/database.yml
 config/cache.yml
 config/auth.yml
 config/shards.yml
+config/aws.yml
 *.swp
 **.swp

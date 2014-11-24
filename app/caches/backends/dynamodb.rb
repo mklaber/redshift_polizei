@@ -8,7 +8,7 @@ module Caches
         raise ArgumentError, 'the option "table" is required'
       end
       @options = options
-      @handle = AWS::DynamoDB.new(@options)
+      @handle = AWSConfig.dynamodb_sdk
       @table = @handle.tables[@options['table']]
       @table.hash_key = [:id, :string]
     end

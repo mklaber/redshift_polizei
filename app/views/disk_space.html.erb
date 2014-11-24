@@ -12,16 +12,16 @@
     <% @disks.each do |disk| %>
       <tr class="active">
         <td><%= disk["node"] %></td>
-        <td><%= disk["used"] %></td>
-        <td><%= disk["capacity"] %></td>
-        <td><%= "%" + "%.2f" % (100 * disk["used"].to_f / disk["capacity"].to_f) %></td>
+        <td><%= disk["used"].round(2) %></td>
+        <td><%= disk["capacity"].round(2) %></td>
+        <td><%= "%.2f%" % (100 * disk["used"].to_f / disk["capacity"].to_f) %></td>
       </tr>
     <% end %>
     <tr class="total success">
       <td>Total: </td>
       <td><%= @disks.map { |d| d["used"].to_i}.sum %></td>
       <td><%= @disks.map { |d| d["capacity"].to_i}.sum %></td>
-      <td><%= "%" + "%.2f" % (100 * @disks.map { |d| d["used"].to_f}.sum / @disks.map { |d| d["capacity"].to_f}.sum)  %></td>
+      <td><%= "%.2f%" % (100 * @disks.map { |d| d["used"].to_f}.sum / @disks.map { |d| d["capacity"].to_f}.sum)  %></td>
     </tr>
   </tbody>
 </table>

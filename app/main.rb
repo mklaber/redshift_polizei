@@ -16,5 +16,6 @@ require 'aws'
 require './app/monkey_patches'
 require './app/helpers'
 require './app/caches'
+require './app/awsconfig'
 
 Dir.glob('./app/{models,reports,caches}/*.rb').sort.each { |file| require file }
