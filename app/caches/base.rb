@@ -1,4 +1,5 @@
 require_relative 'creator'
+require 'time'
 
 module Caches
   ##
@@ -32,14 +33,22 @@ module Caches
       raise NotImplementedError
     end
     protected
-      def expires(options={})
+      def expires_str(options={})
         return nil if not options.has_key?(:expires)
         return (Time.now + options[:expires]).iso8601
+      end
+      def expires_i(options={})
+        return nil if not options.has_key?(:expires)
+        return (Time.now + options[:expires]).utc.to_i
       end
       def expired?(expires, options={})
         return true if expires.nil? && options.has_key?(:expires)
         return false if expires.nil? && (not options.has_key?(:expires))
-        return (Time.iso8601(expires) <= Time.now)
+        if expires.is_a?(String)
+          return (Time.iso8601(expires) <= Time.now)
+        else
+          return (Time.at(expires) <= Time.now)
+        end
       end
   end
 end

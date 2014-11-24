@@ -11,11 +11,21 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 1) do
+ActiveRecord::Schema.define(version: 3) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
   enable_extension "hstore"
+
+  create_table "cache", force: true do |t|
+    t.string   "hashid",     null: false
+    t.json     "data",       null: false
+    t.integer  "expires"
+    t.datetime "created_at"
+    t.datetime "updated_at"
+  end
+
+  add_index "cache", ["hashid"], name: "index_cache_on_hashid", unique: true, using: :btree
 
   create_table "users", force: true do |t|
     t.string   "email",      null: false
@@ -25,5 +35,6 @@ ActiveRecord::Schema.define(version: 1) do
   end
 
   add_index "users", ["email"], name: "index_users_on_email", unique: true, using: :btree
+  add_index "users", ["google_id"], name: "index_users_on_google_id", unique: true, using: :btree
 
 end

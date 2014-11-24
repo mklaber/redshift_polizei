@@ -40,6 +40,9 @@ module Caches
           if env_config['type'] == 'dynamodb'
             require_relative 'backends/dynamodb'
             DynamoDBCache.new(env_config)
+          elsif env_config['type'] == 'activerecord'
+            require_relative 'backends/activerecord'
+            ActiveRecordCache.new(env_config)
           else
             raise ArgumentError, "Unsupported cache type #{env_config['type']}"
           end
