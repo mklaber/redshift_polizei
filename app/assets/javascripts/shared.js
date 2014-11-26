@@ -18,12 +18,11 @@ $(document).ready(function() {
     //the correct menu to pop up on screen
     $('ul#navigation li').click(
         function() {
-            $('ul#navigation li.selected').removeClass('bg-primary');
-            $('ul#navigation li.selected').removeClass('selected');
-            $(this).addClass('selected');
-            $(this).addClass('bg-primary');
             var id = $(this).attr('id');
-            $('div.permissions_content div').hide();
+            window.location.hash = id;
+            $('ul#navigation li.active').removeClass('active');
+            $(this).addClass('active');
+            $('div#permissions_tab_content > div.tabbedMenuContent').hide();
             $('div#'+id).show();
             $('div#access_results').empty();
             $('div#access_results').show();
@@ -85,6 +84,7 @@ $(document).ready(function() {
                     paginate_stuff();  
                 }
             });
+        return false;
 	});
     
     //Want to ensure long tables with the class paginateMe are paginated

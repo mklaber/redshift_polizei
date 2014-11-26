@@ -1,84 +1,95 @@
 <h2 name="permissions" id="permissions">Permissions</h2>
 
-<ul id="navigation">
-  <li id="users" class="selected bg-primary"><a href="javascript:void(0);">Users</a></li>
-  <li id="groups"><a href="javascript:void(0);">Groups</a></li>
-  <li id="tables"><a href="javascript:void(0);">Tables</a></li>
-</ul>
-
 <div class="permissions_content">
-  <br>
-  <div class="tabbedMenuContent" id="users">
-    <p><b>Select a user to view all tables they have access to</b></p>
-    <table>
-      <tr>
-        <td>
-          User:
-        </td>
-        <td>
-          <select class="permissions_dd" id="users_dd">
-            <% @users.each do |user| %>
-            <option id= "<%= user %>">
-              <%= user %>
-            </option>
-            <% end %>
-          </select>
-        </td>
-      </tr>
-    </table>
-    <button id="users" class="permissions_button">Get Permissions</button>
+  <ul id="navigation" class="nav nav-tabs">
+    <li id="users" class="active"><a href="javascript:void(0);">Users</a></li>
+    <li id="groups"><a href="javascript:void(0);">Groups</a></li>
+    <li id="tables"><a href="javascript:void(0);">Tables</a></li>
+  </ul>
+  <div id="permissions_tab_content">
+    <div class="tabbedMenuContent" id="users">
+      <p><b>Select a user to view all tables they have access to</b></p>
+      <form class="form-horizontal">
+        <div class="form-group">
+          <label for="users_dd" class="col-sm-2 control-label">User</label>
+          <div class="col-sm-5">
+            <select class="form-control" id="users_dd">
+              <% @users.each do |user| %>
+              <option id= "<%= user %>">
+                <%= user %>
+              </option>
+              <% end %>
+            </select>
+          </div>
+        </div>
+        <div class="form-group">
+          <div class="col-sm-offset-2 col-sm-5">
+            <button id="users" class="btn btn-primary permissions_button">Get Permissions</button>
+          </div>
+        </div>
+      </form>
+    </div>
+
+    <div class="tabbedMenuContent" id="groups">
+      <p><b>Select a group to view all tables the group has access to</b></p>
+      <form class="form-horizontal">
+        <div class="form-group">
+          <label for="groups_dd" class="col-sm-2 control-label">Group</label>
+          <div class="col-sm-5">
+            <select class="form-control permissions_dd" id="groups_dd">
+              <% @groups.each do |group| %>
+              <option id="<%= group %>">
+                <%= group %>
+              </option>
+              <% end %>
+            </select>
+          </div>
+        </div>
+        <div class="form-group">
+          <div class="col-sm-offset-2 col-sm-5">
+            <button id="groups" class="btn btn-primary permissions_button">Get Permissions</button>
+          </div>
+        </div>
+      </form>
+    </div>
+
+    <div class="tabbedMenuContent" id="tables">
+      <p><b>Select a table to view all users and groups with access to it</b></p>
+      <form class="form-horizontal">
+        <div class="form-group">
+          <label for="tables_dd" class="col-sm-2 control-label">Table</label>
+          <div class="col-sm-5">
+            <select class="form-control permissions_dd" id="tables_dd">
+              <% @tables.each do |table| %>
+              <option id= "<%= table %>" >
+                <%= table %>
+              </option>
+              <% end %>
+            </select>
+          </div>
+        </div>
+        <div class="form-group">
+          <div class="col-sm-offset-2 col-sm-5">
+            <button id="tables" class="btn btn-primary permissions_button">Get Permissions</button>
+          </div>
+        </div>
+      </form>
+    </div>
+
+    <div class="tabbedMenuContent" id="access_results">
+      <b>Access Results</b>
+    </div>
+
   </div>
-
-  <div class="tabbedMenuContent" id="groups">
-    <p><b>Select a group to view all tables the group has access to</b></p>
-    <table>
-      <tr>
-        <td>
-          Group:
-        </td>
-        <td>
-          <select class="permissions_dd" id="groups_dd">
-            <% @groups.each do |group| %>
-            <option id="<%= group %>">
-              <%= group %>
-            </option>
-            <% end %>
-          </select>
-        </td>
-      </tr>
-    </table>
-    <button id="groups" class="permissions_button">Get Permissions</button>
-  </div>
-
-  <div class="tabbedMenuContent" id="tables">
-
-    <p><b>Select a table to view all users and groups with access to it</b></p>
-    <table>
-      <tr>
-        <td>
-          Table:
-        </td>
-        <td>
-          <select class="permissions_dd" id="tables_dd">
-            <% @tables.each do |table| %>
-            <option id= "<%= table %>" >
-              <%= table %>
-            </option>
-            <% end %>
-          </select>
-        </td>
-      </tr>
-    </table>
-    <button id="tables" class="permissions_button">Get Permissions</button>
-  </div>
-
-  <br>
-  <div class="tabbedMenuContent" id='access_results'>
-    <b>Access Results</b>
-  </div>
-
 </div>
 
-
-
-
+<script type="text/javascript">
+  // restore latest selected tab if encoded in url hash
+  $(document).ready(function() {
+    var hash = window.location.hash.split('#')[1];
+    if (hash && hash.length > 0) {
+      var last_tab = $('#navigation li#' + hash);
+      if (hash && last_tab.length) last_tab.click();
+    }
+  });
+</script>
