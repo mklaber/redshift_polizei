@@ -26,9 +26,6 @@ GEM
       minitest (~> 5.1)
       thread_safe (~> 0.1)
       tzinfo (~> 1.1)
-    ar-octopus (0.8.4)
-      activerecord (>= 3.2.0)
-      activesupport (>= 3.2.0)
     arel (5.0.1.20140414130214)
     aws-sdk (1.59.0)
       aws-sdk-v1 (= 1.59.0)
@@ -154,7 +151,6 @@ DEPENDENCIES
   actionview
   activerecord
   activerecord4-redshift-adapter!
-  ar-octopus
   aws-sdk
   capistrano (~> 2.15.5)
   coderay

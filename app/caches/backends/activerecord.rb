@@ -32,7 +32,6 @@ module Caches
       end
       cache_item.data = data.to_json
       cache_item.expires = self.expires_i(options) if options.has_key?(:expires)
-      p "!!! cache_item: #{cache_item}"
       cache_item.save
       cache_item[:data]
     end

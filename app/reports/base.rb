@@ -19,10 +19,16 @@ module Reports
     end
 
     def self.redshift_select_all(sql, *args)
+      # connect to redshift temporarly
       sanitized_sql = self.sanitize_sql(sql, *args)
-      Octopus.using(:redshift) do
-        ActiveRecord::Base.connection.select_all(sanitized_sql)
+      redshift_conn_id = "redshift_#{Sinatra::Application.environment}".to_sym
+      conn_pool = ActiveRecord::Base.establish_connection(redshift_conn_id)
+      conn_pool.with_connection do |c|
+        c.select_all(sanitized_sql)
       end
+    ensure
+      # user normal database connection afterwards
+      ActiveRecord::Base.establish_connection(Sinatra::Application.environment)
     end
 
     def self.sanitize_sql(a, *args)
