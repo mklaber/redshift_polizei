@@ -54,8 +54,3 @@ tr.total {
 .secondary {
   color: #999;
 }
-
-/* tables */
-.headerClickable {
-  cursor: pointer;
-}

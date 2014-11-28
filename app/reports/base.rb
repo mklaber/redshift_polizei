@@ -40,6 +40,7 @@ module Reports
       end
       # sql query is passed at first position
       sanitize_arg = placeholder_values.insert(0, a)
+      return a if sanitize_arg.size == 1 # return immediately if no parameters given (prevents errors where standalone % are in the sql)
       ActiveRecord::Base.__send__(:sanitize_sql_for_conditions, sanitize_arg, '') # last argument is a fake table_name
     end
   end

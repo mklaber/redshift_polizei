@@ -23,17 +23,16 @@ class Polizei < Sinatra::Application
     js :application, '/javascripts/application.js', [
       '/javascripts/lib/jquery-1.10.2.min.js',
       '/javascripts/lib/bootstrap.min.js',
-      '/javascripts/shared.js',
-      '/javascripts/pagination.js',
-      '/javascripts/jquery.tablesorter.js'
+      '/javascripts/lib/jquery.dataTables.min.js',
+      '/javascripts/lib/dataTables.bootstrap.min.js',
+      '/javascripts/shared.js'
     ]
     css :application, '/stylesheets/application.css', [
       '/stylesheets/lib/bootstrap.min.css',
       '/stylesheets/lib/font-awesome.min.css',
-      '/stylesheets/lib/font-awesome.min.css',
+      '/stylesheets/lib/dataTables.bootstrap.css',
       '/stylesheets/lib/animations.css',
       '/stylesheets/screen.css',
-      '/stylesheets/tablePageNavigation.css',
       '/stylesheets/social-buttons.css'
     ]
     js_compression  :jsmin       # Optional
@@ -88,7 +87,7 @@ class Polizei < Sinatra::Application
   get '/' do
     query_report = Reports::Query.new
     @queries = query_report.run
-    #We want to strip out block comments before passing it on to the view
+    # We want to strip out block comments before passing it on to the view
     @queries.each do |q|
       q["query"] = q["query"].gsub(/(\/\*).+(\*\/)/, '')      
     end
@@ -100,30 +99,14 @@ class Polizei < Sinatra::Application
     @disks = disk_space_report.run
     erb :disk_space, :locals => {:name => :disk_space}
   end
-    
-  get '/upload_data' do
-    erb :upload_data, :locals => {:name => :disk_space}
-  end
   
   get '/tables' do
-    tables_report = Reports::Table.new
-    @tables = tables_report.run
-    @table_names = ["Any"] + @tables.map{ |t| t["table"] }.uniq.sort!
-    if params.has_key?("table_search")
-      table = params["table_search"]
-      @tables = @tables.select{ |t| t["table"].include?(table) } unless table=="Any"
-      @prev_table = table
-    else
-      @prev_table = "Any"
-    end
+    @tables = Reports::Table.new.run
     erb :tables, :locals => { :name => :tables }
-    #    @tables = Reports::Table.paginate(:page => params[:page], :per_page => 5)
-    #    erb :tables, :locals => { :name => :tables }
   end
 
   get '/permissions' do
-    permissions_report = Reports::Permission.new
-    @users, @groups, @tables = permissions_report.result
+    @users, @groups, @tables = Reports::Permission.new.result
     @p_types = ["select", "insert", "update", "delete", "references"]
     erb :permissions, :locals => { :name => :permissions }
   end
@@ -131,17 +114,19 @@ class Polizei < Sinatra::Application
   get '/permissions/tables' do
     schemaname, tablename = params[:value].split("-->")
     permissions_report = Reports::Permission.new
-    @result = permissions_report.get_users_with_access(schemaname, tablename)
-    @result = @result.select{ |r| r.has_value?("Yes") }
-    @result.to_json
+    @result = permissions_report.get_users_with_access(schemaname, tablename).to_json
   end
     
   get '/permissions/users' do
     username = params[:value]
     permissions_report = Reports::Permission.new
-    @result = permissions_report.get_tables_for_user(username)
-    @result = @result.select{ |r| r.has_value?("Yes") }
-    @result.to_json
+    @result = permissions_report.get_tables_for_user(username).to_json
+  end
+
+  get '/permissions/groups' do
+    groupname = params[:value]
+    permissions_report = Reports::Permission.new
+    @result = permissions_report.get_tables_for_group(groupname).to_json
   end
    
   not_found do

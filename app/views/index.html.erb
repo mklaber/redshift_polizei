@@ -1,17 +1,20 @@
 <h2 name="queries" id="queries">Queries</h2>
 
 <% if @queries.present? %>
-  <table class="table paginateMe table-bordered table-hover">
-    <tr>
-      <th>User</th>
-      <th>Status</th>
-      <th>Start time</th>
-      <th>Duration</th>
-      <th>PID</th>
-      <th>Query</th>
-    </tr>
+  <table class="table table-bordered table-striped table-condensed table-hover">
+    <thead>
+      <tr>
+        <th>User</th>
+        <th>Status</th>
+        <th>Start time</th>
+        <th>Duration</th>
+        <th>PID</th>
+        <th>Query</th>
+      </tr>
+    </thead>
+    <tbody>
     <% @queries.each do |row| %>
-      <tr class="active">
+      <tr>
         <td><%= row['username'] %> <small>(<%= row['user_id'] %>)</small></td>
         <td>
           <% if row['status'] =~ /Done/ %>
@@ -51,6 +54,7 @@
         </td>
       </tr >
     <% end %>
+    </tbody>
   </table>
 <% else %>
   <h3>That's weird, there don't appear to be any queries running.</h3>

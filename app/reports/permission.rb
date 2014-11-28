@@ -4,6 +4,7 @@ module Reports
     def run
       users, groups, tables = self.result
       users.each  { |user| self.get_tables_for_user(user) }
+      groups.each { |group| self.get_tables_with_group(group) }
       tables.each do |table|
         table_parts = table.split("-->")
         self.get_users_with_access(table_parts[0], table_parts[1])
@@ -64,22 +65,7 @@ module Reports
           ;
       SQL
       sql = self.sanitize_sql(sql, [schemaname, tablename] * 10)
-
-      #We want to grab the sql results and map t --> "Yes" and f --> "No"
-      keys = ["has_select", "has_delete", "has_update", "has_references", "has_insert"]
-      results = cache(sql, expires: 30) do
-        self.redshift_select_all(sql)
-      end
-      results.each do |result|
-        keys.each do |key|
-          if result[key] == "t"
-            result[key] = "Yes"
-          else
-            result[key] = "No"
-          end
-        end
-      end
-      @results = results.sort_by { |r| r["value"] }
+      __get_permissions(sql)
     end
 
     def get_tables_for_user(username)
@@ -100,22 +86,41 @@ module Reports
           AND t.schemaname != 'pg_catalog';
       SQL
       sql = self.sanitize_sql(sql, [username] * 10)
+      __get_permissions(sql)
+    end
 
-      #We want to grab the sql results and map t --> "Yes" and f --> "No"
-      keys = ["has_select", "has_delete", "has_update", "has_references", "has_insert"]
-      results = cache(sql, expires: 30) do
-        self.redshift_select_all(sql)
-      end
-      results.each do |result|
-        keys.each do |key|
-          if result[key] == "t"
-            result[key] = "Yes"
-          else
-            result[key] = "No"
+    def get_tables_for_group(groupname)
+      sql = <<-SQL
+        SELECT n.nspname || '.' || c.relname AS value,
+          case when charindex('r', split_part(split_part(array_to_string(c.relacl, '|'), 'group %s', 2), '/', 1)) > 0 then 't' else 'f' end as has_select,
+          case when charindex('d', split_part(split_part(array_to_string(c.relacl, '|'), 'group %s', 2), '/', 1)) > 0 then 't' else 'f' end as has_delete,
+          case when charindex('w', split_part(split_part(array_to_string(c.relacl, '|'), 'group %s', 2), '/', 1)) > 0 then 't' else 'f' end as has_update,
+          case when charindex('x', split_part(split_part(array_to_string(c.relacl, '|'), 'group %s', 2), '/', 1)) > 0 then 't' else 'f' end as has_references,
+          case when charindex('a', split_part(split_part(array_to_string(c.relacl, '|'), 'group %s', 2), '/', 1)) > 0 then 't' else 'f' end as has_insert
+        FROM pg_catalog.pg_class c
+        JOIN pg_catalog.pg_namespace n ON n.oid = c.relnamespace
+        WHERE array_to_string(relacl, '|') like '%%group %s%%';
+      SQL
+      sql = self.sanitize_sql(sql, [groupname] * 6)
+      __get_permissions(sql)
+    end
+
+    private
+      def __get_permissions(sql)
+        results = cache(sql, expires: 30) do
+          self.redshift_select_all(sql)
+        end
+        keys = ["has_select", "has_delete", "has_update", "has_references", "has_insert"]
+        results.each do |result|
+          keys.each do |key|
+            if result[key] == "t"
+              result[key] = true
+            else
+              result[key] = false
+            end
           end
         end
+        results.sort_by { |r| r["value"] }
       end
-      @results = results.sort_by { |r| r["value"] }
-    end
   end
 end

@@ -1,15 +1,7 @@
 $(document).ready(function() {
-    
-    //We enable table sorting
-    $('#myTables').tablesorter();
-    
-    //We want the headers on tables to change color when hovered over if its sortable
-    $('.headerClickable').hover(function() {
-        $( this ).addClass('success');
-        }, function() {
-        $( this ).removeClass('success');
-        }
-    );
+    // every bootstrap table is going to be a data table
+    $('table.table').dataTable();
+    $('table.table').show();
 
     //We want the first tab in the permissions page to be on by default
     $('div#users').show();
@@ -56,38 +48,36 @@ $(document).ready(function() {
                     
                     //We create our nifty table to hold results
                     var table = document.createElement("table");
-                    $(table).addClass("table paginateMe table-bordered table-hover");
+                    $(table).addClass("table table-bordered table-striped table-condensed table-hover");
                     
                     //We create the column headers first
                     var p_types = ["Delete", "Select", "Insert", "References", "Update"];
-                    var new_row = "<tr><td>Value</td>" ;
+                    var new_row = "<thead><tr><th>Value</th>" ;
                     for(var i = 0; i < p_types.length; i++) {
                         new_row = new_row + "<th>" + p_types[i] + "</th>";           
                     }
-                    new_row = new_row + "</tr>";
+                    new_row = new_row + "</tr></thead>";
                     $(table).append(new_row);
                     
                     //Now we append the results of our query
+                    var revoked = "<td><span class=\"label label-danger\">No</span></td>";
+                    var granted = "<td><span class=\"label label-success\">Yes</span></td>";
                     for(var i = 0; i < data.length; i++) {
-                        new_row = "<tr class='active'>";
+                        new_row = "<tr>";
                         new_row += "<td>" + data[i]["value"] + "</td>";
-                        new_row += "<td>" + data[i]["has_delete"] + "</td>";
-                        new_row += "<td>" + data[i]["has_select"] + "</td>";
-                        new_row += "<td>" + data[i]["has_insert"] + "</td>";
-                        new_row += "<td>" + data[i]["has_references"] + "</td>";
-                        new_row += "<td>" + data[i]["has_update"] + "</td>";
+                        new_row += (data[i]["has_delete"] ? granted : revoked);
+                        new_row += (data[i]["has_select"] ? granted : revoked);
+                        new_row += (data[i]["has_insert"] ? granted : revoked);
+                        new_row += (data[i]["has_references"] ? granted : revoked);
+                        new_row += (data[i]["has_update"] ? granted : revoked);
                         new_row += "</tr>";
                         $(table).append(new_row);
                     }
                     
                     results.append(table);
-                    paginate_stuff();  
+                    $('table.table').dataTable();
                 }
             });
         return false;
 	});
-    
-    //Want to ensure long tables with the class paginateMe are paginated
-    paginate_stuff();
-    
 });

@@ -1,33 +1,21 @@
 <h2 name="tables" id="tables">Tables</h2>
 
-<form class="form-inline pull-right" method="GET" action="/tables">
-  <div class="form-group">
-    <label class="sr-only" for="table_search">Search For Table</label>
-    <% if @prev_table != "Any" %>
-      <input type="text" class="form-control" name="table_search" id="table_search" placeholder="Search For Table" value="<%= @prev_table %>"></input>
-    <% else %>
-      <input type="text" class="form-control" name="table_search" id="table_search" placeholder="Search For Table"></input>
-    <% end %>
-    <button type="submit" class="btn btn-default">Search</button>
-  </div>
-</form>
-
-<table id="myTables" class="table tablesorter paginateMe table-bordered table-hover">
+<table style="display: none;" class="table table-bordered table-striped table-condensed table-hover">
   <thead>
-  <tr>
-    <th class="headerClickable">Schema</th>
-    <th class="headerClickable">Table <small>(table ID)</small></th>
-    <th class="headerClickable">Size in GB</th>
-    <th class="headerClickable">Sort Keys</th>
-    <th class="headerClickable">Distribution Key</th>
-    <th class="headerClickable">Column Encoding</th>
-    <th class="headerClickable">% Skew Across Slices <small>(lower better)</small></th>
-    <th class="headerClickable">% Slices Populated <small>(higher better)</small</th>
-  </tr>
+    <tr>
+      <th>Schema</th>
+      <th>Table <small>(table ID)</small></th>
+      <th>Size in GB</th>
+      <th>Sort Keys</th>
+      <th>Distribution Key</th>
+      <th>Column Encoding</th>
+      <th>% Skew Across Slices <small>(lower better)</small></th>
+      <th>% Slices Populated <small>(higher better)</small</th>
+    </tr>
   </thead>
   <tbody>
   <% @tables.each do |row| %>
-    <tr class="active">
+    <tr>
       <td><%= h row['schema'] %></td>
       <td><%= h row['table'] %> <small class="secondary">(<%=row['tableid']%>)</small></td>
       <td nowrap="nowrap"><%= (row['size_in_mb'].to_i / 1000.0).round(2) %></td>
