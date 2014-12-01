@@ -1,7 +1,56 @@
+function regex_is_valid(regex) {
+    try {
+        new RegExp(regex);
+        return true;
+    } catch(e) {
+        return false;
+    }
+}
+
+function datatable_init(table) {
+    $(table).dataTable({
+        'dom': 'lrtip'
+    });
+    var table_id = $(table).attr('id');
+    var table_no = table_id.substr(table_id.lastIndexOf("_") + 1);
+    var wrapper_id = "div#DataTables_Table_" + table_no + "_wrapper";
+    var length_id = "div#DataTables_Table_" + table_no + "_length";
+    var info_id = "div#DataTables_Table_" + table_no + "_info";
+    var paginate_id = "div#DataTables_Table_" + table_no + "_paginate";
+    // fix bootstrap table style with custom dom option
+    $(wrapper_id).css('overflow', 'auto');
+    $(length_id).css('float', 'left');
+    $(info_id).css('float', 'left');
+    $(paginate_id).css('float', 'right');
+    // create custom filter input field
+    var filter_id = "DataTables_Table_" + table_no + "_customfilter";
+    var cfilter = $('<div id="' + filter_id + '" class="dataTables_filter">' +
+            '<label>Search:' +
+                '<input ' +
+                    'type="search" ' +
+                    'class="form-control input-sm" ' +
+                    'placeholder="" ' +
+                    'aria-controls="DataTables_Table_' + table_no + '">' +
+            '</label>' +
+        '</div>');
+    cfilter.insertAfter($(length_id));
+
+    $('div#' + filter_id + ' input').on('keyup click', function () {
+        var search_term = $(this).val();
+        $(table).DataTable().search(
+            search_term,
+            regex_is_valid(search_term), // only use as regex if valid
+            true
+        ).draw();
+    });
+    $('table.table').show();
+}
+
 $(document).ready(function() {
     // every bootstrap table is going to be a data table
-    $('table.table').dataTable();
-    $('table.table').show();
+    $('table.table').each(function(table) {
+        datatable_init(table);
+    });
 
     //We want the first tab in the permissions page to be on by default
     $('div#users').show();
@@ -75,7 +124,7 @@ $(document).ready(function() {
                     }
                     
                     results.append(table);
-                    $('table.table').dataTable();
+                    datatable_init(table);
                 }
             });
         return false;
