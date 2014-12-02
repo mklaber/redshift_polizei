@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 3) do
+ActiveRecord::Schema.define(version: 4) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -26,6 +26,19 @@ ActiveRecord::Schema.define(version: 3) do
   end
 
   add_index "cache", ["hashid"], name: "index_cache_on_hashid", unique: true, using: :btree
+
+  create_table "queries", force: true do |t|
+    t.integer  "record_time", null: false
+    t.string   "db",          null: false
+    t.string   "user",        null: false
+    t.integer  "pid",         null: false
+    t.integer  "userid",      null: false
+    t.integer  "xid",         null: false
+    t.text     "query",       null: false
+    t.string   "logfile",     null: false
+    t.datetime "created_at"
+    t.datetime "updated_at"
+  end
 
   create_table "users", force: true do |t|
     t.string   "email",      null: false

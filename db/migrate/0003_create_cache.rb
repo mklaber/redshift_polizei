@@ -1,6 +1,4 @@
 class CreateCache < ActiveRecord::Migration
-  using(:postgres)
-
   def change
     create_table(:cache) do |t|
       t.string :hashid, :null => false
