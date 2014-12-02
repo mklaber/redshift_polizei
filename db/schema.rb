@@ -11,11 +11,18 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 4) do
+ActiveRecord::Schema.define(version: 5) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
   enable_extension "hstore"
+
+  create_table "audit_log_config", force: true do |t|
+    t.integer  "retention_period", default: 2592000, null: false
+    t.integer  "last_update",      default: 0,       null: false
+    t.datetime "created_at"
+    t.datetime "updated_at"
+  end
 
   create_table "cache", force: true do |t|
     t.string   "hashid",     null: false

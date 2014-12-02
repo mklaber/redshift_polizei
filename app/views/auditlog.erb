@@ -1,0 +1,41 @@
+<div class="row">
+  <div class="col-md-6">
+    <h2 name="auditlog" id="auditlog">Audit Log</h2>
+  </div>
+  <div class="col-md-6" style="text-align: right;">
+    <h3>
+    <% if not @selects %>
+        <a href="?selects=true" style=""><span class="label label-default">Include selects</span></a>
+      <% else %>
+        <a href="?selects=false"><span class="label label-default">Exclude selects</span></a>
+      <% end %>
+    </h3>
+  </div>
+</div>
+
+<% if @queries.present? %>
+  <table style="display: none;" class="table table-bordered table-striped table-condensed table-hover">
+    <thead>
+      <tr>
+        <th>User</th>
+        <th>Record time</th>
+        <th>Transaction ID</th>
+        <th>Query</th>
+      </tr>
+    </thead>
+    <tbody>
+    <% @queries.each do |row| %>
+      <tr>
+        <td><%= row['user'] %> <small>(<%= row['userid'] %>)</small></td>
+        <td><%= row['record_time'].strftime("%m-%d-%Y") + " at " + row['record_time'].strftime("%l:%M %p %Z") %></td>
+        <td><%= row['xid'] %></td>
+        <td>
+            <%= CodeRay.scan(row['query'], :sql).div()  %>
+        </td>
+      </tr >
+    <% end %>
+    </tbody>
+  </table>
+<% else %>
+  <h3>That's weird, there don't appear to be any queries in the audit log</h3>
+<% end %>

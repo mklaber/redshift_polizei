@@ -3,14 +3,65 @@ require_relative 'base'
 
 module Reports
   class AuditLog < Base
-    def run(ua_log)
-      prev_q = nil
+    def self.update_from_s3
+      auditlog = self.new
+      auditlog.enforce_retention_period
+      auditlogconfig = Models::AuditLogConfig.get
+      last_update = DateTime.strptime(auditlogconfig.last_update.to_s,'%s').utc
 
-      File.open(ua_log).each.each_with_index do |line, i|
-        lineno = i + 1
+      s3 = AWSConfig.s3_sdk
+      bucket = s3.buckets['amg-redshift-logging']
+      bucket.objects.each do |obj|
+        begin
+          is_user_activity_log = (not obj.key.index('useractivitylog').nil?)
+          if is_user_activity_log && obj.last_modified > last_update
+            # we are going to parse the file while downloading making this a little more complicated
+            reader, writer = IO.pipe
+            # "download" thread, can't do without it
+            thread = Thread.new do
+              begin
+                obj.read do |chunk|
+                  writer.write chunk
+                end
+              ensure
+                writer.close
+              end
+            end
+            # parse it after gzip decompression
+            auditlog.run(Zlib::GzipReader.new(reader), obj.key)
+          end
+        rescue
+          p "Error parsing s3 object #{obj.key}"
+          raise
+        end
+      end
+    rescue
+      raise
+    else
+      # if no exception was thrown, update was successful
+      auditlogconfig.last_update = Time.now.to_i
+      auditlogconfig.save
+    end
+
+    def enforce_retention_period
+      # data retention, delete all old audit queries
+      timestamp_now = Time.now.to_i
+      retention_time = Models::AuditLogConfig.get.retention_period
+      Models::Query.where('record_time < ?', timestamp_now - retention_time).destroy_all
+    end
+
+    def run(ua_log, logfile)
+      self.enforce_retention_period
+
+      # read user activity log
+      lineno = 0
+      prev_q = nil
+      ua_log.each_line do |line|
+        lineno += 1
         q = nil
         if line.match("'[0-9]{4}\-[0-9]{2}\-[0-9]{2}T").nil?
           # part of previous query => append to query
+          p line
           raise "Corrupt file on line #{lineno}" if prev_q.nil?
           q = prev_q
           q.query += line
@@ -38,7 +89,7 @@ module Reports
             userid: userid,
             xid: xid,
             query: query.strip,
-            logfile: ua_log
+            logfile: logfile
           )
         end
 
@@ -52,43 +103,38 @@ module Reports
       end
     end
 
-    def audit_queries
+    def audit_queries(with_selects)
       # from local datbase, no caching necessary
-      Models::Query.order(:record_time).all.map { |q| q.attributes }
-    end
-
-    def running_queries
-      # currently running queries, caching does not make sense
-      sql = <<-SQL
-        select
-          queries.userid as user_id,
-          users.usename as username,
-          queries.starttime as start_time,
-          queries.pid as pid,
-          queries.xid as xid,
-          queries.text as query
-        from stv_inflight as queries
-        inner join pg_user as users on queries.userid = users.usesysid
-        where users.usename <> 'rdsdb'
-          and users.usename <> '%s'
-          and lower(queries.text) <> 'show search_path'
-          and lower(queries.text) <> 'select 1'
-      SQL
-      self.redshift_select_all(sql, self.class.redshift_user).map do |query|
-        {
-          'record_time' => DateTime.parse(query['start_time']).utc,
-          'user' => query['username'].strip,
-          'pid' => query['pid'].to_i,
-          'userid' => query['userid'].to_i,
-          'xid' => query['xid'].to_i,
-          'query' => query['query'].strip
-        }
+      Models::Query.order(record_time: :desc).all.select do |q|
+        attrs = q.attributes
+        qstr = attrs['query'].downcase.strip
+        is_select   = (qstr.start_with?('select'))
+        is_select ||= (qstr.start_with?('show'))
+        is_select ||= (qstr.start_with?('set client_encoding'))
+        is_select ||= (qstr.start_with?('set statement_timeout'))
+        is_select ||= (qstr.start_with?('set query_group'))
+        is_select ||= (qstr.start_with?('set search_path'))
+        !is_select || (with_selects && is_select)
+      end.map do |q|
+        attrs = q.attributes
+        attrs['record_time'] = DateTime.strptime(attrs['record_time'].to_s,'%s').utc
+        attrs
       end
     end
   end
 end
 
 if __FILE__ == $0
-  abort "Usage:\n\tauditlog.rb user-activity-log\n" if ARGV.empty?
-  Reports::AuditLog.new.run(ARGV[0])
+  begin
+    if ARGV.empty?
+      Reports::AuditLog.update_from_s3
+    else
+      auditlog = Reports::AuditLog.new
+      ARGV.each { |file| auditlog.run(File.read(file), file) }
+    end
+  rescue Interrupt
+    # discard StackTrace if ctrl + c was pressed
+    p "Ctrl + C => exiting ..."
+    exit
+  end
 end

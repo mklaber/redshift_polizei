@@ -3,28 +3,15 @@ module Reports
 
     def run
       sql = self.sanitize_sql(<<-SQL
-        (select 'SVL_STATEMENTTEXT' as "source", queries.userid as user_id, users.usename as username, 'Done' as status,
-         starttime as start_time, endtime as end_time, "sequence", pid, type, "text" as query
-        from SVL_STATEMENTTEXT as queries
-        inner join pg_user as users on queries.userid = users.usesysid
-        where
-          label = 'default' and username <> 'rdsdb' and username <> '%s'
-          and lower(query) <> 'show search_path' and lower(query) <> 'select 1'
-        order by start_time desc
-        limit 100)       
-        
-        union all
-        
-        (select 'STV_INFLIGHT' as "source", queries.userid as user_id, users.usename as username, 'In Flight' as status,
+        select 'STV_INFLIGHT' as "source", queries.userid as user_id, users.usename as username, 'In Flight' as status,
          starttime as start_time, null as end_time,
          null "sequence", pid, '' as type, "text" as query
         from stv_inflight as queries
         inner join pg_user as users on queries.userid = users.usesysid
         where
           label = 'default' and username <> 'rdsdb' and username <> '%s'
-          and lower(query) <> 'show search_path' and lower(query) <> 'select 1')
-
-         order by "source", start_time desc, sequence asc
+          and lower(query) <> 'show search_path' and lower(query) <> 'select 1'
+        order by "source", start_time desc, sequence asc
         
       SQL
       )

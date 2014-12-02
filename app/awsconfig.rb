@@ -11,6 +11,10 @@ class AWSConfig
     AWS::CloudWatch::Client.new(AWS_CONFIG)
   end
 
+  def self.s3_sdk
+    AWS::S3.new(AWS_CONFIG)
+  end
+
   def self.dynamodb_sdk
     AWS::DynamoDB.new(AWS_CONFIG)
   end

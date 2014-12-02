@@ -94,6 +94,15 @@ class Polizei < Sinatra::Application
     erb :index, :locals => { :name => :home }
   end
 
+  get '/auditlog' do
+    p params[:selects]
+    @selects = ((not params[:selects].nil?) && params[:selects] == 'true')
+    p @selects
+    query_report = Reports::AuditLog.new
+    @queries = query_report.audit_queries(@selects)
+    erb :auditlog, :locals => { :name => :auditlog }
+  end
+
   get '/disk_space' do
     disk_space_report = Reports::DiskSpaceCloudwatch.new
     @disks = disk_space_report.run
