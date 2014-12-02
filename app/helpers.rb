@@ -2,7 +2,7 @@ require 'sinatra'
 
 helpers do
   def logged_in?
-    (not(session[:uid].nil?) && User.exists?(session[:uid]))
+    (not(session[:uid].nil?) && Models::User.exists?(session[:uid]))
   end
 
   def link_to(body, url = nil, html_options = {})

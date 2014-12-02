@@ -48,7 +48,7 @@ function datatable_init(table) {
 
 $(document).ready(function() {
     // every bootstrap table is going to be a data table
-    $('table.table').each(function(table) {
+    $.each($('table.table'), function(idx, table) {
         datatable_init(table);
     });
 

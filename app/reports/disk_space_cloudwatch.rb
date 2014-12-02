@@ -20,10 +20,17 @@ module Reports
           period: 60, statistics: ["Average"],
           dimensions: [dimension])
         # transform result for frontend
-        { 'node' => node[:node_role],
-          'used' => result[:datapoints][0][:average],
-          'capacity' => 100
-        }
+        if result[:datapoints].empty?
+          { 'node' => node[:node_role],
+            'used' => 0,
+            'capacity' => 0
+          }
+        else
+          { 'node' => node[:node_role],
+            'used' => result[:datapoints][0][:average],
+            'capacity' => 100
+          }
+        end
       end
     end
   end

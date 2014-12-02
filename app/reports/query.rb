@@ -1,6 +1,6 @@
 module Reports
   class Query < Base
-  
+
     def run
       sql = self.sanitize_sql(<<-SQL
         (select 'SVL_STATEMENTTEXT' as "source", queries.userid as user_id, users.usename as username, 'Done' as status,
@@ -8,7 +8,7 @@ module Reports
         from SVL_STATEMENTTEXT as queries
         inner join pg_user as users on queries.userid = users.usesysid
         where
-          label = 'default' and username <> 'rdsdb' and username <> 'polizei_bot'
+          label = 'default' and username <> 'rdsdb' and username <> '%s'
           and lower(query) <> 'show search_path' and lower(query) <> 'select 1'
         order by start_time desc
         limit 100)       
@@ -21,7 +21,7 @@ module Reports
         from stv_inflight as queries
         inner join pg_user as users on queries.userid = users.usesysid
         where
-          label = 'default' and username <> 'rdsdb' and username <> 'polizei_bot'
+          label = 'default' and username <> 'rdsdb' and username <> '%s'
           and lower(query) <> 'show search_path' and lower(query) <> 'select 1')
 
          order by "source", start_time desc, sequence asc
@@ -29,6 +29,7 @@ module Reports
       SQL
       )
 
+      sql = self.sanitize_sql(sql, [self.class.redshift_user] * 2)
       result = cache(sql, expires: 30) do
         self.redshift_select_all(sql)
       end
