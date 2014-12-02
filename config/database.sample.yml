@@ -1,4 +1,12 @@
 development:
+  adapter: postgresql
+  host: localhost
+  database: database
+  port: 5432
+  username: username
+  password: password
+
+redshift_development:
   adapter: redshift
   host: analytics-dw-1.analyticsmediagroup.net
   database: amg
