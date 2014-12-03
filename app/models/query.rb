@@ -1,4 +1,7 @@
 module Models
+  #
+  # Audit Log Query Model
+  #
   class Query < ActiveRecord::Base
     # id                     :integer          not null, primary key
     # record_time            :integer          not null

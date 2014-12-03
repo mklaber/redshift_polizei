@@ -8,10 +8,25 @@ class Polizei < Sinatra::Application
   register Sinatra::AssetPack
   enable :sessions
 
+  # setup the custom logger
+  configure do
+    # disable Sinatra's default
+    set :logging, nil
+    # set activerecords logger
+    ActiveRecord::Base.logger = PolizeiLogger.logger
+  end
+  # set logger in environment variable for rack to pick it up
+  before do
+    env['rack.logger'] = PolizeiLogger.logger
+    env['rack.errors'] = PolizeiLogger.logger
+  end
+
+  # configure OAuth authentication
   use OmniAuth::Builder do
     provider AUTH_CONFIG['provider'], AUTH_CONFIG['client_id'], AUTH_CONFIG['client_secret']
   end
 
+  # configure asset pipeline
   assets do
     serve '/javascripts',    from: 'assets/javascripts'   # Optional
     serve '/stylesheets',    from: 'assets/stylesheets'   # Optional
@@ -95,9 +110,7 @@ class Polizei < Sinatra::Application
   end
 
   get '/auditlog' do
-    p params[:selects]
     @selects = ((not params[:selects].nil?) && params[:selects] == 'true')
-    p @selects
     query_report = Reports::AuditLog.new
     @queries = query_report.audit_queries(@selects)
     erb :auditlog, :locals => { :name => :auditlog }

@@ -1,16 +1,30 @@
 module Reports
+  #
+  # Report retrieving running queries on the database
+  # not cacheable
+  #
   class Query < Base
 
     def run
       sql = self.sanitize_sql(<<-SQL
-        select 'STV_INFLIGHT' as "source", queries.userid as user_id, users.usename as username, 'In Flight' as status,
-         starttime as start_time, null as end_time,
-         null "sequence", pid, '' as type, "text" as query
+        select
+          'STV_INFLIGHT' as "source",
+          queries.userid as user_id,
+          users.usename as username,
+          'In Flight' as status,
+          starttime as start_time,
+          null as end_time,
+          null "sequence",
+          pid,
+          '' as type,
+          "text" as query
         from stv_inflight as queries
         inner join pg_user as users on queries.userid = users.usesysid
-        where
-          label = 'default' and username <> 'rdsdb' and username <> '%s'
-          and lower(query) <> 'show search_path' and lower(query) <> 'select 1'
+        where label = 'default'
+        and username <> 'rdsdb'
+        and username <> '%s'
+        and lower(query) <> 'show search_path'
+        and lower(query) <> 'select 1'
         order by "source", start_time desc, sequence asc
         
       SQL

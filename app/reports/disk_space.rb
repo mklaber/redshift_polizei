@@ -1,4 +1,7 @@
 module Reports
+  #
+  # Report retrieving disk space usage directly from cluster using SQL
+  #
   class DiskSpace < Base
 
     def run

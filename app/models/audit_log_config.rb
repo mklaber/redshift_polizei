@@ -1,4 +1,7 @@
 module Models
+  #
+  # Configuration for the audit log parser task
+  #
   class AuditLogConfig < ActiveRecord::Base
     self.table_name = :audit_log_config
     # id                     :integer          not null, primary key

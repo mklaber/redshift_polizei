@@ -1,7 +1,10 @@
 require './app/main'
 
 DEFAULT_REPORT_NAMESPACE = 'Reports::'
-
+#
+# Retrieve a report subclass base on its name.
+# Tries '<name>' and 'Reports::<name>'
+#
 def get_report_class(name)
   report = nil
   begin
@@ -24,6 +27,11 @@ def renew_all_reports
   renew_reports(nil)
 end
 
+#
+# Renews the given reports.
+# Accepts list of classes or strings.
+# If parameter is empty or nil, uses all Reports::Base subclasses
+#
 def renew_reports(reports)
   return renew_reports(Reports::Base.descendants) if reports.nil?
   return renew_reports(Reports::Base.descendants) if reports.is_a?(Array) && reports.empty?
@@ -40,7 +48,7 @@ def renew_reports(reports)
         # run the report
         report.new.run
       rescue NotImplementedError
-        p "Error running report #{report}"
+        PolizeiLogger.logger.error "Error running report #{report}"
         raise
       end
     end

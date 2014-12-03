@@ -1,4 +1,7 @@
 module Reports
+  #
+  # Report retrieving permissions for users, groups, tables
+  #
   class Permission < Base
 
     def run
@@ -48,7 +51,7 @@ module Reports
     end
 
     def get_users_with_access(schemaname, tablename)
-      #We want to find all access types every user has for the specified schema + table
+      # we want to find all access types every user has for the specified schema + table
       sql = <<-SQL
         SELECT u.usename AS value,
         has_table_privilege(u.usename, '%s' || '.' || '%s', 'select') AS has_select,
@@ -69,7 +72,7 @@ module Reports
     end
 
     def get_tables_for_user(username)
-      #We want to grab all the tables and the permissions the specified user has to them
+      # we want to grab all the tables and the permissions the specified user has to them
       sql = <<-SQL
         SELECT t.schemaname || '.' || t.tablename AS value,
         has_table_privilege('%s', t.schemaname || '.' || t.tablename, 'select') AS has_select,
@@ -90,6 +93,16 @@ module Reports
     end
 
     def get_tables_for_group(groupname)
+      # this query is a handful.
+      # it parses the ACL objects in the pg_class system table
+      # ACL example: [grantee=permissions/granter, ...]
+      # available permissions:
+      #   r => select
+      #   d => delete
+      #   w => update
+      #   x => reference
+      #   a => insert
+      #   ... for more check PG documentation
       sql = <<-SQL
         SELECT n.nspname || '.' || c.relname AS value,
           case when charindex('r', split_part(split_part(array_to_string(c.relacl, '|'), 'group %s', 2), '/', 1)) > 0 then 't' else 'f' end as has_select,
@@ -106,6 +119,10 @@ module Reports
     end
 
     private
+      #
+      # common method for querying permissions from RedShift and
+      # transforming result into common data structure
+      #
       def __get_permissions(sql)
         results = cache(sql, expires: 30) do
           self.redshift_select_all(sql)
