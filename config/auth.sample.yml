@@ -1,4 +1,4 @@
-provider: oauth_provider
+provider: GoogleOauth2
 client_id: client_id
 client_secret: client_secret
 valid_domains: ['amg.tv', 'analyticsmediagroup.com']
