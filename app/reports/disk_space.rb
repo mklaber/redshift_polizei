@@ -12,7 +12,13 @@ module Reports
       )
 
       @results = cache(sql, expires: 30) do
-        self.redshift_select_all(sql)
+        self.redshift_select_all(sql).map do |node|
+          {
+            'node' => node['node'],
+            'used' => node['used'].to_i,
+            'capacity' => node['capacity'].to_i
+          }
+        end
       end
     end
   end

@@ -104,7 +104,7 @@ module Reports
     end
 
     def audit_queries(with_selects)
-      # from local datbase, no caching necessary
+      # from local database, no caching necessary
       Models::Query.order(record_time: :desc).all.select do |q|
         attrs = q.attributes
         qstr = attrs['query'].downcase.strip

@@ -1,3 +1,3 @@
 development:
-  type: dynamodb
-  table: polizei_query_cache
+  type: activerecord # valid values: dynamodb, activerecord
+  table: Models::Cache # table to use a cache (dynamodb key or activerecord class name)
