@@ -13,29 +13,14 @@
   </div>
 </div>
 
-<% if @queries.present? %>
-  <table style="display: none;" class="table table-bordered table-striped table-condensed table-hover">
-    <thead>
-      <tr>
-        <th>User</th>
-        <th>Record time</th>
-        <th>Transaction ID</th>
-        <th>Query</th>
-      </tr>
-    </thead>
-    <tbody>
-    <% @queries.each do |row| %>
-      <tr>
-        <td><%= row['user'] %> <small>(<%= row['userid'] %>)</small></td>
-        <td><%= row['record_time'].strftime("%m-%d-%Y") + " at " + row['record_time'].strftime("%l:%M %p %Z") %></td>
-        <td><%= row['xid'] %></td>
-        <td>
-            <%= CodeRay.scan(row['query'], :sql).div()  %>
-        </td>
-      </tr >
-    <% end %>
-    </tbody>
-  </table>
-<% else %>
-  <h3>That's weird, there don't appear to be any queries in the audit log</h3>
-<% end %>
+<table data-server="true" class="table table-bordered table-striped table-condensed table-hover">
+  <thead>
+    <tr>
+      <th>Record time</th>
+      <th>User</th>
+      <th>Transaction ID</th>
+      <th>Query</th>
+    </tr>
+  </thead>
+  <tbody></tbody>
+</table>

@@ -16,7 +16,7 @@ module Reports
       last_update = DateTime.strptime(auditlogconfig.last_update.to_s,'%s').utc
 
       s3 = AWSConfig.s3_sdk
-      bucket = s3.buckets['amg-redshift-logging']
+      bucket = s3.buckets['amg-redshift-logging'] # TODO configuration option
       bucket.objects.each do |obj|
         begin
           is_user_activity_log = (not obj.key.index('useractivitylog').nil?)
@@ -71,6 +71,7 @@ module Reports
           raise "Corrupt file on line #{lineno}" if prev_q.nil?
           q = prev_q
           q.query += line
+          q.query_type = query_type(q.query)
         else
           metadata_end = line.index(']\'')
           raise "Unsupported line format on line #{lineno}" if metadata_end.nil?
@@ -86,6 +87,8 @@ module Reports
           xid    = metadata_parts[7].split('=')[-1].to_i
           query  = line[(metadata_end + 8)..-1]
 
+
+          # save query
           q = Models::Query.new
           q.assign_attributes(
             record_time: record_time,
@@ -94,6 +97,7 @@ module Reports
             pid: pid,
             userid: userid,
             xid: xid,
+            query_type: query_type(query),
             query: query.strip,
             logfile: logfile
           )
@@ -123,10 +127,23 @@ module Reports
         !is_select || (with_selects && is_select)
       end.map do |q|
         attrs = q.attributes
-        attrs['record_time'] = DateTime.strptime(attrs['record_time'].to_s,'%s').utc
+        attrs['record_time'] = Time.at(attrs['record_time'])
         attrs
       end
     end
+
+    private
+      def query_type(query)
+        # determine what kind kind of query
+        qstr = query.downcase.strip # TODO remove comments
+        is_select   = (qstr.start_with?('select'))
+        is_select ||= (qstr.start_with?('show'))
+        is_select ||= (qstr.start_with?('set client_encoding'))
+        is_select ||= (qstr.start_with?('set statement_timeout'))
+        is_select ||= (qstr.start_with?('set query_group'))
+        is_select ||= (qstr.start_with?('set search_path'))
+        return ((is_select) ? 0 : 1)
+      end
   end
 end
 

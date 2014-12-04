@@ -18,6 +18,7 @@ class PolizeiLogger < Logger
 
   # Rack expects a write method for its logger
   alias :write :'<<'
+  alias :puts :'<<'
 
   #
   # convenience method to log an exception
