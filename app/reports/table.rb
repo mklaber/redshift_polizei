@@ -2,7 +2,7 @@ module Reports
   class Table < Base
 
     def run
-      sql = self.sanitize_sql(<<-SQL
+      sql = self.class.sanitize_sql(<<-SQL
       SELECT c.schemaname as schema, c.tablename as table, c.tableid, c.size_in_mb, 
       sort_key_1_attr.attname as sort_key_1,
       sort_key_2_attr.attname as sort_key_2,
@@ -21,7 +21,7 @@ module Reports
       )
 
       @result = cache(sql, expires: 30) do
-        self.redshift_select_all(sql)
+        self.class.select_all(sql)
       end
       @result.each do |row|
         row['sort_keys'] = []
