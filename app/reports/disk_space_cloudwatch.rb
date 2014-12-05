@@ -6,6 +6,9 @@ module Reports
   #
   class DiskSpaceCloudwatch < Base
 
+    #
+    # retrieves disk usage and capacity for RedShift from CloudWatch Metric
+    #
     def run
       cluster = AWSConfig.cluster_info
       cloudwatch = AWSConfig.cloudwatch_sdk

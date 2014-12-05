@@ -58,6 +58,9 @@ def renew_reports(reports)
   end
 end
 
+#
+# default action when executing file directly
+#
 if __FILE__ == $0
   renew_reports(ARGV)
 end

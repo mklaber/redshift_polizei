@@ -21,27 +21,58 @@ module Caches
   # - expires?
   #
   class BaseCache
+    #
+    # mixin `cache` method to create cache
+    # instances from configuration
+    #
     include Caches::Creator
+
+    #
+    # init method of cache, this interface can't be instantiated
+    #
     def initialize(options = {})
       raise NotImplementedError
     end
+    #
+    # disables cache, making every `exists?` or
+    # `get` request a cache miss
+    #
     def disable
       @enabled = false
     end
+    #
+    # puts cache into normal operating mode
+    # see `disable` method for differences
+    #
     def enable
       @enabled = true
     end
+    #
+    # returns boolean whether cache is enabled
+    # see `disable` method for differences
+    #
     def enabled
       return true if @enabled.nil?
       @enabled
     end
-    def exists?(sql, options={})
+    #
+    # returns boolean whether id `id` has data in the cache
+    #
+    def exists?(id, options={})
       raise NotImplementedError
     end
-    def get(sql, options={})
+    #
+    # retrieves cache data saved with id `id`
+    # returns nil if not found
+    #
+    def get(id, options={})
       raise NotImplementedError
     end
-    def put(sql, data, options={})
+    #
+    # put `data` into cache with id `id`
+    # returns `data` from cache afterwards
+    #
+    def put(id, data, options={})
       raise NotImplementedError
     end
     protected

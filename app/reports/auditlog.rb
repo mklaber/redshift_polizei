@@ -8,6 +8,12 @@ module Reports
   # periodically built from the RedShift Audit Logs
   #
   class AuditLog < Base
+    #
+    # retrieves unprocessed audit logs from S3 and calls
+    # `run` on them to parse them into the database.
+    #
+    # also runs `enforce_retention_period`
+    #
     def self.update_from_s3
       logger = PolizeiLogger.logger
       auditlog = self.new
@@ -49,6 +55,10 @@ module Reports
       auditlogconfig.save
     end
 
+    #
+    # removes old audit log queries from the database.
+    # the cutoff date is retrieved thorugh Models::AuditLogConfig.
+    #
     def enforce_retention_period
       # data retention, delete all old audit queries
       timestamp_now = Time.now.to_i
@@ -56,6 +66,16 @@ module Reports
       Models::Query.where('record_time < ?', timestamp_now - retention_time).destroy_all
     end
 
+    #
+    # parses audit log passed in with `ua_log` with
+    # the given file name `logfile` and puts the contents
+    # into the Models::Query table.
+    #
+    # `ua_log` has to respond to method `each_line` to
+    # iterate over the file line-by-line.
+    #
+    # also runs `enforce_retention_period`
+    #
     def run(ua_log, logfile)
       self.enforce_retention_period
       logger = PolizeiLogger.logger
@@ -113,31 +133,24 @@ module Reports
       end
     end
 
-    def audit_queries(with_selects)
-      # from local database, no caching necessary
-      Models::Query.order(record_time: :desc).all.select do |q|
-        attrs = q.attributes
-        qstr = attrs['query'].downcase.strip
-        is_select   = (qstr.start_with?('select'))
-        is_select ||= (qstr.start_with?('show'))
-        is_select ||= (qstr.start_with?('set client_encoding'))
-        is_select ||= (qstr.start_with?('set statement_timeout'))
-        is_select ||= (qstr.start_with?('set query_group'))
-        is_select ||= (qstr.start_with?('set search_path'))
-        !is_select || (with_selects && is_select)
-      end.map do |q|
-        attrs = q.attributes
-        attrs['record_time'] = Time.at(attrs['record_time'])
-        attrs
-      end
-    end
-
     private
+      #
+      # returns query with stripped comments
+      # supports:
+      # - singe line --
+      # - multi-line /**/ comments
+      #
       def strip_comments(q)
         q = q.gsub(/--(.*)/, '') # singe line -- comments
         q = q.gsub(/(\/\*).+(\*\/)/m, '') # multi-line /**/ comments
       end
 
+      #
+      # returns the type of query
+      # currently:
+      # - 0 => select
+      # - 1 => non-select
+      #
       def query_type(query)
         # determine what kind kind of query
         qstr = strip_comments(query.downcase).strip
@@ -152,6 +165,9 @@ module Reports
   end
 end
 
+#
+# default action when executing file directly
+#
 if __FILE__ == $0
   begin
     if ARGV.empty?

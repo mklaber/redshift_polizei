@@ -4,6 +4,9 @@ module Reports
   #
   class DiskSpace < Base
 
+    #
+    # retrieves disk usage and capacity from RedShift directly
+    #
     def run
       #We want to query disk space information for all the nodes
       sql = self.class.sanitize_sql(<<-SQL

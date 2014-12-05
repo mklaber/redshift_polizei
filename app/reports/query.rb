@@ -5,6 +5,9 @@ module Reports
   #
   class Query < Base
 
+    #
+    # retrieves currently still executing queries
+    #
     def run
       sql = self.class.sanitize_sql(<<-SQL
         select
@@ -26,7 +29,6 @@ module Reports
         and lower(query) <> 'show search_path'
         and lower(query) <> 'select 1'
         order by "source", start_time desc, sequence asc
-        
       SQL
       )
 

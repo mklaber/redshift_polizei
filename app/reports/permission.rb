@@ -4,6 +4,9 @@ module Reports
   #
   class Permission < Base
 
+    #
+    # caches permissions for all users, groups and tables
+    #
     def run
       users, groups, tables = self.result
       users.each  { |user| self.get_tables_for_user(user) }
@@ -14,6 +17,9 @@ module Reports
       end
     end
 
+    #
+    # retrieves user, group and tables names
+    #
     def result
       users, groups, tables = [], [], []
 
@@ -50,6 +56,9 @@ module Reports
       @result = [users.sort, groups.sort, tables.sort]
     end
 
+    #
+    # retrieves users with access to the given table
+    #
     def get_users_with_access(schemaname, tablename)
       # we want to find all access types every user has for the specified schema + table
       sql = <<-SQL
@@ -71,6 +80,9 @@ module Reports
       __get_permissions(sql)
     end
 
+    #
+    # retrieves tables the given user has access to
+    #
     def get_tables_for_user(username)
       # we want to grab all the tables and the permissions the specified user has to them
       sql = <<-SQL
@@ -92,6 +104,9 @@ module Reports
       __get_permissions(sql)
     end
 
+    #
+    # retrieves tables the given group has access to
+    #
     def get_tables_for_group(groupname)
       # this query is a handful.
       # it parses the ACL objects in the pg_class system table
