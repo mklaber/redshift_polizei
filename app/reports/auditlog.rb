@@ -133,9 +133,14 @@ module Reports
     end
 
     private
+      def strip_comments(q)
+        q = q.gsub(/--(.*)/, '') # singe line -- comments
+        q = q.gsub(/(\/\*).+(\*\/)/m, '') # multi-line /**/ comments
+      end
+
       def query_type(query)
         # determine what kind kind of query
-        qstr = query.downcase.strip # TODO remove comments
+        qstr = strip_comments(query.downcase).strip
         is_select   = (qstr.start_with?('select'))
         is_select ||= (qstr.start_with?('show'))
         is_select ||= (qstr.start_with?('set client_encoding'))
