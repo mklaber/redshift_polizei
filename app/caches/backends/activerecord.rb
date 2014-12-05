@@ -12,21 +12,24 @@ module Caches
   #
   class ActiveRecordCache < BaseCache
     def initialize(options = {})
+      # without the 'table' nothing can be done
       if not options.member?('table')
         raise ArgumentError, 'the option "table" is required'
       end
-      @options = options
-      @table = @options['table'].constantize
+      super(options)
+      # check that the given table is valid, will throw NameError if not
+      table
     end
 
     def exists?(id, options={})
       return false if not self.enabled
-      not(self.get(id).nil?)
+      not(self.get(id, options).nil?)
     end
 
     def get(id, options={})
       return nil if not self.enabled
-      hq = build_hash(id)
+      hq = self.build_hash(id)
+      table = self.table(options)
       cache_item = table.find_by(hashid: hq)
       if cache_item.nil?
         return nil
@@ -36,19 +39,22 @@ module Caches
     end
 
     def put(id, data, options={})
-      hq = build_hash(id)
+      hq = self.build_hash(id)
+      table = self.table(options)
       cache_item = table.find_by(hashid: hq)
       if cache_item.nil?
         cache_item = table.new({ hashid: hq })
       end
       cache_item.data = data.to_json
-      cache_item.expires = self.expires_i(options) if options.has_key?(:expires)
+      cache_item.expires = self.expires_i(options)
       cache_item.save
       cache_item[:data]
     end
 
-    private
-      attr_reader :table
+    protected
+      def table(options = {})
+        self.options(options)['table'].constantize
+      end
 
       #
       # builds the hash of the cache id

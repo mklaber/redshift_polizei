@@ -28,10 +28,23 @@ module Caches
     include Caches::Creator
 
     #
-    # init method of cache, this interface can't be instantiated
+    # init method of cache, this interface shouldn't be instantiated.
+    #
+    # saves general options to be used, which can be overriden by the
+    # method specific options
     #
     def initialize(options = {})
-      raise NotImplementedError
+      # HashWithIndifferentAccess disregrds the differences between the keys
+      # :key and 'key'
+      @options = ActiveSupport::HashWithIndifferentAccess.new(options)
+    end
+    #
+    # returns a hash with the combination of
+    # initialization options and the given options.
+    # the given options override initialization options.
+    #
+    def options(options = {})
+      @options.merge(options)
     end
     #
     # disables cache, making every `exists?` or
@@ -80,6 +93,7 @@ module Caches
       # parses a expiration date string in iso8601 format to a Time instance
       #
       def expires_str(options={})
+        options = self.options(options)
         return nil if not options.has_key?(:expires)
         return (Time.now + options[:expires]).iso8601
       end
@@ -87,6 +101,7 @@ module Caches
       # parses a unix timestamp to a Time instance
       #
       def expires_i(options={})
+        options = self.options(options)
         return nil if not options.has_key?(:expires)
         return (Time.now + options[:expires]).utc.to_i
       end
@@ -95,6 +110,7 @@ module Caches
       # the passed options
       #
       def expired?(expires, options={})
+        options = self.options(options)
         return true if expires.nil? && options.has_key?(:expires)
         return false if expires.nil? && (not options.has_key?(:expires))
         if expires.is_a?(String)

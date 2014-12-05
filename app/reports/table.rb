@@ -20,7 +20,7 @@ module Reports
       SQL
       )
 
-      @result = cache(sql, expires: 30) do
+      @result = cache(sql) do
         self.class.select_all(sql)
       end
       @result.each do |row|

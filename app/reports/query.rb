@@ -33,7 +33,7 @@ module Reports
       )
 
       sql = self.class.sanitize_sql(sql, [self.class.database_user] * 2)
-      result = cache(sql, expires: 30) do
+      result = cache(sql) do
         self.class.select_all(sql)
       end
       result.chunk {|r| "#{r['pid']}#{r['start_time']}" }.collect do |query_grouping, query_parts|
