@@ -16,7 +16,7 @@ module Reports
       last_update = DateTime.strptime(auditlogconfig.last_update.to_s,'%s').utc
 
       s3 = AWSConfig.s3_sdk
-      bucket = s3.buckets['amg-redshift-logging'] # TODO configuration option
+      bucket = s3.buckets[AWSConfig['redshift_audit_log_bucket']]
       bucket.objects.each do |obj|
         begin
           is_user_activity_log = (not obj.key.index('useractivitylog').nil?)
@@ -162,7 +162,7 @@ if __FILE__ == $0
     end
   rescue Interrupt
     # discard StackTrace if ctrl + c was pressed
-    logger.info "Ctrl + C => exiting ..."
+    PolizeiLogger.logger.info "Ctrl + C => exiting ..."
     exit
   end
 end
