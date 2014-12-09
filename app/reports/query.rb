@@ -113,7 +113,7 @@ module Reports
       queries = result.map do |q|
         [
           DateTime.parse(q['start_time']).strftime('%F at %T %:z'),
-          "#{q['user']} <small>(#{q['userid']})<small>",
+          "#{q['user']} <small class=\"secondary\">(#{q['userid']})<small>",
           q['xid'],
           CodeRay.scan(q['query'].strip, :sql).div()
         ]
@@ -148,7 +148,7 @@ module Reports
         queries = q_query.limit(length).offset(start).map do |q|
           [
             Time.at(q.record_time).strftime('%F at %T %:z'),
-            "#{q.user} <small>(#{q.userid})<small>",
+            "#{q.user} <small class=\"secondary\">(#{q.userid})<small>",
             q.xid,
             CodeRay.scan(q.query.strip, :sql).div()
           ]

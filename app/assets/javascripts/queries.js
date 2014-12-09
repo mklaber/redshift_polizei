@@ -3,7 +3,7 @@ datatable_init($('#queries_running_tbl')[0], {
     {
       'targets': 0,
       'render': function (data, type, row) {
-        return row['username'] + '<small> (' + row['user_id'] + ')</small>';
+        return row['username'] + '<small class="secondary"> (' + row['user_id'] + ')</small>';
       }
     },
     {
