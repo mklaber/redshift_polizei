@@ -5,8 +5,11 @@ module Reports
   #
   class Query < Base
 
+    #
+    # retrieves currently still executing queries
+    #
     def run
-      sql = self.sanitize_sql(<<-SQL
+      sql = self.class.sanitize_sql(<<-SQL
         select
           'STV_INFLIGHT' as "source",
           queries.userid as user_id,
@@ -26,13 +29,12 @@ module Reports
         and lower(query) <> 'show search_path'
         and lower(query) <> 'select 1'
         order by "source", start_time desc, sequence asc
-        
       SQL
       )
 
-      sql = self.sanitize_sql(sql, [self.class.redshift_user] * 2)
+      sql = self.class.sanitize_sql(sql, [self.class.database_user] * 2)
       result = cache(sql, expires: 30) do
-        self.redshift_select_all(sql)
+        self.class.select_all(sql)
       end
       result.chunk {|r| "#{r['pid']}#{r['start_time']}" }.collect do |query_grouping, query_parts|
         {

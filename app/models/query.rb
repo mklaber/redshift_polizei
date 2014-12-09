@@ -12,5 +12,6 @@ module Models
     # xid                    :integer          not null
     # query                  :text             not null
     # logfile                :string(255)      not null
+    # query_type             :integer          not null, 0 => select, 1 => non-select
   end
 end

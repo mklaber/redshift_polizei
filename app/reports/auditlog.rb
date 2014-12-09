@@ -8,6 +8,12 @@ module Reports
   # periodically built from the RedShift Audit Logs
   #
   class AuditLog < Base
+    #
+    # retrieves unprocessed audit logs from S3 and calls
+    # `run` on them to parse them into the database.
+    #
+    # also runs `enforce_retention_period`
+    #
     def self.update_from_s3
       logger = PolizeiLogger.logger
       auditlog = self.new
@@ -16,7 +22,7 @@ module Reports
       last_update = DateTime.strptime(auditlogconfig.last_update.to_s,'%s').utc
 
       s3 = AWSConfig.s3_sdk
-      bucket = s3.buckets['amg-redshift-logging']
+      bucket = s3.buckets[AWSConfig['redshift_audit_log_bucket']]
       bucket.objects.each do |obj|
         begin
           is_user_activity_log = (not obj.key.index('useractivitylog').nil?)
@@ -49,6 +55,10 @@ module Reports
       auditlogconfig.save
     end
 
+    #
+    # removes old audit log queries from the database.
+    # the cutoff date is retrieved thorugh Models::AuditLogConfig.
+    #
     def enforce_retention_period
       # data retention, delete all old audit queries
       timestamp_now = Time.now.to_i
@@ -56,6 +66,16 @@ module Reports
       Models::Query.where('record_time < ?', timestamp_now - retention_time).destroy_all
     end
 
+    #
+    # parses audit log passed in with `ua_log` with
+    # the given file name `logfile` and puts the contents
+    # into the Models::Query table.
+    #
+    # `ua_log` has to respond to method `each_line` to
+    # iterate over the file line-by-line.
+    #
+    # also runs `enforce_retention_period`
+    #
     def run(ua_log, logfile)
       self.enforce_retention_period
       logger = PolizeiLogger.logger
@@ -71,6 +91,7 @@ module Reports
           raise "Corrupt file on line #{lineno}" if prev_q.nil?
           q = prev_q
           q.query += line
+          q.query_type = query_type(q.query)
         else
           metadata_end = line.index(']\'')
           raise "Unsupported line format on line #{lineno}" if metadata_end.nil?
@@ -86,6 +107,8 @@ module Reports
           xid    = metadata_parts[7].split('=')[-1].to_i
           query  = line[(metadata_end + 8)..-1]
 
+
+          # save query
           q = Models::Query.new
           q.assign_attributes(
             record_time: record_time,
@@ -94,6 +117,7 @@ module Reports
             pid: pid,
             userid: userid,
             xid: xid,
+            query_type: query_type(query),
             query: query.strip,
             logfile: logfile
           )
@@ -109,27 +133,41 @@ module Reports
       end
     end
 
-    def audit_queries(with_selects)
-      # from local database, no caching necessary
-      Models::Query.order(record_time: :desc).all.select do |q|
-        attrs = q.attributes
-        qstr = attrs['query'].downcase.strip
+    private
+      #
+      # returns query with stripped comments
+      # supports:
+      # - singe line --
+      # - multi-line /**/ comments
+      #
+      def strip_comments(q)
+        q = q.gsub(/--(.*)/, '') # singe line -- comments
+        q = q.gsub(/(\/\*).+(\*\/)/m, '') # multi-line /**/ comments
+      end
+
+      #
+      # returns the type of query
+      # currently:
+      # - 0 => select
+      # - 1 => non-select
+      #
+      def query_type(query)
+        # determine what kind kind of query
+        qstr = strip_comments(query.downcase).strip
         is_select   = (qstr.start_with?('select'))
         is_select ||= (qstr.start_with?('show'))
         is_select ||= (qstr.start_with?('set client_encoding'))
         is_select ||= (qstr.start_with?('set statement_timeout'))
         is_select ||= (qstr.start_with?('set query_group'))
         is_select ||= (qstr.start_with?('set search_path'))
-        !is_select || (with_selects && is_select)
-      end.map do |q|
-        attrs = q.attributes
-        attrs['record_time'] = DateTime.strptime(attrs['record_time'].to_s,'%s').utc
-        attrs
+        return ((is_select) ? 0 : 1)
       end
-    end
   end
 end
 
+#
+# default action when executing file directly
+#
 if __FILE__ == $0
   begin
     if ARGV.empty?
@@ -140,7 +178,7 @@ if __FILE__ == $0
     end
   rescue Interrupt
     # discard StackTrace if ctrl + c was pressed
-    logger.info "Ctrl + C => exiting ..."
+    PolizeiLogger.logger.info "Ctrl + C => exiting ..."
     exit
   end
 end

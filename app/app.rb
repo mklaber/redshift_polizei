@@ -110,10 +110,55 @@ class Polizei < Sinatra::Application
   end
 
   get '/auditlog' do
-    @selects = ((not params[:selects].nil?) && params[:selects] == 'true')
-    query_report = Reports::AuditLog.new
-    @queries = query_report.audit_queries(@selects)
+    @selects = ((not params['selects'].nil?) && params['selects'] == 'true')
     erb :auditlog, :locals => { :name => :auditlog }
+  end
+
+  get '/auditlog/table' do
+    # parse parameters
+    draw = params['draw'].to_i
+    start = params['start'].to_i
+    length = params['length'].to_i
+    order = params['order']
+    search = params['search']['value']
+    selects = ((not params['selects'].nil?) && params['selects'] == 'true')
+    # q_query is the filter query
+    q_query = Models::Query
+    q_query = q_query.where(query_type: 1) if not selects
+    # filter by search query
+    if not search.empty?
+      q_query = q_query.where(
+        'queries.user LIKE ? OR queries.query LIKE ?', "%#{search}%", "%#{search}%"
+      )
+    end
+    # figure out ordering
+    columns = [ 'record_time', 'user', 'xid', 'query' ]
+    order_str = ''
+    (0..(order.size-1)).each do |i|
+      order_str += 'queries.'
+      order_str += columns[order[i.to_s]['column'].to_i]
+      order_str += ' asc' if order[i.to_s]['dir'] == 'asc'
+      order_str += ' desc' if order[i.to_s]['dir'] == 'desc'
+      order_str += ', '
+    end
+    order_str = 'queries.record_time desc' if order_str.empty? # default ordering
+    q_query = q_query.order(order_str[0, order_str.length - 2]) if not order_str.empty?
+    # get data
+    queries = q_query.limit(length).offset(start).map do |q|
+      [
+        Time.at(q.record_time).strftime('%F at %T %:z'),
+        "#{q.user} <small>(#{q.userid})<small>",
+        q.xid,
+        CodeRay.scan(q.query, :sql).div()
+      ]
+    end
+    # generate output format
+    {
+      draw: draw,
+      recordsTotal: Models::Query.count,
+      recordsFiltered: q_query.count,
+      data: queries
+    }.to_json
   end
 
   get '/disk_space' do

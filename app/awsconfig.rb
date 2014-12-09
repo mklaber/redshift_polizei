@@ -27,4 +27,8 @@ class AWSConfig
     clusters = redshift_sdk.describe_clusters(cluster_identifier: AWS_CONFIG['cluster_identifier'])
     clusters[:clusters][0]
   end
+
+  def self.[] key
+    AWS_CONFIG[key]
+  end
 end

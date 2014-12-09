@@ -4,6 +4,9 @@ module Reports
   #
   class Permission < Base
 
+    #
+    # caches permissions for all users, groups and tables
+    #
     def run
       users, groups, tables = self.result
       users.each  { |user| self.get_tables_for_user(user) }
@@ -14,6 +17,9 @@ module Reports
       end
     end
 
+    #
+    # retrieves user, group and tables names
+    #
     def result
       users, groups, tables = [], [], []
 
@@ -21,7 +27,7 @@ module Reports
         SELECT u.usename FROM pg_user u;
       SQL
       users_as_dicts = cache(user_sql, expires: 30) do
-        self.redshift_select_all(user_sql)
+        self.class.select_all(user_sql)
       end
       users_as_dicts.each do |use_dict|
         users.append(use_dict["usename"])
@@ -31,7 +37,7 @@ module Reports
         SELECT t.schemaname, t.tablename FROM pg_tables t;
       SQL
       tables_as_dicts = cache(table_sql, expires: 30) do
-        self.redshift_select_all(table_sql)
+        self.class.select_all(table_sql)
       end
       tables_as_dicts.each do |table_dict|
         tables.append(table_dict["schemaname"] + "-->" + table_dict["tablename"])
@@ -41,7 +47,7 @@ module Reports
         SELECT groname FROM pg_group;
       SQL
       groups_as_dicts = cache(group_sql, expires: 30) do
-        self.redshift_select_all(group_sql)
+        self.class.select_all(group_sql)
       end
       groups_as_dicts.each do |group_dict|
         groups.append(group_dict["groname"])
@@ -50,6 +56,9 @@ module Reports
       @result = [users.sort, groups.sort, tables.sort]
     end
 
+    #
+    # retrieves users with access to the given table
+    #
     def get_users_with_access(schemaname, tablename)
       # we want to find all access types every user has for the specified schema + table
       sql = <<-SQL
@@ -67,10 +76,13 @@ module Reports
           OR has_table_privilege(u.usename, '%s' || '.' || '%s', 'insert') = true
           ;
       SQL
-      sql = self.sanitize_sql(sql, [schemaname, tablename] * 10)
+      sql = self.class.sanitize_sql(sql, [schemaname, tablename] * 10)
       __get_permissions(sql)
     end
 
+    #
+    # retrieves tables the given user has access to
+    #
     def get_tables_for_user(username)
       # we want to grab all the tables and the permissions the specified user has to them
       sql = <<-SQL
@@ -88,10 +100,13 @@ module Reports
           OR has_table_privilege('%s', t.schemaname || '.' || t.tablename, 'insert') = true)
           AND t.schemaname != 'pg_catalog';
       SQL
-      sql = self.sanitize_sql(sql, [username] * 10)
+      sql = self.class.sanitize_sql(sql, [username] * 10)
       __get_permissions(sql)
     end
 
+    #
+    # retrieves tables the given group has access to
+    #
     def get_tables_for_group(groupname)
       # this query is a handful.
       # it parses the ACL objects in the pg_class system table
@@ -114,7 +129,7 @@ module Reports
         JOIN pg_catalog.pg_namespace n ON n.oid = c.relnamespace
         WHERE array_to_string(relacl, '|') like '%%group %s%%';
       SQL
-      sql = self.sanitize_sql(sql, [groupname] * 6)
+      sql = self.class.sanitize_sql(sql, [groupname] * 6)
       __get_permissions(sql)
     end
 
@@ -125,7 +140,7 @@ module Reports
       #
       def __get_permissions(sql)
         results = cache(sql, expires: 30) do
-          self.redshift_select_all(sql)
+          self.class.select_all(sql)
         end
         keys = ["has_select", "has_delete", "has_update", "has_references", "has_insert"]
         results.each do |result|

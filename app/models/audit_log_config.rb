@@ -8,6 +8,9 @@ module Models
     # retention_period       :integer          not null, default 0
     # last_update            :integer          not null, default 0
 
+    #
+    # returns the currently used audit log configuration
+    #
     def self.get
       t = self.all.take
       if t.nil?
