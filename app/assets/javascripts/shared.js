@@ -105,6 +105,30 @@ $.fn.dataTable.Api.register('clearPipeline()', function () {
     });
 });
 
+$.fn.dataTable.ajaxload = function (opts) {
+    // Configuration options
+    var conf = $.extend({
+        pages: 5,     // number of pages to cache
+        url: '',      // script url
+        data: null,   // function or object with parameters to send to the server
+                      // matching how `ajax.data` works in DataTables
+        method: 'GET' // Ajax HTTP method
+    }, opts);
+
+    return function (request, drawCallback, settings) {
+        $.ajax({
+            "type":     conf.method,
+            "url":      conf.url,
+            "data":     request,
+            "dataType": "json",
+            "cache":    false,
+            "success":  function (json) {
+                drawCallback(json);
+            }
+        });
+    };
+};
+
 function regex_is_valid(regex) {
     try {
         new RegExp(regex);
@@ -114,44 +138,58 @@ function regex_is_valid(regex) {
     }
 }
 
-function datatable_init(table) {
-    if($(table).attr('data-server') == 'true')
-        datatable_server_init(table);
+function datatable_init(table, options) {
+    if($(table).attr('data-server'))
+        datatable_server_init(table, options);
+    else if($(table).attr('data-ajax'))
+        datatable_ajax_init(table, $(table).attr('data-ajax'), options);
     else
-        datatable_client_init(table);
+        datatable_client_init(table, options);
     $(table).show();
 }
 
-function datatable_server_init(table) {
+function datatable_server_init(table, options) {
     var wl = window.location;
     var table_data_url = wl.protocol + '//' + wl.host + wl.pathname + '/table' + wl.search;
-    $(table).dataTable({
+    options = options || {};
+    $.extend(options, {
+        "aaSorting": [],
         "processing": true,
         "serverSide": true,
-        "ajax": $.fn.dataTable.pipeline( {
+        "ajax": $.fn.dataTable.pipeline({
             url: table_data_url,
             pages: 5 // number of pages to cache
         })
     });
+    $(table).dataTable(options);
 }
 
-function datatable_client_init(table) {
-    $(table).dataTable({
-        'dom': 'lrtip'
+function datatable_ajax_init(table, url, options) {
+    options = options || {};
+    $.extend(options, {
+        'ajax': $.fn.dataTable.ajaxload({
+            url: url,
+        })
     });
+    datatable_client_init(table, options);
+}
+
+function datatable_client_init(table, user_options) {
+    options = { 'dom': 'lrtip', 'aaSorting': [] };
+    $.extend(options, user_options);
+    $(table).dataTable(options);
     var table_id = $(table).attr('id');
-    var table_no = table_id.substr(table_id.lastIndexOf("_") + 1);
-    var wrapper_id = "div#DataTables_Table_" + table_no + "_wrapper";
-    var length_id = "div#DataTables_Table_" + table_no + "_length";
-    var info_id = "div#DataTables_Table_" + table_no + "_info";
-    var paginate_id = "div#DataTables_Table_" + table_no + "_paginate";
+    var wrapper_id = "div#" + table_id + "_wrapper";
+    var length_id = "div#" + table_id + "_length";
+    var info_id = "div#" + table_id + "_info";
+    var paginate_id = "div#" + table_id + "_paginate";
     // fix bootstrap table style with custom dom option
     $(wrapper_id).css('overflow', 'auto');
     $(length_id).css('float', 'left');
     $(info_id).css('float', 'left');
     $(paginate_id).css('float', 'right');
     // create custom filter input field
-    var filter_id = "DataTables_Table_" + table_no + "_customfilter";
+    var filter_id = table_id + "_customfilter";
     var cfilter = $('<div id="' + filter_id + '" class="dataTables_filter">' +
             '<label>' +
                 '<span class="label label-default" style="position: relative; left: 195px;">RegEx</span>' +
@@ -160,7 +198,7 @@ function datatable_client_init(table) {
                     'type="search" ' +
                     'class="form-control input-sm" ' +
                     'placeholder="" ' +
-                    'aria-controls="DataTables_Table_' + table_no + '">' +
+                    'aria-controls="' + table_id + '">' +
             '</label>' +
         '</div>');
     cfilter.insertAfter($(length_id));
@@ -178,7 +216,8 @@ function datatable_client_init(table) {
 $(document).ready(function() {
     // every bootstrap table is going to be a data table
     $.each($('table.table'), function(idx, table) {
-        datatable_init(table);
+        if ($(table).attr('data-auto'))
+            datatable_init(table);
     });
 
     //We want the first tab in the permissions page to be on by default

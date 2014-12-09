@@ -39,6 +39,7 @@ class Polizei < Sinatra::Application
       '/javascripts/lib/jquery-1.10.2.min.js',
       '/javascripts/lib/bootstrap.min.js',
       '/javascripts/lib/jquery.dataTables.min.js',
+      '/javascripts/lib/jquery-dateFormat.min.js',
       '/javascripts/lib/dataTables.bootstrap.min.js',
       '/javascripts/shared.js'
     ]
@@ -100,13 +101,17 @@ class Polizei < Sinatra::Application
   end
 
   get '/' do
-    query_report = Reports::Query.new
-    @queries = query_report.run
-    # We want to strip out block comments before passing it on to the view
-    @queries.each do |q|
-      q["query"] = q["query"].gsub(/(\/\*).+(\*\/)/, '')      
-    end
     erb :index, :locals => { :name => :home }
+  end
+
+  get '/queries/running' do
+    query_report = Reports::Query.new
+    queries = query_report.run
+    # We want to strip out block comments before passing it on to the view
+    queries.each do |q|
+      q["query"] = CodeRay.scan(q["query"].gsub(/(\/\*).+(\*\/)/, '').strip, :sql).div()
+    end
+    { data: queries }.to_json
   end
 
   get '/auditlog' do
@@ -122,41 +127,36 @@ class Polizei < Sinatra::Application
     order = params['order']
     search = params['search']['value']
     selects = ((not params['selects'].nil?) && params['selects'] == 'true')
-    # q_query is the filter query
-    q_query = Models::Query
-    q_query = q_query.where(query_type: 1) if not selects
-    # filter by search query
-    if not search.empty?
-      q_query = q_query.where(
-        'queries.user LIKE ? OR queries.query LIKE ?', "%#{search}%", "%#{search}%"
-      )
+
+    order_column = 0
+    order_dir = 'desc'
+    if not(order.nil? || order.size == 0)
+      order_column = order['0']['column'].to_i
+      order_dir = order['0']['dir']
     end
-    # figure out ordering
-    columns = [ 'record_time', 'user', 'xid', 'query' ]
-    order_str = ''
-    (0..(order.size-1)).each do |i|
-      order_str += 'queries.'
-      order_str += columns[order[i.to_s]['column'].to_i]
-      order_str += ' asc' if order[i.to_s]['dir'] == 'asc'
-      order_str += ' desc' if order[i.to_s]['dir'] == 'desc'
-      order_str += ', '
-    end
-    order_str = 'queries.record_time desc' if order_str.empty? # default ordering
-    q_query = q_query.order(order_str[0, order_str.length - 2]) if not order_str.empty?
-    # get data
-    queries = q_query.limit(length).offset(start).map do |q|
-      [
-        Time.at(q.record_time).strftime('%F at %T %:z'),
-        "#{q.user} <small>(#{q.userid})<small>",
-        q.xid,
-        CodeRay.scan(q.query, :sql).div()
-      ]
-    end
+
+    total_count = 0
+    filtered_count = 0
+    queries = []
+    report = Reports::Query.new
+    # get newest queries not yet in the audit log
+    t1, t2, t3 = report.new_queries(selects, start, length, order_column, order_dir, search)
+    total_count += t1
+    filtered_count += t2
+    queries += t3
+    start += queries.size
+    length -= queries.size
+    # get the rest from auit log, always needs to be executed to get accurate counts
+    t1, t2, t3 = report.audit_queries(selects, start, length, order_column, order_dir, search)
+    total_count += t1
+    filtered_count += t2
+    queries += t3
+
     # generate output format
     {
       draw: draw,
-      recordsTotal: Models::Query.count,
-      recordsFiltered: q_query.count,
+      recordsTotal: total_count,
+      recordsFiltered: filtered_count,
       data: queries
     }.to_json
   end

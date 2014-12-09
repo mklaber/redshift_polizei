@@ -1,65 +1,17 @@
 <h2 name="queries" id="queries">Running Queries</h2>
 
-<% if @queries.present? %>
-  <table class="table table-bordered table-striped table-condensed table-hover">
+<table style="display: none;" data-ajax="/queries/running" id="queries_running_tbl" class="table table-bordered table-striped table-condensed table-hover">
     <thead>
       <tr>
         <th>User</th>
         <th>Status</th>
         <th>Start time</th>
         <th>Duration</th>
-        <th>PID</th>
+        <th>Transaction</th>
         <th>Query</th>
       </tr>
     </thead>
-    <tbody>
-    <% @queries.each do |row| %>
-      <tr>
-        <td><%= row['username'] %> <small>(<%= row['user_id'] %>)</small></td>
-        <td>
-          <% if row['status'] =~ /Done/ %>
-            <span class="label label-success">Done</span>
-          <% #elsif row['duration'].to_i < 0 %>
-            <% #<span class="label label-warning">Cancelled?</span> %>
-          <% else %>
-            <span class="label label-default"><%= row['status'] %></span>
-          <% end %>
-        </td>
-        
-        <td><%= row['start_time'].strftime("%m-%d-%Y") + " at " + row['start_time'].strftime("%l:%M %p") %></td>
-        <% if row['duration'] != nil %>
-            <% mins, secs = (Time.mktime(0)+row['duration']).strftime("%-M,%-S").split(",") %>
-            <% if mins.to_i != 0 %>
-                <td><%= mins + " minutes,  " + secs + " seconds" %></td>
-            <% else %>
-                <td><%= secs + " seconds"%></td>
-            <% end %>
-        <% else %>
-        <td>
-          <% total_seconds = Time.now - row['start_time'] %>
-          <% minutes = (total_seconds/60).to_i %>
-          <% seconds = (total_seconds % 60).to_i %>
-          <% if minutes != 0 %>
-            <div><%= minutes.to_s + " minutes,  " + seconds.to_s + " seconds" %></div>
-          <% else %>
-            <div><%= seconds.to_s + " seconds"%></div>
-          <% end %>
-          <div>(running)</div>
-          <% minutes = seconds / 60 %>
-        </td>
-        <% end %>
-        <td><%= row['pid'].to_i < 0 ? 'n/a' :  row['pid'] %></td>
-        <td>
-            <%= CodeRay.scan(row['query'], :sql).div()  %>
-        </td>
-      </tr >
-    <% end %>
-    </tbody>
-  </table>
-<% else %>
-  <h3>That's weird, there don't appear to be any queries running.</h3>
-<% end %>
+    <tbody></tbody>
+</table>
 
-
-
-
+<script type="text/javascript" src="/javascripts/queries.js"></script>
