@@ -1,6 +1,9 @@
 require 'aws'
 
 module Reports
+  #
+  # Report retireving the disk space usage from CloudWatch
+  #
   class DiskSpaceCloudwatch < Base
 
     def run

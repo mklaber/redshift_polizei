@@ -1,4 +1,4 @@
-provider: GoogleOauth2
-client_id: client_id
-client_secret: client_secret
-valid_domains: ['amg.tv', 'analyticsmediagroup.com']
+provider: GoogleOauth2 # for Google: GoogleOauth2, otherwise refer to OmniAuth
+client_id: client_id # client id from e.g. Google developer console
+client_secret: client_secret # client secret from e.g. Google developer console
+valid_domains: ['amg.tv', 'analyticsmediagroup.com'] # domains of email addresses which are allowed to log in

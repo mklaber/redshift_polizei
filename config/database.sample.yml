@@ -1,3 +1,4 @@
+# database to be used for general user data of Polizei
 development:
   adapter: postgresql
   host: localhost
@@ -6,6 +7,7 @@ development:
   username: username
   password: password
 
+# to query the redshift cluster for general information
 redshift_development:
   adapter: redshift
   host: analytics-dw-1.analyticsmediagroup.net

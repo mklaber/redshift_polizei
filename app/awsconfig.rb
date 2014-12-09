@@ -1,5 +1,9 @@
 require 'aws'
 
+#
+# Convenience utility class for getting AWS Clients so the credential
+# process is abstracted away
+#
 class AWSConfig
   AWS_CONFIG = YAML::load_file(File.join('config', 'aws.yml'))
 

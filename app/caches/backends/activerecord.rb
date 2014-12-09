@@ -1,4 +1,15 @@
 module Caches
+  #
+  # uses ActiveRecord Model as a cache
+  #
+  # expects the following options on initialization:
+  # - table: full class name of the Model class to use
+  #
+  # the model class has to have the following schema:
+  # - hashid: string, hash of the cache id (configure this as an index)
+  # - data: json, json representation of the data
+  # - expires: integer, unix timestamp of the expiration date
+  #
   class ActiveRecordCache < BaseCache
     def initialize(options = {})
       if not options.member?('table')
@@ -39,6 +50,9 @@ module Caches
     private
       attr_reader :table
 
+      #
+      # builds the hash of the cache id
+      #
       def build_hash(sql, *args)
         Digest::MD5.hexdigest(sql)
       end

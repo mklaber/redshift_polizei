@@ -1,4 +1,7 @@
 module Models
+  #
+  # User Model
+  #
   class User < ActiveRecord::Base
     # id                     :integer          not null, primary key
     # email                  :string(255)      not null

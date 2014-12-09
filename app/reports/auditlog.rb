@@ -2,8 +2,14 @@ require './app/main'
 require_relative 'base'
 
 module Reports
+  #
+  # Report retrieving queries for audit logs
+  # may not have the newest queries, since this is
+  # periodically built from the RedShift Audit Logs
+  #
   class AuditLog < Base
     def self.update_from_s3
+      logger = PolizeiLogger.logger
       auditlog = self.new
       auditlog.enforce_retention_period
       auditlogconfig = Models::AuditLogConfig.get
@@ -31,7 +37,7 @@ module Reports
             auditlog.run(Zlib::GzipReader.new(reader), obj.key)
           end
         rescue
-          p "Error parsing s3 object #{obj.key}"
+          logger.error "Error parsing s3 object #{obj.key}"
           raise
         end
       end
@@ -52,6 +58,7 @@ module Reports
 
     def run(ua_log, logfile)
       self.enforce_retention_period
+      logger = PolizeiLogger.logger
 
       # read user activity log
       lineno = 0
@@ -61,7 +68,6 @@ module Reports
         q = nil
         if line.match("'[0-9]{4}\-[0-9]{2}\-[0-9]{2}T").nil?
           # part of previous query => append to query
-          p line
           raise "Corrupt file on line #{lineno}" if prev_q.nil?
           q = prev_q
           q.query += line
@@ -97,14 +103,14 @@ module Reports
         begin
           q.save
         rescue
-          p "Database error on line #{lineno}"
+          logger.error "Database error on line #{lineno}"
           raise
         end
       end
     end
 
     def audit_queries(with_selects)
-      # from local datbase, no caching necessary
+      # from local database, no caching necessary
       Models::Query.order(record_time: :desc).all.select do |q|
         attrs = q.attributes
         qstr = attrs['query'].downcase.strip
@@ -134,7 +140,7 @@ if __FILE__ == $0
     end
   rescue Interrupt
     # discard StackTrace if ctrl + c was pressed
-    p "Ctrl + C => exiting ..."
+    logger.info "Ctrl + C => exiting ..."
     exit
   end
 end

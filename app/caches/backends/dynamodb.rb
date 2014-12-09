@@ -1,6 +1,18 @@
 require 'aws'
 
 module Caches
+  #
+  # uses AWS DynamoDB as a cache
+  #
+  # expects the following options on initialization:
+  # - table: name of the table to use (will not be autocreated)
+  #
+  # the table will have the following structure:
+  # - id: hash of the cache id (configure this as the hash key)
+  # - data: cached data in JSON format
+  # - expires: expiration date as iso8601 string
+  # - id_plain: unhashed cache id
+  #
   class DynamoDBCache < BaseCache
     def initialize(options = {})
       # TODO needs connection pool or provided by AWS SDK?
@@ -40,10 +52,16 @@ module Caches
     private
       attr_reader :table
 
-      def build_hash(sql, *args)
+      #
+      # builds the hash of the cache id
+      #
+      def build_hash(sql)
         Digest::MD5.hexdigest(sql)
       end
 
+      #
+      # transforms DynamoDB Object into JSON
+      #
       def cache2cash(cache_item)
         JSON.load(cache_item.attributes[:data])
       end
