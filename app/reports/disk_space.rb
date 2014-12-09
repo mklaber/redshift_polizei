@@ -17,7 +17,7 @@ module Reports
       SQL
       )
 
-      @results = cache(sql, expires: 30) do
+      @results = cache(sql) do
         self.class.select_all(sql).map do |node|
           {
             'node' => node['node'],

@@ -19,20 +19,21 @@ module Caches
       if not options.member?('table')
         raise ArgumentError, 'the option "table" is required'
       end
-      @options = options
+      super(options)
       @handle = AWSConfig.dynamodb_sdk
-      @table = @handle.tables[@options['table']]
-      @table.hash_key = [:id, :string]
+      # check that the given table is valid, will throw NoSuchMethodError if not
+      table
     end
 
     def exists?(id, options={})
       return false if not self.enabled
-      not(self.get(id).nil?)
+      not(self.get(id, options).nil?)
     end
 
     def get(id, options={})
       return nil if not self.enabled
-      hq = build_hash(id)
+      hq = self.build_hash(id)
+      table = self.table(options)
       cache_item = table.items[hq]
       if not cache_item.exists?
         return nil
@@ -42,15 +43,20 @@ module Caches
     end
 
     def put(id, data, options={})
-      hq = build_hash(id)
+      hq = self.build_hash(id)
+      table = self.table(options)
       cache_data = { id: hq, id_plain: id, data: data.to_json }
-      cache_data[:expires] = self.expires_str(options) if options.has_key?(:expires)
+      cache_data[:expires] = self.expires_str(options)
       cache_item = table.items.create(cache_data)
       cache2cash(cache_item)
     end
 
-    private
-      attr_reader :table
+    protected
+      def table(options = {})
+        t = @handle.tables[self.options(options)['table']]
+        t.hash_key = [:id, :string]
+        t
+      end
 
       #
       # builds the hash of the cache id

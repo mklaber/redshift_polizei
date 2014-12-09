@@ -26,7 +26,7 @@ module Reports
       user_sql = <<-SQL
         SELECT u.usename FROM pg_user u;
       SQL
-      users_as_dicts = cache(user_sql, expires: 30) do
+      users_as_dicts = cache(user_sql) do
         self.class.select_all(user_sql)
       end
       users_as_dicts.each do |use_dict|
@@ -36,7 +36,7 @@ module Reports
       table_sql = <<-SQL
         SELECT t.schemaname, t.tablename FROM pg_tables t;
       SQL
-      tables_as_dicts = cache(table_sql, expires: 30) do
+      tables_as_dicts = cache(table_sql) do
         self.class.select_all(table_sql)
       end
       tables_as_dicts.each do |table_dict|
@@ -46,7 +46,7 @@ module Reports
       group_sql = <<-SQL
         SELECT groname FROM pg_group;
       SQL
-      groups_as_dicts = cache(group_sql, expires: 30) do
+      groups_as_dicts = cache(group_sql) do
         self.class.select_all(group_sql)
       end
       groups_as_dicts.each do |group_dict|
@@ -139,7 +139,7 @@ module Reports
       # transforming result into common data structure
       #
       def __get_permissions(sql)
-        results = cache(sql, expires: 30) do
+        results = cache(sql) do
           self.class.select_all(sql)
         end
         keys = ["has_select", "has_delete", "has_update", "has_references", "has_insert"]

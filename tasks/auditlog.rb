@@ -1,13 +1,12 @@
 require './app/main'
-require_relative 'base'
 
-module Reports
+module Tasks
   #
-  # Report retrieving queries for audit logs
+  # Task retrieving queries from audit logs
   # may not have the newest queries, since this is
   # periodically built from the RedShift Audit Logs
   #
-  class AuditLog < Base
+  class AuditLog
     #
     # retrieves unprocessed audit logs from S3 and calls
     # `run` on them to parse them into the database.
@@ -91,7 +90,7 @@ module Reports
           raise "Corrupt file on line #{lineno}" if prev_q.nil?
           q = prev_q
           q.query += line
-          q.query_type = query_type(q.query)
+          q.query_type = Models::Query.query_type(q.query)
         else
           metadata_end = line.index(']\'')
           raise "Unsupported line format on line #{lineno}" if metadata_end.nil?
@@ -117,7 +116,7 @@ module Reports
             pid: pid,
             userid: userid,
             xid: xid,
-            query_type: query_type(query),
+            query_type: Models::Query.query_type(query),
             query: query.strip,
             logfile: logfile
           )
@@ -132,36 +131,6 @@ module Reports
         end
       end
     end
-
-    private
-      #
-      # returns query with stripped comments
-      # supports:
-      # - singe line --
-      # - multi-line /**/ comments
-      #
-      def strip_comments(q)
-        q = q.gsub(/--(.*)/, '') # singe line -- comments
-        q = q.gsub(/(\/\*).+(\*\/)/m, '') # multi-line /**/ comments
-      end
-
-      #
-      # returns the type of query
-      # currently:
-      # - 0 => select
-      # - 1 => non-select
-      #
-      def query_type(query)
-        # determine what kind kind of query
-        qstr = strip_comments(query.downcase).strip
-        is_select   = (qstr.start_with?('select'))
-        is_select ||= (qstr.start_with?('show'))
-        is_select ||= (qstr.start_with?('set client_encoding'))
-        is_select ||= (qstr.start_with?('set statement_timeout'))
-        is_select ||= (qstr.start_with?('set query_group'))
-        is_select ||= (qstr.start_with?('set search_path'))
-        return ((is_select) ? 0 : 1)
-      end
   end
 end
 
@@ -171,7 +140,7 @@ end
 if __FILE__ == $0
   begin
     if ARGV.empty?
-      Reports::AuditLog.update_from_s3
+      Tasks::AuditLog.update_from_s3
     else
       auditlog = Reports::AuditLog.new
       ARGV.each { |file| auditlog.run(File.read(file), file) }

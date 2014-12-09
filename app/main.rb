@@ -18,4 +18,6 @@ require './app/caches'
 require './app/awsconfig'
 require './app/logger'
 
+require './tasks/auditlog'
+
 Dir.glob('./app/{models,reports,caches}/*.rb').sort.each { |file| require file }

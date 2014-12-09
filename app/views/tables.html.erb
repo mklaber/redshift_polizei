@@ -1,23 +1,23 @@
 <h2 name="tables" id="tables">Tables</h2>
 
-<table style="display: none;" class="table table-bordered table-striped table-condensed table-hover">
+<table data-auto="true" style="display: none;" class="table table-bordered table-striped table-condensed table-hover">
   <thead>
     <tr>
       <th>Schema</th>
-      <th>Table <small>(table ID)</small></th>
+      <th>Table <small class="secondary">(table ID)</small></th>
       <th>Size in GB</th>
       <th>Sort Keys</th>
       <th>Distribution Key</th>
       <th>Column Encoding</th>
-      <th>% Skew Across Slices <small>(lower better)</small></th>
-      <th>% Slices Populated <small>(higher better)</small</th>
+      <th>% Skew Across Slices <small class="secondary">(lower better)</small></th>
+      <th>% Slices Populated <small class="secondary">(higher better)</small</th>
     </tr>
   </thead>
   <tbody>
   <% @tables.each do |row| %>
     <tr>
-      <td><%= h row['schema'] %></td>
-      <td><%= h row['table'] %> <small class="secondary">(<%=row['tableid']%>)</small></td>
+      <td><%= h row['schema_name'] %></td>
+      <td><%= h row['table_name'] %> <small class="secondary">(<%=row['table_id']%>)</small></td>
       <td nowrap="nowrap"><%= (row['size_in_mb'].to_i / 1000.0).round(2) %></td>
       <td>
         <% if row['sort_keys'].present? %>

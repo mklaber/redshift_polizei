@@ -11,3 +11,15 @@ namespace :db do
     require "./app/app"
   end
 end
+
+namespace :auditlog do
+  desc 'Import audit log files into polizei'
+  task :import do
+    Tasks::AuditLog.update_from_s3
+  end
+
+  desc 'Discard old audit log entries'
+  task :retention do
+    Tasks::AuditLog.new.enforce_retention_period
+  end
+end
