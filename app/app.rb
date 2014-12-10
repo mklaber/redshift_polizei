@@ -168,7 +168,7 @@ class Polizei < Sinatra::Application
   end
   
   get '/tables' do
-    @tables = Reports::Table.new.run
+    @tables = Reports::Table.new.retrieve
     erb :tables, :locals => { :name => :tables }
   end
 

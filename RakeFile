@@ -12,14 +12,23 @@ namespace :db do
   end
 end
 
-namespace :auditlog do
-  desc 'Import audit log files into polizei'
-  task :import do
-    Tasks::AuditLog.update_from_s3
+namespace :redshift do
+  namespace :auditlog do
+    desc 'Import audit log files into polizei'
+    task :auditlog_import do
+      Tasks::AuditLog.update_from_s3
+    end
+
+    desc 'Discard old audit log entries'
+    task :auditlog_retention do
+      Tasks::AuditLog.new.enforce_retention_period
+    end
   end
 
-  desc 'Discard old audit log entries'
-  task :retention do
-    Tasks::AuditLog.new.enforce_retention_period
+  namespace :tablereport do
+    desc 'Update tables report'
+    task :update do
+      Reports::Table.new.run
+    end
   end
 end

@@ -16,8 +16,8 @@
   <tbody>
   <% @tables.each do |row| %>
     <tr>
-      <td><%= h row['schema_name'] %></td>
-      <td><%= h row['table_name'] %> <small class="secondary">(<%=row['table_id']%>)</small></td>
+      <td><%= row['schema_name'] %></td>
+      <td><%= row['table_name'] %> <small class="secondary">(<%=row['table_id']%>)</small></td>
       <td nowrap="nowrap"><%= (row['size_in_mb'].to_i / 1000.0).round(2) %></td>
       <td>
         <% if row['sort_keys'].present? %>
