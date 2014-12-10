@@ -24,7 +24,7 @@ set :shared_path,     "#{deploy_to}/shared"
 set :user,            "deploy"
 set :runner,          "deploy"
 set :keep_releases,   5
-set :yaml_files,      ['database']
+set :yaml_files,      ['database', 'aws', 'auth', 'cache']
 set :use_sudo,        false 
 default_run_options[:pty] = true
 set :ssh_options, {:forward_agent => true,
@@ -42,6 +42,7 @@ end
 
 before "deploy:migrate", "config:setup"
 after "deploy:update_code", "config:setup"
+after "deploy:restart", "deploy:migrate"
 
 namespace :deploy do
   [:start, :stop].each do |t|
@@ -54,7 +55,7 @@ namespace :deploy do
   end
   
   task :migrate, :roles => :app do
-    run "rake db:migrate RAILS_ENV=#{rails_env}"
+    run "cd #{current_path}; bundle exec rake db:migrate RAILS_ENV=#{rails_env}"
   end
 end
 

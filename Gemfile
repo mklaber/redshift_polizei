@@ -1,5 +1,6 @@
 source 'https://rubygems.org'
 
+gem 'rake'
 gem 'sinatra'
 gem 'omniauth-google-oauth2'
 gem 'mail' # mail address parsing
