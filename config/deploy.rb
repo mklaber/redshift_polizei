@@ -40,7 +40,6 @@ task :staging do
   #role :cron, "www-staging.analyticsmediagroup.com"
 end
 
-before "deploy:migrate", "config:setup"
 after "deploy:update_code", "config:setup"
 after "deploy:restart", "deploy:migrate"
 
