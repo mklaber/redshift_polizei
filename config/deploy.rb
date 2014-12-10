@@ -55,7 +55,7 @@ namespace :deploy do
   end
   
   task :migrate, :roles => :app do
-    run "cd #{current_path}; bundle exec rake db:migrate RAILS_ENV=#{rails_env}"
+    run "cd #{current_path}; bundle exec rake db:migrate RACK_ENV=#{rails_env}"
   end
 end
 
