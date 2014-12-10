@@ -20,6 +20,10 @@ class PolizeiLogger < Logger
   alias :write :'<<'
   alias :puts :'<<'
 
+  def flush
+    # TODO needed on deployment machine
+  end
+
   #
   # convenience method to log an exception
   #
