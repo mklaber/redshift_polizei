@@ -161,6 +161,7 @@ DEPENDENCIES
   pg
   puma
   rack_csrf
+  rake
   ruby-prof
   rvm-capistrano
   shotgun

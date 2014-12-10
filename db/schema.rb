@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 6) do
+ActiveRecord::Schema.define(version: 7) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -47,6 +47,23 @@ ActiveRecord::Schema.define(version: 6) do
     t.datetime "updated_at"
     t.integer  "query_type",  null: false
   end
+
+  create_table "table_reports", force: true do |t|
+    t.string   "schema_name",            null: false
+    t.string   "table_name",             null: false
+    t.integer  "table_id",               null: false
+    t.integer  "size_in_mb",             null: false
+    t.float    "pct_skew_across_slices", null: false
+    t.float    "pct_slices_populated",   null: false
+    t.string   "dist_key"
+    t.json     "sort_keys",              null: false
+    t.boolean  "has_col_encodings",      null: false
+    t.datetime "created_at"
+    t.datetime "updated_at"
+  end
+
+  add_index "table_reports", ["schema_name", "table_name"], name: "index_table_reports_on_schema_name_and_table_name", unique: true, using: :btree
+  add_index "table_reports", ["table_id"], name: "index_table_reports_on_table_id", unique: true, using: :btree
 
   create_table "users", force: true do |t|
     t.string   "email",      null: false
