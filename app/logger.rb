@@ -5,9 +5,9 @@ require 'fileutils'
 # removes color escape character sequences from log messages
 # and write them to file
 #
-class ColorBlindFile
+class ColorBlindLogFile
   def initialize(*args)
-     @target = File.new(*args)
+     @target = File.new(*args, 'a')
   end
 
   def write(*args)
@@ -27,8 +27,8 @@ end
 # common Logger for Sinatra, ActiveRecord and everything else
 #
 class PolizeiLogger < Logger
-  def initialize(logdev)
-    super
+  def initialize(logdev, *args)
+    super(logdev, *args)
     @logdev = logdev
   end
 
@@ -50,8 +50,8 @@ class PolizeiLogger < Logger
         # generate log file name
         logfile = "#{logdirectory}/#{env}.log"
         # open environment log file while removing color coding from messages
-        f = File.open(File.expand_path(logfile, File.dirname(__FILE__ )), "a")
-        @_logger = self.new(ColorBlind.new(f), shift_age='daily')
+        f = File.expand_path(logfile, File.dirname(__FILE__ ))
+        @_logger = self.new(ColorBlindLogFile.new(f), shift_age='daily')
       end
       # set up logger settings
       @_logger.level = Logger::DEBUG
