@@ -1,4 +1,5 @@
 require 'logger'
+require 'fileutils'
 
 #
 # Passes IO actions to multiple IO backends
@@ -58,12 +59,16 @@ class PolizeiLogger < Logger
   end
 
   #
-  # singleton method
+  # singleton method to retrieve logger instance
   #
   def self.logger
     if @_logger.nil?
+      # create log directory if it doesn't exist
+      logdirectory = '../log'
+      FileUtils::mkdir_p File.expand_path(logdirectory, File.dirname(__FILE__ ))
+      # generate log file name
       env = Sinatra::Application.environment
-      logfile = "../log/#{env}.log"
+      logfile = "#{logdirectory}/#{env}.log"
       # open environment log file while removing color coding from messages
       f = File.open(File.expand_path(logfile, File.dirname(__FILE__ )), "a")
       # synchronous log file IO for development
