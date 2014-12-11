@@ -4,6 +4,7 @@ module Reports
   class Table < Base
 
     def run
+      PolizeiLogger.logger.info "Updating Table Reports ..."
       results = self.class.select_all(<<-SQL
         SELECT
           t1.*,
@@ -47,6 +48,7 @@ module Reports
           has_col_encodings: has_column_encodings(tableid)
         })
       end
+      PolizeiLogger.logger.info "... done updating Table Reports"
     end
 
     def retrieve

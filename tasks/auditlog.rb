@@ -14,6 +14,7 @@ module Tasks
     # also runs `enforce_retention_period`
     #
     def self.update_from_s3
+      PolizeiLogger.logger.info "Updating Audit Log from S3 ..."
       logger = PolizeiLogger.logger
       auditlog = self.new
       auditlog.enforce_retention_period
@@ -46,6 +47,7 @@ module Tasks
           raise
         end
       end
+      PolizeiLogger.logger.info "... done updating Audit Log from S3 ..."
     rescue
       raise
     else
