@@ -1,8 +1,9 @@
 require './app/main'
 
-# set :output, "/path/to/my/cron_log.log"
-report_update_frequency = 10.minutes
+every :day, :at => '12pm', :roles => [:app] do
+  rake 'redshift:tablereport:update'
+end
 
-every report_update_frequency do
-  renew_reports
+every :hour, :roles => [:app] do
+  rake 'redshift:auditlog:import'
 end

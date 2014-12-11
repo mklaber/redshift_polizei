@@ -11,6 +11,8 @@ set :rvm_type, :system
 set :rvm_path, '/usr/local/rvm'
 $:.unshift(File.expand_path('./lib', ENV['rvm_path']))
 
+# whenever for cronjobs
+require 'whenever/capistrano'
 
 APP_NAME = 'polizei'
 
@@ -39,6 +41,9 @@ task :staging do
   role :db,   "staging.amg.tv", :primary => true
   #role :cron, "www-staging.analyticsmediagroup.com"
 end
+
+set :whenever_environment, defer { rails_env }
+set :whenever_identifier, defer { "#{application}_#{rails_env}" }
 
 after "deploy:update_code", "config:setup"
 after "deploy:restart", "deploy:migrate"
