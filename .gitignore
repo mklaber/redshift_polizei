@@ -41,3 +41,5 @@ config/shards.yml
 config/aws.yml
 *.swp
 **.swp
+
+log/*

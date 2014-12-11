@@ -21,6 +21,10 @@ class Polizei < Sinatra::Application
     env['rack.errors'] = PolizeiLogger.logger
   end
 
+  after do
+    PolizeiLogger.logger.info "#{request.ip} - #{session[:uid]} \"#{request.request_method} #{request.path}\" #{response.status} "
+  end
+
   # configure OAuth authentication
   use OmniAuth::Builder do
     provider AUTH_CONFIG['provider'], AUTH_CONFIG['client_id'], AUTH_CONFIG['client_secret']
