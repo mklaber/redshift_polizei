@@ -45,6 +45,7 @@ end
 
 set :whenever_environment, defer { rails_env }
 set :whenever_identifier, defer { "#{application}_#{rails_env}" }
+set :whenever_roles, defer { :app }
 
 after "deploy:update_code", "config:setup"
 after "deploy:restart", "deploy:migrate"
