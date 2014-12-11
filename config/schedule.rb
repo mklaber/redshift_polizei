@@ -1,5 +1,3 @@
-require './app/main'
-
 every :day, :at => '12pm', :roles => [:app] do
   rake 'redshift:tablereport:update'
 end

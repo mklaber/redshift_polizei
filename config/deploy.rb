@@ -12,6 +12,7 @@ set :rvm_path, '/usr/local/rvm'
 $:.unshift(File.expand_path('./lib', ENV['rvm_path']))
 
 # whenever for cronjobs
+set :whenever_command, "bundle exec whenever"
 require 'whenever/capistrano'
 
 APP_NAME = 'polizei'
