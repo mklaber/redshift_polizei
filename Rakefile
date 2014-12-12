@@ -32,6 +32,11 @@ namespace :redshift do
     task :retention do
       Tasks::AuditLog.new.enforce_retention_period
     end
+
+    desc 'Rerun the query classification'
+    task :reclassify do
+      Tasks::AuditLog.reclassify_queries
+    end
   end
 
   namespace :tablereport do

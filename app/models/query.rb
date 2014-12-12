@@ -34,6 +34,10 @@ module Models
     def self.query_type(query)
       # determine what kind kind of query
       qstr = strip_comments(query.downcase).strip
+      name_match = qstr.match(/^[a-zA-Z0-9_]+:/)
+      if not(name_match.nil?)
+        qstr = qstr[name_match[0].length, qstr.length].strip
+      end
       is_select   = (qstr.start_with?('select'))
       is_select ||= (qstr.start_with?('show'))
       is_select ||= (qstr.start_with?('set client_encoding'))

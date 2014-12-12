@@ -57,6 +57,16 @@ module Tasks
     end
 
     #
+    # reclassifies queries to be run when the classification logic changed
+    #
+    def self.reclassify_queries
+      Models::Query.all.each do |q|
+        q.query_type = Models::Query.query_type(q.query)
+        q.save
+      end
+    end
+
+    #
     # removes old audit log queries from the database.
     # the cutoff date is retrieved thorugh Models::AuditLogConfig.
     #
