@@ -76,8 +76,8 @@ module Reports
           r['attname']
         end
         distkey = nil
-        tmp = result.select { |r| (r['attisdistkey'] == 'true') }
-        distkey  = tmp[0] if not tmp.empty?
+        tmp = result.select { |r| (r['attisdistkey'] == 't') }
+        distkey = tmp[0]['attname'] if not tmp.empty?
         return sortkeys, distkey
       end
 
