@@ -8,6 +8,8 @@ require 'fileutils'
 class ColorBlindLogFile
   def initialize(*args)
      @target = File.new(*args, 'a')
+     # easier debugging with log files
+     @target.sync = true unless Sinatra::Application.environment == :production
   end
 
   def write(*args)
