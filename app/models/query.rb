@@ -15,6 +15,16 @@ module Models
     # query_type             :integer          not null, 0 => select, 1 => non-select
 
     #
+    # returns the given query to be used when showing in frontend
+    #
+    def self.query_for_display(q)
+      # convert unexpanded newlines
+      t = q.gsub('\n', "\n")
+      t = self.strip_comments(t)
+      t.strip
+    end
+
+    #
     # returns sql query with stripped comments
     # supports:
     # - singe line --
@@ -22,7 +32,7 @@ module Models
     #
     def self.strip_comments(q)
       q = q.gsub(/--(.*)/, '') # singe line -- comments
-      q = q.gsub(/(\/\*).+(\*\/)/m, '') # multi-line /**/ comments
+      q = q.gsub(/(\/\*).+?(\*\/)/m, '') # multi-line /**/ comments
     end
 
     #

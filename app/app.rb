@@ -115,7 +115,7 @@ class Polizei < Sinatra::Application
     queries = query_report.run
     # We want to strip out block comments before passing it on to the view
     queries.each do |q|
-      q["query"] = CodeRay.scan(q["query"].gsub(/(\/\*).+(\*\/)/, '').strip, :sql).div()
+      q["query"] = CodeRay.scan(q.query_for_display, :sql).div()
     end
     { data: queries }.to_json
   end

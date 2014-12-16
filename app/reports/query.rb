@@ -115,7 +115,7 @@ module Reports
           DateTime.parse(q['start_time']).strftime('%F at %T %:z'),
           "#{q['user']} <small class=\"secondary\">(#{q['userid']})<small>",
           q['xid'],
-          CodeRay.scan(q['query'].strip, :sql).div()
+          CodeRay.scan(Models::Query.query_for_display(q['query']), :sql).div()
         ]
       end
       return total_count, filtered_count, queries
@@ -150,7 +150,7 @@ module Reports
             Time.at(q.record_time).strftime('%F at %T %:z'),
             "#{q.user} <small class=\"secondary\">(#{q.userid})<small>",
             q.xid,
-            CodeRay.scan(q.query.strip, :sql).div()
+            CodeRay.scan(Models::Query.query_for_display(q.query), :sql).div()
           ]
         end
       else
