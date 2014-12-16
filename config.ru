@@ -22,6 +22,5 @@ Tilt.register Tilt::ErubisTemplate, "html.erb"
 
 disable :run
 set :views, "#{settings.root}/app/views"
-set :session_secret, '*&(^q24t89y$*q27895#yjknsd%@f4'
 
 run Polizei

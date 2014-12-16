@@ -6,7 +6,9 @@ class Polizei < Sinatra::Application
   
   set :root, File.dirname(__FILE__)
   register Sinatra::AssetPack
-  enable :sessions
+  use Rack::Session::Cookie, :key => 'rack.session',
+                           :expire_after => 86400 * 7, # In seconds
+                           :secret => '*&(^q24t89y$*q27895#yjknsd%@f4'
 
   # setup the custom logger
   configure do
