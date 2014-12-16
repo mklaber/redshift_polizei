@@ -41,7 +41,10 @@ The Audit Log relies on RedShift Audit Logs stored on S3, which is why `Reports:
 
 All Reports can be kept in cache be running `app/renew_reports.rb` regularly. Otherwise the cache will be updated once the reports data is expired and accessed.
 
-TODO describe cronjob and how to run manually
+There are two cronjobs running in the background to keep data up to date. They are rake tasks and can be manually run by executing
+- `rake redshift:auditlog:import`: Retrieves newest queries from the Redshift audit logs.
+- `rake redshift:tablereport:update`: Updates all the table statistics
+The cron jobs are configured using 'whenever' in 'config/schedule.rb' and updated automatically on deployment. To enable them locally run 'whenever --update-crontab'.
 
 Running
 ---------------------
@@ -54,7 +57,6 @@ To get a console
 To deploy
 ---------------------
 `cap staging deploy`
-(or `cap production deploy`, which for the time being actually goes to the same place)
 
 View at
 ---------------------
