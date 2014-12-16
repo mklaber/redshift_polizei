@@ -48,11 +48,11 @@
       </td>
       <td>
         <span class='label label-<%= row['pct_skew_across_slices'].to_f > 100.0 ? 'danger' : 'success' %>'><%= 
-          h number_with_precision(row['pct_skew_across_slices'], :precision=> 1) %>%</span>
+          h number_with_precision(row['pct_skew_across_slices'].round(2), :precision=> 1) %>%</span>
       </td>
       <td>
         <span class='label label-<%= row['pct_slices_populated'].to_f < 50.0 ? 'danger' : 'success' %>'>
-      <%= h row['pct_slices_populated'] %></td>
+      <%= h row['pct_slices_populated'].round(2) %></td>
     </tr >
   <% end %>
   </tbody>

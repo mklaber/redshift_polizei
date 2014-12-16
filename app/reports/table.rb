@@ -47,6 +47,7 @@ module Reports
           dist_key: distkey,
           has_col_encodings: has_column_encodings(tableid)
         })
+        tr.save
       end
       PolizeiLogger.logger.info "... done updating Table Reports"
     end
@@ -90,7 +91,7 @@ module Reports
           AND NOT a.attisdropped
           AND a.attencodingtype <> 0
         SQL
-        self.class.select_all(sql, tableid).empty?
+        not(self.class.select_all(sql, tableid).empty?)
       end
   end
 end
