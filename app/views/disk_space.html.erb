@@ -2,35 +2,35 @@
 <table data-auto="true" class="table table-bordered table-striped table-condensed table-hover">
   <thead>
     <tr>
-      <th>Node</th>
-      <th>Used</th>
-      <th>Capacity</th>
-      <th>Usage %</th>
+      <th class="text-right">Node</th>
+      <th class="text-right">Used</th>
+      <th class="text-right">Capacity</th>
+      <th class="text-right">Usage %</th>
     </tr>
   </thead>
   <tbody>
     <% @disks.each do |disk| %>
       <tr>
         <% if disk["capacity"] == 0 %>
-          <td><%= disk["node"] %></td>
-          <td>n/a</td>
-          <td>n/a</td>
-          <td>n/a</td>
+          <td class="text-right"><%= disk["node"] %></td>
+          <td class="text-right">n/a</td>
+          <td class="text-right">n/a</td>
+          <td class="text-right">n/a</td>
         <% else %>
-          <td><%= disk["node"] %></td>
-          <td><%= disk["used"].round(2) %></td>
-          <td><%= disk["capacity"].round(2) %></td>
-          <td><%= "%.2f%" % (100 * disk["used"].to_f / disk["capacity"].to_f) %></td>
+          <td class="text-right"><%= disk["node"] %></td>
+          <td class="text-right"><%= (disk["used"] / 1024).round(2) %> GB</td>
+          <td class="text-right"><%= (disk["capacity"] / 1024).round(2) %> GB</td>
+          <td class="text-right"><%= "%.2f%" % (100 * disk["used"].to_f / disk["capacity"].to_f) %></td>
         <% end %>
       </tr>
     <% end %>
   </tbody>
   <tfoot>
     <tr class="total success">
-      <td>Total: </td>
-      <td><%= @disks.map { |d| d["used"].to_i}.sum %></td>
-      <td><%= @disks.map { |d| d["capacity"].to_i}.sum %></td>
-      <td><%= "%.2f%" % (100 * @disks.map { |d| d["used"].to_f}.sum / @disks.map { |d| d["capacity"].to_f}.sum)  %></td>
+      <td class="text-right">Total: </td>
+      <td class="text-right"><%= @disks.map { |d| (d["used"] / 1024).to_i}.sum %> GB</td>
+      <td class="text-right"><%= @disks.map { |d| (d["capacity"] / 1024).to_i}.sum %> GB</td>
+      <td class="text-right"><%= "%.2f%" % (100 * @disks.map { |d| d["used"].to_f}.sum / @disks.map { |d| d["capacity"].to_f}.sum)  %></td>
     </tr>
   </tfoot>
 </table>
