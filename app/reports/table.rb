@@ -32,10 +32,7 @@ module Reports
       end
       tableids = [tableids] if not(tableids.is_a?(Array))
 
-      tableids.each do |tableid|
-        PolizeiLogger.logger.info "Updating Table Report (#{tableid}) ..."
-        update_table_report(tableid)
-      end
+      update_table_reports(tableids)
       PolizeiLogger.logger.info "... done updating Table Reports"
     end
 
@@ -44,21 +41,22 @@ module Reports
     end
 
     def update_one(tableid)
-      update_table_report(tableid)
+      update_table_reports([tableid])[0]
     end
 
     private
-      def update_table_report(tableid)
-        r = get_table_report(tableid)
-        return nil if r.nil?
-        tr = Models::TableReport.where(schema_name: r[:schema_name],
-          table_name: r[:table_name]).first_or_initialize
-        tr.update_attributes(r)
-        tr.save
-        return r
+      def update_table_reports(tableids)
+        rs = get_table_reports(tableids)
+        rs.each do |r|
+          tr = Models::TableReport.where(schema_name: r[:schema_name],
+            table_name: r[:table_name]).first_or_initialize
+          tr.update_attributes(r)
+          tr.save
+        end
+        return rs
       end
 
-      def get_table_report(tableid)
+      def get_table_reports(tableids)
         sql = <<-SQL
           SELECT
             t1.*,
@@ -82,24 +80,25 @@ module Reports
                   GROUP BY pc.relname, pc.oid, slice)
             GROUP BY tableid) AS t2
           WHERE t1.tableid = t2.tableid
-          AND t1.tableid = %d;
+          AND t1.tableid IN (%s);
         SQL
-        results = self.class.select_all(sql, tableid)
+        results = self.class.select_all(sql, tableids.join(','))
 
         return nil if results.empty?
-        r = results[0]
-        sortkeys, distkey = get_sort_and_dist_keys(tableid)
-        {
-          schema_name: r['schemaname'].strip,
-          table_name: r['tablename'].strip,
-          table_id: tableid,
-          size_in_mb: r['size_in_mb'].to_i,
-          pct_skew_across_slices: r['pct_skew_across_slices'].to_f,
-          pct_slices_populated: r['pct_slices_populated'].to_f,
-          sort_keys: sortkeys.to_json,
-          dist_key: distkey,
-          has_col_encodings: has_column_encodings(tableid)
-        }
+        results.map do |r|
+          sortkeys, distkey = get_sort_and_dist_keys(r['tableid'])
+          {
+            schema_name: r['schemaname'].strip,
+            table_name: r['tablename'].strip,
+            table_id: r['tableid'],
+            size_in_mb: r['size_in_mb'].to_i,
+            pct_skew_across_slices: r['pct_skew_across_slices'].to_f,
+            pct_slices_populated: r['pct_slices_populated'].to_f,
+            sort_keys: sortkeys.to_json,
+            dist_key: distkey,
+            has_col_encodings: has_column_encodings(r['tableid'])
+          }
+        end
       end
 
       def get_sort_and_dist_keys(tableid)
