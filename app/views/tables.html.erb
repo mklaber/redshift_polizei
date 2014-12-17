@@ -1,6 +1,6 @@
 <h2 name="tables" id="tables">Tables</h2>
 
-<table data-auto="true" style="display: none;" class="table table-bordered table-striped table-condensed table-hover">
+<table id="tablereports" data-auto="true" style="display: none;" class="table table-bordered table-striped table-condensed table-hover">
   <thead>
     <tr>
       <th>Schema</th>
@@ -10,7 +10,8 @@
       <th>Distribution Key</th>
       <th>Column Encoding</th>
       <th>% Skew Across Slices <small class="secondary">(lower better)</small></th>
-      <th>% Slices Populated <small class="secondary">(higher better)</small</th>
+      <th>% Slices Populated <small class="secondary">(higher better)</small></th>
+      <th class="text-center"></th>
     </tr>
   </thead>
   <tbody>
@@ -18,7 +19,7 @@
     <tr>
       <td><%= row['schema_name'] %></td>
       <td><%= row['table_name'] %> <small class="secondary">(<%=row['table_id']%>)</small></td>
-      <td nowrap="nowrap"><%= (row['size_in_mb'].to_i / 1000.0).round(2) %></td>
+      <td nowrap="nowrap"><%= (row['size_in_mb'].to_i / 1024.0).round(2) %></td>
       <td>
         <% if row['sort_keys'].present? %>
           <%= row['sort_keys'].collect{|k|
@@ -52,14 +53,11 @@
       </td>
       <td>
         <span class='label label-<%= row['pct_slices_populated'].to_f < 50.0 ? 'danger' : 'success' %>'>
-      <%= h row['pct_slices_populated'].round(2) %></td>
+      <%= h row['pct_slices_populated'].round(2) %>%</span></td>
+      <td class="text-center"><button id="update_button_<%= row['table_id'] %>" type="button" data-id="<%= row['table_id'] %>" class="tbl-update btn btn-info btn-xs">Update</button><img id="loading_img_<%= row['table_id'] %>"src="/images/ajax-loader.gif" style="display: none; height: 20px;" /></td>
     </tr >
   <% end %>
   </tbody>
 </table>
 
-
-
-
-
-
+<script type="text/javascript" src="/javascripts/tables.js"></script>

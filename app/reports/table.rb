@@ -3,42 +3,80 @@ require './app/main'
 module Reports
   class Table < Base
 
-    def run
+    def run(tableids=nil)
       PolizeiLogger.logger.info "Updating Table Reports ..."
-      results = self.class.select_all(<<-SQL
-        SELECT
-          t1.*,
-          100 * CAST(t2.max_blocks_per_slice - t2.min_blocks_per_slice AS FLOAT)
-              / CASE WHEN (t2.min_blocks_per_slice = 0)
-                     THEN 1 ELSE t2.min_blocks_per_slice END AS pct_skew_across_slices,
-          CAST(100 * t2.slice_count AS FLOAT) / (SELECT COUNT(*) FROM STV_SLICES) AS pct_slices_populated
-        FROM
-          (SELECT
-            n.nspname AS schemaname,
-            c.relname AS tablename,
-            c.oid AS tableid,
-            (SELECT COUNT(*) FROM STV_BLOCKLIST b WHERE b.tbl = c.oid) AS size_in_mb
-          FROM pg_namespace n, pg_class c
+      if tableids.nil? || tableids.empty?
+        results = self.class.select_all(<<-SQL
+          SELECT c.oid AS tableid
+          FROM pg_class c, pg_namespace n
           WHERE n.oid = c.relnamespace
-          AND nspname NOT IN ('pg_catalog', 'pg_toast', 'information_schema')) AS t1,
-          (SELECT tableid, MIN(c) AS min_blocks_per_slice, MAX(c) AS max_blocks_per_slice, COUNT(DISTINCT slice) AS slice_count
-          FROM (SELECT pc.oid AS tableid, slice, COUNT(*) AS c
-                FROM pg_class pc, STV_BLOCKLIST b
-                WHERE pc.oid = b.tbl
-                GROUP BY pc.relname, pc.oid, slice)
-          GROUP BY tableid) AS t2
-        WHERE t1.tableid = t2.tableid;
-      SQL
-      )
+          AND n.nspname NOT IN ('pg_catalog', 'pg_toast', 'information_schema');
+        SQL
+        )
+        tableids = results.map { |r| r['tableid'].to_i }
+      end
+      tableids = [tableids] if not(tableids.is_a?(Array))
 
-      results.each do |r|
-        tableid = r['tableid'].to_i
+      tableids.each do |tableid|
+        PolizeiLogger.logger.info "Updating Table Report (#{tableid}) ..."
+        update_table_report(tableid)
+      end
+      PolizeiLogger.logger.info "... done updating Table Reports"
+    end
+
+    def retrieve_all
+      Models::TableReport.order(size_in_mb: :desc)
+    end
+
+    def update_one(tableid)
+      update_table_report(tableid)
+    end
+
+    private
+      def update_table_report(tableid)
+        r = get_table_report(tableid)
+        return nil if r.nil?
+        tr = Models::TableReport.where(schema_name: r[:schema_name],
+          table_name: r[:table_name]).first_or_initialize
+        tr.update_attributes(r)
+        tr.save
+        return r
+      end
+
+      def get_table_report(tableid)
+        sql = <<-SQL
+          SELECT
+            t1.*,
+            100 * CAST(t2.max_blocks_per_slice - t2.min_blocks_per_slice AS FLOAT)
+                / CASE WHEN (t2.min_blocks_per_slice = 0)
+                       THEN 1 ELSE t2.min_blocks_per_slice END AS pct_skew_across_slices,
+            CAST(100 * t2.slice_count AS FLOAT) / (SELECT COUNT(*) FROM STV_SLICES) AS pct_slices_populated
+          FROM
+            (SELECT
+              n.nspname AS schemaname,
+              c.relname AS tablename,
+              c.oid AS tableid,
+              (SELECT COUNT(*) FROM STV_BLOCKLIST b WHERE b.tbl = c.oid) AS size_in_mb
+            FROM pg_namespace n, pg_class c
+            WHERE n.oid = c.relnamespace
+            AND nspname NOT IN ('pg_catalog', 'pg_toast', 'information_schema')) AS t1,
+            (SELECT tableid, MIN(c) AS min_blocks_per_slice, MAX(c) AS max_blocks_per_slice, COUNT(DISTINCT slice) AS slice_count
+            FROM (SELECT pc.oid AS tableid, slice, COUNT(*) AS c
+                  FROM pg_class pc, STV_BLOCKLIST b
+                  WHERE pc.oid = b.tbl
+                  GROUP BY pc.relname, pc.oid, slice)
+            GROUP BY tableid) AS t2
+          WHERE t1.tableid = t2.tableid
+          AND t1.tableid = %d;
+        SQL
+        results = self.class.select_all(sql, tableid)
+
+        return nil if results.empty?
+        r = results[0]
         sortkeys, distkey = get_sort_and_dist_keys(tableid)
-        tr = Models::TableReport.where(schema_name: r['schemaname'],
-          table_name: r['tablename']).first_or_initialize
-        tr.update_attributes({
-          schema_name: r['schemaname'],
-          table_name: r['tablename'],
+        {
+          schema_name: r['schemaname'].strip,
+          table_name: r['tablename'].strip,
           table_id: tableid,
           size_in_mb: r['size_in_mb'].to_i,
           pct_skew_across_slices: r['pct_skew_across_slices'].to_f,
@@ -46,17 +84,9 @@ module Reports
           sort_keys: sortkeys.to_json,
           dist_key: distkey,
           has_col_encodings: has_column_encodings(tableid)
-        })
-        tr.save
+        }
       end
-      PolizeiLogger.logger.info "... done updating Table Reports"
-    end
 
-    def retrieve
-      Models::TableReport.order(size_in_mb: :desc)
-    end
-
-    private
       def get_sort_and_dist_keys(tableid)
         sql = <<-SQL
           SELECT
@@ -97,5 +127,5 @@ module Reports
 end
 
 if __FILE__ == $0
-  Reports::Table.new.run
+  Reports::Table.new.run(ARGV)
 end

@@ -115,7 +115,7 @@ class Polizei < Sinatra::Application
     queries = query_report.run
     # We want to strip out block comments before passing it on to the view
     queries.each do |q|
-      q["query"] = CodeRay.scan(q.query_for_display, :sql).div()
+      q["query"] = CodeRay.scan(Models::Query.query_for_display(q['query']), :sql).div()
     end
     { data: queries }.to_json
   end
@@ -174,8 +174,12 @@ class Polizei < Sinatra::Application
   end
   
   get '/tables' do
-    @tables = Reports::Table.new.retrieve
+    @tables = Reports::Table.new.retrieve_all
     erb :tables, :locals => { :name => :tables }
+  end
+
+  get '/tables/report' do
+    Reports::Table.new.update_one(params[:tableid]).to_json
   end
 
   get '/permissions' do
