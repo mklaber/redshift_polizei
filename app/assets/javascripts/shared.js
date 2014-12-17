@@ -74,7 +74,8 @@ $.fn.dataTable.pipeline = function (opts) {
                 "data":     request,
                 "dataType": "json",
                 "cache":    false,
-                "success":  function (json) {
+                "timeout":  15000,
+                "success":  function (json, textStatus, req) {
                     cacheLastJson = $.extend(true, {}, json);
 
                     if (cacheLower != drawStart) {
@@ -83,6 +84,11 @@ $.fn.dataTable.pipeline = function (opts) {
                     json.data.splice(requestLength, json.data.length);
 
                     drawCallback(json);
+                },
+                "error": function (req, textStatus, errorThrown) {
+                    var errorContainer = 'div#' + settings.sTableId + '_processing';
+                    var errorMsg = "Error loading table date, reason: '" + textStatus + "'";
+                    $(errorContainer).text(errorMsg);
                 }
             });
         } else {
@@ -122,8 +128,14 @@ $.fn.dataTable.ajaxload = function (opts) {
             "data":     request,
             "dataType": "json",
             "cache":    false,
-            "success":  function (json) {
+            "timeout":  15000,
+            "success":  function (json, textStatus, req) {
                 drawCallback(json);
+            },
+            "error": function (req, textStatus, errorThrown) {
+                var errorContainer = 'table#' + settings.sTableId + ' td.dataTables_empty';
+                var errorMsg = "Error loading table date, reason: '" + textStatus + "'";
+                $(errorContainer).text(errorMsg);
             }
         });
     };
