@@ -41,7 +41,7 @@ class Polizei < Sinatra::Application
 
     # The second parameter defines where the compressed version will be served.
     # (Note: that parameter is optional, AssetPack will figure it out.)
-    js :application, '/javascripts/application.js', [
+    js :application, [
       '/javascripts/lib/jquery-1.10.2.min.js',
       '/javascripts/lib/bootstrap.min.js',
       '/javascripts/lib/jquery.dataTables.min.js',
@@ -49,7 +49,9 @@ class Polizei < Sinatra::Application
       '/javascripts/lib/dataTables.bootstrap.min.js',
       '/javascripts/shared.js'
     ]
-    css :application, '/stylesheets/application.css', [
+    js :tables, ['/javascripts/tables.js']
+    js :queries, ['/javascripts/queries.js']
+    css :application, [
       '/stylesheets/lib/bootstrap.min.css',
       '/stylesheets/lib/font-awesome.min.css',
       '/stylesheets/lib/dataTables.bootstrap.css',
