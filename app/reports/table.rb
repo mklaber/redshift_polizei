@@ -6,11 +6,26 @@ module Reports
     def run(tableids=nil)
       PolizeiLogger.logger.info "Updating Table Reports ..."
       if tableids.nil? || tableids.empty?
+        # retrieve all the table ids to update
         results = self.class.select_all(<<-SQL
-          SELECT c.oid AS tableid
-          FROM pg_class c, pg_namespace n
-          WHERE n.oid = c.relnamespace
-          AND n.nspname NOT IN ('pg_catalog', 'pg_toast', 'information_schema');
+          SELECT
+            t1.tableid AS tableid
+          FROM
+            (SELECT
+              n.nspname AS schemaname,
+              c.relname AS tablename,
+              c.oid AS tableid,
+              (SELECT COUNT(*) FROM STV_BLOCKLIST b WHERE b.tbl = c.oid) AS size_in_mb
+            FROM pg_namespace n, pg_class c
+            WHERE n.oid = c.relnamespace
+            AND nspname NOT IN ('pg_catalog', 'pg_toast', 'information_schema')) AS t1,
+            (SELECT tableid, MIN(c) AS min_blocks_per_slice, MAX(c) AS max_blocks_per_slice, COUNT(DISTINCT slice) AS slice_count
+            FROM (SELECT pc.oid AS tableid, slice, COUNT(*) AS c
+                  FROM pg_class pc, STV_BLOCKLIST b
+                  WHERE pc.oid = b.tbl
+                  GROUP BY pc.relname, pc.oid, slice)
+            GROUP BY tableid) AS t2
+          WHERE t1.tableid = t2.tableid
         SQL
         )
         tableids = results.map { |r| r['tableid'].to_i }
