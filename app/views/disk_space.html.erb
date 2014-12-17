@@ -3,34 +3,26 @@
   <thead>
     <tr>
       <th class="text-right">Node</th>
-      <th class="text-right">Used</th>
-      <th class="text-right">Capacity</th>
       <th class="text-right">Usage %</th>
     </tr>
   </thead>
   <tbody>
     <% @disks.each do |disk| %>
       <tr>
-        <% if disk["capacity"] == 0 %>
+        <% if disk["pct"] == 0 %>
           <td class="text-right"><%= disk["node"] %></td>
-          <td class="text-right">n/a</td>
-          <td class="text-right">n/a</td>
           <td class="text-right">n/a</td>
         <% else %>
           <td class="text-right"><%= disk["node"] %></td>
-          <td class="text-right"><%= (disk["used"] / 1024).round(2) %> GB</td>
-          <td class="text-right"><%= (disk["capacity"] / 1024).round(2) %> GB</td>
-          <td class="text-right"><%= "%.2f%" % (100 * disk["used"].to_f / disk["capacity"].to_f) %></td>
+          <td class="text-right"><%= "%.2f%" % (disk["pct"].to_f) %></td>
         <% end %>
       </tr>
     <% end %>
   </tbody>
   <tfoot>
     <tr class="total success">
-      <td class="text-right">Total: </td>
-      <td class="text-right"><%= @disks.map { |d| (d["used"] / 1024).to_i}.sum %> GB</td>
-      <td class="text-right"><%= @disks.map { |d| (d["capacity"] / 1024).to_i}.sum %> GB</td>
-      <td class="text-right"><%= "%.2f%" % (100 * @disks.map { |d| d["used"].to_f}.sum / @disks.map { |d| d["capacity"].to_f}.sum)  %></td>
+      <td class="text-right">Average: </td>
+      <td class="text-right"><%= "%.2f%" % (100 * @disks.map { |d| d["pct"].to_f}.sum / (@disks.size * 100))  %></td>
     </tr>
   </tfoot>
 </table>

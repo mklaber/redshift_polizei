@@ -12,29 +12,33 @@ module Reports
     def run
       cluster = AWSConfig.cluster_info
       cloudwatch = AWSConfig.cloudwatch_sdk
-      cluster[:cluster_nodes].map do |node|
-        # TODO currently only returns non-empty data for whole cluster instead of individual nodes
-        dimension = {
+      i = 0
+      cluster[:cluster_nodes].select { |node| node[:node_role] != 'LEADER' }.map do |node|
+        dimensions = [{
           name: "ClusterIdentifier",
-          value: cluster[:cluster_parameter_groups][0][:parameter_group_name]
-        }
-        # query results from CloudWatch
-        result = cloudwatch.get_metric_statistics(namespace: "AWS/Redshift",
+          value: AWSConfig['cluster_identifier']
+        },{
+          name: "NodeID",
+          value: "Compute-#{i}"
+        }]
+        i += 1
+        req = {namespace: "AWS/Redshift",
           metric_name: "PercentageDiskSpaceUsed",
-          start_time: (Time.now - 60).iso8601,
+          start_time: (Time.now - 86400).iso8601,
           end_time: (Time.now - 1).iso8601,
-          period: 60, statistics: ["Average"],
-          dimensions: [dimension])
+          period: 86400,
+          statistics: ["Average"],
+          dimensions: dimensions}
+        # query results from CloudWatch
+        result = cloudwatch.get_metric_statistics(req)
         # transform result for frontend
         if result[:datapoints].empty?
           { 'node' => node[:node_role],
-            'used' => 0,
-            'capacity' => 0
+            'pct' => 0,
           }
         else
           { 'node' => node[:node_role],
-            'used' => result[:datapoints][0][:average],
-            'capacity' => 100
+            'pct' => result[:datapoints][0][:average]
           }
         end
       end
