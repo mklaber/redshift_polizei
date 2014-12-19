@@ -14,9 +14,10 @@ $(document).ready(function() {
       {
         'targets': 2,
         'render': function(data, type, row) {
-          var date = $.format.date(row['start_time'], 'dd.MM.yy');
-          var time = $.format.date(row['start_time'], 'HH:mm:ss');
-          return date + ' at ' + time + ' UTC';
+          console.log(row['start_time']);
+          var date = $.format.date(row['start_time'] * 1000, 'MM/dd/yyyy');
+          var time = $.format.date(row['start_time'] * 1000, 'HH:mm:ss');
+          return date + ' at ' + time;
         }
       },
       {
