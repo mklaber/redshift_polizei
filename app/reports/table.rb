@@ -8,24 +8,8 @@ module Reports
       if tableids.nil? || tableids.empty?
         # retrieve all the table ids to update
         results = self.class.select_all(<<-SQL
-          SELECT
-            t1.tableid AS tableid
-          FROM
-            (SELECT
-              n.nspname AS schemaname,
-              c.relname AS tablename,
-              c.oid AS tableid,
-              (SELECT COUNT(*) FROM STV_BLOCKLIST b WHERE b.tbl = c.oid) AS size_in_mb
-            FROM pg_namespace n, pg_class c
-            WHERE n.oid = c.relnamespace
-            AND nspname NOT IN ('pg_catalog', 'pg_toast', 'information_schema')) AS t1,
-            (SELECT tableid, MIN(c) AS min_blocks_per_slice, MAX(c) AS max_blocks_per_slice, COUNT(DISTINCT slice) AS slice_count
-            FROM (SELECT pc.oid AS tableid, slice, COUNT(*) AS c
-                  FROM pg_class pc, STV_BLOCKLIST b
-                  WHERE pc.oid = b.tbl
-                  GROUP BY pc.relname, pc.oid, slice)
-            GROUP BY tableid) AS t2
-          WHERE t1.tableid = t2.tableid
+          SELECT DISTINCT(id) AS tableid
+          FROM stv_tbl_perm
         SQL
         )
         tableids = results.map { |r| r['tableid'].to_i }
@@ -59,15 +43,22 @@ module Reports
       def get_table_reports(tableids)
         sql = <<-SQL
           SELECT
-            t1.*,
+            t0.schemaname,
+            t0.tablename,
+            t0.tableid,
+            t1.size_in_mb,
             100 * CAST(t2.max_blocks_per_slice - t2.min_blocks_per_slice AS FLOAT)
                 / CASE WHEN (t2.min_blocks_per_slice = 0)
                        THEN 1 ELSE t2.min_blocks_per_slice END AS pct_skew_across_slices,
             CAST(100 * t2.slice_count AS FLOAT) / (SELECT COUNT(*) FROM STV_SLICES) AS pct_slices_populated
           FROM
+            (select distinct(id) AS tableid
+            ,trim(nspname) AS schemaname
+            ,trim(relname) AS tablename
+            from stv_tbl_perm
+            join pg_class on pg_class.oid = stv_tbl_perm.id
+            join pg_namespace on pg_namespace.oid = relnamespace) AS t0,
             (SELECT
-              n.nspname AS schemaname,
-              c.relname AS tablename,
               c.oid AS tableid,
               (SELECT COUNT(*) FROM STV_BLOCKLIST b WHERE b.tbl = c.oid) AS size_in_mb
             FROM pg_namespace n, pg_class c
@@ -80,11 +71,11 @@ module Reports
                   GROUP BY pc.relname, pc.oid, slice)
             GROUP BY tableid) AS t2
           WHERE t1.tableid = t2.tableid
-          AND t1.tableid IN (%s);
+          AND t2.tableid = t0.tableid
+          AND t0.tableid IN (%s);
         SQL
         results = self.class.select_all(sql, tableids.join(','))
 
-        return nil if results.empty?
         results.map do |r|
           sortkeys, distkey = get_sort_and_dist_keys(r['tableid'])
           {
