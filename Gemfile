@@ -19,6 +19,10 @@ gem 'aws-sdk' # dynamodb
 
 gem 'whenever', :require => false # cronjobs
 
+gem 'que' # background jobs
+
+gem 'rack', '1.5.2' # 1.6 leads to NoSuchMethodError as of 12/29/2014
+
 group :development do
   gem 'shotgun'
   gem 'puma'
