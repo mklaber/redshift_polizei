@@ -54,7 +54,7 @@
       <td>
         <span class='label label-<%= row['pct_slices_populated'].to_f < 50.0 ? 'danger' : 'success' %>'>
       <%= h row['pct_slices_populated'].round(2) %>%</span></td>
-      <td class="text-center"><button id="update_button_<%= row['table_id'] %>" type="button" data-id="<%= row['table_id'] %>" class="tbl-update btn btn-info btn-xs">Update</button><img id="loading_img_<%= row['table_id'] %>"src="/images/ajax-loader.gif" style="display: none; height: 20px;" /></td>
+      <td class="text-center"><button id="update_button_<%= row['table_id'] %>" type="button" data-id="<%= row['table_id'] %>" class="tbl-update btn btn-info btn-xs">Update</button><%= img '/images/ajax-loader.gif', id: "loading_img_#{row['table_id']}", height: '25px', style: 'display: none;' %></td>
     </tr >
   <% end %>
   </tbody>
