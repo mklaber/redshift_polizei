@@ -2,17 +2,6 @@ $: << File.join(File.dirname(__FILE__), 'app')
 
 require 'bundler'
 Bundler.require
-require './app/app'
-
-# set activerecords logger
-ActiveRecord::Base.logger = PolizeiLogger.logger
-# Rake error handling should use our logger
-class Rake::Application
-  def display_error_message(ex)
-    PolizeiLogger.logger.exception ex
-  end
-end
-
 # activerecord tasks
 require "sinatra/activerecord/rake"
 namespace :db do
@@ -20,6 +9,23 @@ namespace :db do
     require "./app/app"
   end
 end
+# load que rake tasks
+require 'que/rake_tasks'
+
+require './app/main'
+
+# Rake error handling should use our logger
+class Rake::Application
+  def display_error_message(ex)
+    PolizeiLogger.logger.exception ex
+  end
+end
+
+task :environment do
+  ENV["RACK_ENV"] || 'development'
+end
+
+
 
 namespace :redshift do
   namespace :auditlog do

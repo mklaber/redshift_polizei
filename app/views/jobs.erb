@@ -1,0 +1,53 @@
+<div style="overflow: auto;">
+  <div style="float: left;"><h2>Jobs</h2></div>
+  <div style="float: right;">
+    <h3>
+      <a href="/export/" style=""><span class="label label-primary">Create Export</span></a>
+    </h3>
+  </div>
+</div>
+
+<table id="jobs" data-auto="true" class="table table-bordered table-striped table-condensed table-hover">
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Creator</th>
+      <th>Format</th>
+      <th>Status</th>
+      <th>SQL</th>
+    </tr>
+  </thead>
+  <tbody>
+    <% @jobs.each do |job| %>
+      <tr href="/export/<%= h job['id'] %>">
+        <td>
+          <a href="/export/<%= h job['id'] %>">
+            <%= h job['name'] %>
+          </a></td>
+        <td><a href="mailto:<%= h Models::User.find(job['user_id']).email %>"><%= h Models::User.find(job['user_id']).name %></a></td>
+        <td><%= h job['export_format'] %></td>
+        <td>
+          <% if job['status'].empty? %>
+          <span class="label label-default">Not queued</span>
+          <% else %>
+            <% job['status'].each do |run| %>
+              <% if run.done? %>
+                <span class="label label-success">Completed at <%= run.done_time.strftime('%F %T UTC') %> for <%= run.user.name %></span>
+              <% elsif run.failed? %>
+                <span class="label label-danger">Failed at <%= run.done_time.strftime('%F %T UTC') %> for <%= run.user.name %></span>
+              <% elsif run.running? %>
+                <span class="label label-warning">Running since <%= run.run_time %> for <%= run.user.name %></span>
+              <% elsif run.queued? %>
+                <span class="label label-info">Queued at <%= run.queue_time %> for <%= run.user.name %></span>
+              <% end %>
+              <br />
+            <% end %>
+          <% end %>
+        </td>
+        <td><%= CodeRay.scan(job['query'].strip, :sql).div() %></td>
+      </tr>
+    <% end %>
+  </tbody>
+</table>
+
+<%= js :jobs %>

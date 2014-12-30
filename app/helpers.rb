@@ -5,6 +5,11 @@ helpers do
     (not(session[:uid].nil?) && Models::User.exists?(session[:uid]))
   end
 
+  def current_user
+    return nil if not(logged_in?)
+    Models::User.find(session[:uid])
+  end
+
   def link_to(body, url = nil, html_options = {})
     url = body if url.nil?
     s = "<a href='#{url}'"

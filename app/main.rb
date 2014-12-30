@@ -11,6 +11,8 @@ require 'erubis'
 require 'coderay'
 require 'action_view'
 require 'aws'
+require 'que'
+require 'action_mailer'
 
 require './app/monkey_patches'
 require './app/helpers'
@@ -20,4 +22,9 @@ require './app/logger'
 
 require './tasks/auditlog'
 
-Dir.glob('./app/{models,reports,caches}/*.rb').sort.each { |file| require file }
+Dir.glob('./lib/*.rb').sort.each { |file| require file }
+Dir.glob('./app/{models,reports,caches,jobs,mailers}/*.rb').sort.each { |file| require file }
+
+Tilt.register Tilt::ErubisTemplate, "html.erb"
+
+ActiveRecord::Base.logger = PolizeiLogger.logger

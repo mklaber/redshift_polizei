@@ -5,7 +5,8 @@ $.fn.dataTable.pipeline = function (opts) {
         url: '',      // script url
         data: null,   // function or object with parameters to send to the server
                       // matching how `ajax.data` works in DataTables
-        method: 'GET' // Ajax HTTP method
+        method: 'GET',// Ajax HTTP method
+        cacheInit: null
     }, opts);
 
     // Private variables for storing the cache
@@ -13,6 +14,13 @@ $.fn.dataTable.pipeline = function (opts) {
     var cacheUpper = null;
     var cacheLastRequest = null;
     var cacheLastJson = null;
+    var requestImmutable = false;
+    if (conf.cacheInit != null) {
+        requestImmutable = true;
+        cacheLower = 0;
+        cacheUpper = conf.cacheInit['data'].length;
+        cacheLastJson = conf.cacheInit;
+    }
 
     return function (request, drawCallback, settings) {
         var ajax          = false;
@@ -28,9 +36,10 @@ $.fn.dataTable.pipeline = function (opts) {
         } else if (cacheLower < 0 || requestStart < cacheLower || requestEnd > cacheUpper) {
             // outside cached data - need to make a request
             ajax = true;
-        } else if (JSON.stringify(request.order)   !== JSON.stringify(cacheLastRequest.order) ||
-                 JSON.stringify(request.columns) !== JSON.stringify(cacheLastRequest.columns) ||
-                 JSON.stringify(request.search)  !== JSON.stringify(cacheLastRequest.search)) {
+        } else if (!requestImmutable &&
+               (JSON.stringify(request.order)   !== JSON.stringify(cacheLastRequest.order)   ||
+                JSON.stringify(request.columns) !== JSON.stringify(cacheLastRequest.columns) ||
+                JSON.stringify(request.search)  !== JSON.stringify(cacheLastRequest.search))) {
             // properties changed (ordering, columns, searching)
             ajax = true;
         }
@@ -155,7 +164,7 @@ function datatable_init(table, options) {
         datatable_server_init(table, options);
     else if($(table).attr('data-ajax'))
         datatable_ajax_init(table, $(table).attr('data-ajax'), options);
-    else
+    else if ($(table).attr('data-auto'))
         datatable_client_init(table, options);
     $(table).show();
 }
@@ -278,6 +287,7 @@ $(document).ready(function() {
                     
                     //We create our nifty table to hold results
                     var table = document.createElement("table");
+                    $(table).attr('data-auto', 'true');
                     $(table).addClass("table table-bordered table-striped table-condensed table-hover");
                     
                     //We create the column headers first

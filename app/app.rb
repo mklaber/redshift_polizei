@@ -5,6 +5,7 @@ class Polizei < Sinatra::Application
   AUTH_CONFIG = YAML::load_file(File.join('config', 'auth.yml'))
   
   set :root, File.dirname(__FILE__)
+  set :views, "#{settings.root}/views"
   register Sinatra::AssetPack
   use Rack::Session::Cookie, :key => 'rack.session',
                            :expire_after => 86400 * 7, # In seconds
@@ -51,6 +52,7 @@ class Polizei < Sinatra::Application
     ]
     js :tables, ['/javascripts/tables.js']
     js :queries, ['/javascripts/queries.js']
+    js :jobs, ['/javascripts/jobs.js']
     css :application, [
       '/stylesheets/lib/bootstrap.min.css',
       '/stylesheets/lib/font-awesome.min.css',
@@ -61,7 +63,6 @@ class Polizei < Sinatra::Application
     ]
     js_compression  :jsmin       # Optional
     css_compression :simple      # Optional
-    
     prebuild true
   end
 
@@ -212,6 +213,110 @@ class Polizei < Sinatra::Application
     groupname = params[:value]
     permissions_report = Reports::Permission.new
     @result = permissions_report.get_tables_for_group(groupname).to_json
+  end
+
+  get '/jobs' do
+    @jobs = Models::ExportJob.where("user_id = ? OR public", session[:uid]).order(created_at: :asc).map do |job|
+      new_job = job.attributes
+      new_job['status'] = job.last3_runs
+      new_job
+    end
+    erb :jobs, :locals => { :name => :export }
+  end
+
+  get '/export/?:id?' do
+    if params['id'].nil?
+      @form = { 'export_options' => {} }
+    else
+      @form = Models::ExportJob.find(params['id'].to_i).attributes
+      halt 404 if @form['user_id'] != session[:uid] and not(@form['public'])
+    end
+    erb :export, :locals => { :name => :export }
+  end
+
+  post '/export/?:id?' do
+    @form = params
+    @form['export_options'] = { 'delimiter' => params['csvDelimiter'], 'include_header' => params['csvIncludeHeader'] }
+    @error = nil
+    j = nil
+    if params['id'].nil?
+      j = Models::ExportJob.new
+    else
+      j = Models::ExportJob.find(params[:id].to_i)
+      halt 404 if j['user_id'] != session[:uid] and not(j['public'])
+    end
+    if params['name'].nil? || params['name'].size == 0 || params['query'].nil?|| params['query'].size == 0
+      @error = "Please give at least a name and a query."
+      return erb :export, :locals => { :name => :export }
+    end
+
+    j.update_attributes({
+      name: params['name'],
+      user_id: session[:uid],
+      success_email: params['success_email'],
+      failure_email: params['failure_email'],
+      public: not(params['public'].nil?),
+      query: params['query'],
+      export_format: params['export_format'],
+      export_options: {
+        delimiter: params['csvDelimiter'],
+        include_header: not(params['csvIncludeHeader'].nil?)
+      }.to_json
+    })
+    j.save
+    if params['execute'].to_i != 0
+      # only schedule the job if is not already running for the user
+      if not(j.runs_unfinished(current_user).empty?)
+        @error = "This job is already scheduled/running for you!"
+        return erb :export, :locals => { :name => :export }
+      end
+      if params['redshift_username'].empty? || params['redshift_password'].empty?
+        @error = "You forgot your database credentials!"
+        return erb :export, :locals => { :name => :export }
+      end
+      Jobs::ExportJob.enqueue(j.id, current_user.id, redshift_username: params['redshift_username'], redshift_password: params['redshift_password'])
+    end
+    redirect to('/jobs')
+  end
+
+  post '/query/test' do
+    result = []
+    error = nil
+    begin
+      query_type = Models::Query.query_type(params[:query])
+      if query_type == 0 # select query
+        # save previous connection config
+        previous_conn_config = ActiveRecord::Base.connection_config
+        # construct connection config with users credentials
+        redshift_config = ActiveRecord::Base.configurations["redshift_#{Sinatra::Application.environment}"]
+        redshift_config['username'] = params['redshift']['username']
+        redshift_config['password'] = params['redshift']['password']
+        username = current_user.name # save username, query will fail afterwards, because of different database connection
+        p redshift_config
+        ActiveRecord::Base.establish_connection(redshift_config)
+        # start querying database
+        r = CSVStreams::ActiveRecordCursorReader.new("#{username}_#{Time.now.to_i}", params[:query], fetch_size: 100)
+        begin
+          result = r.read
+        ensure
+          r.close
+          # restore previous connection config
+          ActiveRecord::Base.establish_connection(previous_conn_config)
+        end
+      else
+        error = "Only queries not changing data are allowed!"
+      end
+    rescue ActiveRecord::StatementInvalid => e
+      error = e.message
+    end
+    {
+      draw: params[:draw].to_i,
+      recordsTotal: result.count,
+      recordsFiltered: result.count,
+      data: result.map { |r| r.values },
+      columns: result.map { |r| r.keys }[0] || [],
+      error: error
+    }.to_json
   end
    
   not_found do

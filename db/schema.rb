@@ -11,20 +11,20 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 7) do
+ActiveRecord::Schema.define(version: 8) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
   enable_extension "hstore"
 
-  create_table "audit_log_config", force: true do |t|
+  create_table "audit_log_config", force: :cascade do |t|
     t.integer  "retention_period", default: 2592000, null: false
     t.integer  "last_update",      default: 0,       null: false
     t.datetime "created_at"
     t.datetime "updated_at"
   end
 
-  create_table "cache", force: true do |t|
+  create_table "cache", force: :cascade do |t|
     t.string   "hashid",     null: false
     t.json     "data",       null: false
     t.integer  "expires"
@@ -34,7 +34,47 @@ ActiveRecord::Schema.define(version: 7) do
 
   add_index "cache", ["hashid"], name: "index_cache_on_hashid", unique: true, using: :btree
 
-  create_table "queries", force: true do |t|
+  create_table "export_jobs", force: :cascade do |t|
+    t.string   "name",           null: false
+    t.integer  "user_id",        null: false
+    t.string   "success_email"
+    t.string   "failure_email"
+    t.boolean  "public",         null: false
+    t.text     "query",          null: false
+    t.string   "export_format",  null: false
+    t.json     "export_options", null: false
+    t.datetime "created_at"
+    t.datetime "updated_at"
+  end
+
+  add_index "export_jobs", ["public"], name: "index_export_jobs_on_public", using: :btree
+  add_index "export_jobs", ["user_id"], name: "index_export_jobs_on_user_id", using: :btree
+
+  create_table "job_runs", force: :cascade do |t|
+    t.integer  "job_id",      null: false
+    t.string   "job_class",   null: false
+    t.integer  "user_id",     null: false
+    t.string   "status",      null: false
+    t.datetime "executed_at"
+    t.json     "details",     null: false
+    t.datetime "created_at"
+    t.datetime "updated_at"
+  end
+
+  add_index "job_runs", ["job_id", "job_class"], name: "index_job_runs_on_job_id_and_job_class", using: :btree
+  add_index "job_runs", ["user_id"], name: "index_job_runs_on_user_id", using: :btree
+
+  create_table "que_jobs", primary_key: "queue", force: :cascade do |t|
+    t.integer  "priority",    limit: 2, default: 100,                                        null: false
+    t.datetime "run_at",                default: "now()",                                    null: false
+    t.integer  "job_id",      limit: 8, default: "nextval('que_jobs_job_id_seq'::regclass)", null: false
+    t.text     "job_class",                                                                  null: false
+    t.json     "args",                  default: [],                                         null: false
+    t.integer  "error_count",           default: 0,                                          null: false
+    t.text     "last_error"
+  end
+
+  create_table "queries", force: :cascade do |t|
     t.integer  "record_time", null: false
     t.string   "db",          null: false
     t.string   "user",        null: false
@@ -48,7 +88,7 @@ ActiveRecord::Schema.define(version: 7) do
     t.integer  "query_type",  null: false
   end
 
-  create_table "table_reports", force: true do |t|
+  create_table "table_reports", force: :cascade do |t|
     t.string   "schema_name",            null: false
     t.string   "table_name",             null: false
     t.integer  "table_id",               null: false
@@ -65,7 +105,7 @@ ActiveRecord::Schema.define(version: 7) do
   add_index "table_reports", ["schema_name", "table_name"], name: "index_table_reports_on_schema_name_and_table_name", unique: true, using: :btree
   add_index "table_reports", ["table_id"], name: "index_table_reports_on_table_id", unique: true, using: :btree
 
-  create_table "users", force: true do |t|
+  create_table "users", force: :cascade do |t|
     t.string   "email",      null: false
     t.string   "google_id",  null: false
     t.datetime "created_at"

@@ -12,16 +12,15 @@ gem 'activerecord'
 gem 'sinatra-activerecord'
 gem 'pg'
 gem 'activerecord4-redshift-adapter', github: 'aamine/activerecord4-redshift-adapter'
-gem 'coderay'
+gem 'coderay' # sql pretty printing
 gem 'actionview' # formatting decimals to be 2 places
+gem 'actionmailer' # sending emails
 
-gem 'aws-sdk' # dynamodb
+gem 'aws-sdk' # redshift, cloudwatch, dynamodb
 
 gem 'whenever', :require => false # cronjobs
 
 gem 'que' # background jobs
-
-gem 'rack', '1.5.2' # 1.6 leads to NoSuchMethodError as of 12/29/2014
 
 group :development do
   gem 'shotgun'

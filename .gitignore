@@ -39,6 +39,7 @@ config/cache.yml
 config/auth.yml
 config/shards.yml
 config/aws.yml
+config/mail.yml
 *.swp
 **.swp
 

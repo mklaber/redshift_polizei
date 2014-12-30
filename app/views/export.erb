@@ -1,0 +1,106 @@
+<h2>Export</h2>
+
+<% if not(@error.nil?) %>
+<div class="alert alert-danger" role="alert">
+<%= @error %>
+</div>
+<% end %>
+
+<form class="form-horizontal" role="form" method="POST" action="#">
+  <div class="form-group">
+    <label for="inputJobName" class="col-sm-2 control-label">Job Name</label>
+    <div class="col-sm-3">
+      <input type="text" class="form-control" id="inputJobName" name="name" placeholder="Exporting Media Markets" value="<%= h @form['name'] %>">
+    </div>
+  </div>
+  <div class="form-group">
+    <label for="inputEmailSuccess" class="col-sm-2 control-label">Success E-Mail</label>
+    <div class="col-sm-3">
+      <input type="email" class="form-control" id="inputEmailSuccess" name="success_email" placeholder="success@example.com" value="<%= h @form['success_email'] %>">
+    </div>
+  </div>
+  <div class="form-group">
+    <label for="inputEmailFailure" class="col-sm-2 control-label">Failure E-Mail</label>
+    <div class="col-sm-3">
+      <input type="email" class="form-control" id="inputEmailFailure" name="failure_email" placeholder="failure@example.com" value="<%= h @form['failure_email'] %>">
+    </div>
+  </div>
+  <div class="form-group">
+    <label for="inputPublic" class="col-sm-2 control-label">Public Job?</label>
+    <div class="col-sm-3 checkbox">
+      <input type="checkbox" id="inputPublic" name="public" style="margin-left: 0;" value="true" <%= 'checked' if @form['public'] %>>
+    </div>
+  </div>
+  <div class="form-group" style="border: 1px solid #ddd;">
+    <label for="inputRedshiftUsername" class="col-sm-2 control-label">Redshift Username</label>
+    <div class="col-sm-3">
+      <input type="text" class="form-control" id="inputRedshiftUsername" name="redshift_username" placeholder="username">
+    </div>
+    <label for="inputRedshiftPassword" class="col-sm-2 control-label">Redshift Password</label>
+    <div class="col-sm-3">
+      <input type="password" class="form-control" id="inputRedshiftPassword" name="redshift_password">
+    </div>
+    <div class="col-sm-2">
+      <h5><span class="label label-info">not saved</span></h5>
+    </div>
+  </div>
+  <div class="form-group">
+    <label for="inputSQL" class="col-sm-2 control-label">SQL Query</label>
+    <div class="col-sm-10">
+      <textarea class="form-control" id="inputSQL" name="query" rows="15" style="resize: vertical;" placeholder="SELECT * FROM media_markets;"><%= h @form['query'] %></textarea>
+    </div>
+  </div>
+  <div class="form-group" role="navigation">
+    <label for="inputExportOption" class="col-sm-2 control-label">Export options</label>
+    <input type="hidden" class="form-control" id="inputExportOption" name="export_format" value="<%= h @form['inputExportOption'] %>">
+    <div class="col-sm-10">
+      <ul class="nav nav-tabs" id="export_options">
+        <li role="presentation" class="export_option active"><a href="#">CSV</a></li>
+        <li role="presentation" class="export_option disabled"><a href="#">...</a></li>
+      </ul>
+      <div id="export_option_csv" style="border: 1px solid #ddd; padding: 15px 0px;">
+        <div class="form-group">
+          <label for="inputCsvDelimiter" class="col-sm-2 control-label">Delimiter</label>
+          <div class="col-sm-3">
+            <select id="inputCsvDelimiter" name="csvDelimiter" class="form-control">
+              <option value="," <%= 'selected' if @form['export_options']['delimiter'] == ',' %>>, (comma)</option>
+              <option value="|" <%= 'selected' if @form['export_options']['delimiter'] == '|' %>>| (pipe)</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-group">
+          <div class="checkbox col-sm-offset-2 col-sm-5">
+            <label for="inputCsvIncludeHeader">
+              <input type="checkbox" id="inputCsvIncludeHeader" name="csvIncludeHeader" value="true" <%= 'checked' if @form['export_options']['include_header'] %>>
+              Include the header row in the export
+            </label>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="form-group">
+    <input type="hidden" class="form-control" id="inputExecute" name="execute" value="0">
+    <div class="col-sm-offset-2 col-sm-3">
+      <button id="savejob" type="submit" class="btn btn-block btn-info">Save</button>
+    </div>
+    <div class="col-sm-3">
+      <button id="submitjob" type="submit" class="btn btn-block btn-success">Save &amp; Execute</button>
+    </div>
+    <div class="col-sm-3">
+      <button id="testjob" type="button" class="btn btn-block btn-warning">Test Query (show top 100 rows)</button>
+    </div>
+  </div>
+</form>
+
+
+<div id="querytest_loading" style="width: 100%; text-align: center; display: none;">
+  <%= img '/images/ajax-loader.gif' %>
+</div>
+
+<table id="querytest" style="display: none;" class="table table-bordered table-striped table-condensed table-hover">
+  <thead><tr></tr></thead>
+  <tbody></tbody>
+</table>
+
+<%= js :jobs %>

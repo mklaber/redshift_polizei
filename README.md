@@ -12,6 +12,7 @@ cp config/database.sample.yml config/database.yml
 cp config/auth.sample.yml config/auth.yml
 cp config/aws.sample.yml config/aws.yml
 cp config/cache.sample.yml config/cache.yml
+cp config/mail.sample.yml config/mail.yml
 ```
 
 Configuration
@@ -34,6 +35,8 @@ Configuration
     - uses AWS DynamoDB as a cache
     - type: dynamodb
     - table: {table name}
+5. Set the mail settings in `config/mail.yml`
+  - All settings will be directly injected into ActionMailer 'smtp_settings' (see http://guides.rubyonrails.org/action_mailer_basics.html#action-mailer-configuration)
 
 Data Acquisition
 ---------------------
