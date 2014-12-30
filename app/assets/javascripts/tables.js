@@ -9,6 +9,7 @@ $(document).ready(function() {
       "data":     'tableid=' + tableid,
       "dataType": "json",
       "cache":    false,
+      "timeout":  35000,
       "success":  function (json) {
         json_sort_keys = JSON.parse(json['sort_keys']);
         var dTable = $('table#tablereports').dataTable();
@@ -60,6 +61,11 @@ $(document).ready(function() {
 
         $('button#update_button_' + tableid).show();
         $('img#loading_img_' + tableid).hide();
+      },
+      "error": function (req, textStatus, errorThrown) {
+        $('button#update_button_' + tableid).show();
+        $('img#loading_img_' + tableid).hide();
+        alert("Error loading update, reason: '" + textStatus + "'");
       }
     });
     return false;

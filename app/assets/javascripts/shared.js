@@ -266,6 +266,7 @@ $(document).ready(function() {
                 type: 'GET',
                 url: '/permissions/' + id,
                 data: { "value": selected },
+                timeout:  15000,
                 beforeSend:function(){
                     results.html('<br>Loading....<br><br>'); 
                 },
@@ -305,6 +306,10 @@ $(document).ready(function() {
                     
                     results.append(table);
                     datatable_init(table);
+                },
+                "error": function (req, textStatus, errorThrown) {
+                    results.empty();
+                    alert("Error loading permissions, reason: '" + textStatus + "'");
                 }
             });
         return false;
