@@ -74,12 +74,14 @@ class Polizei < Sinatra::Application
       request.path_info.start_with?('/stylesheets'))
     if not (is_asset || is_login_site || is_auth_site)
       if not logged_in?
+        session[:prev_login_site] = request.path_info
         redirect to('/login')
       end
     end
   end
 
   get '/login' do
+    redirect to('/') if logged_in?
     erb :login
   end
 
@@ -89,6 +91,10 @@ class Polizei < Sinatra::Application
   end
 
   get '/auth/google_oauth2/callback' do
+    # recover site visited before login, so we can redirect there afterwards
+    previous_site = session[:prev_login_site] || '/'
+    session[:prev_login_site] = nil
+    # get auth data from google
     auth_hash = request.env['omniauth.auth']
     google_email = auth_hash['info']['email']
     # make sure only valid domains can login
@@ -101,7 +107,7 @@ class Polizei < Sinatra::Application
     # save user id in session
     session[:uid] = user.id
     # redirect to root site
-    redirect to('/')
+    redirect to(previous_site)
   end
 
   get '/auth/failure' do
