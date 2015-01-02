@@ -28,3 +28,13 @@ Dir.glob('./app/{models,reports,caches,jobs,mailers}/*.rb').sort.each { |file| r
 Tilt.register Tilt::ErubisTemplate, "html.erb"
 
 ActiveRecord::Base.logger = PolizeiLogger.logger
+
+#
+# tricking passenger 4.0.56 into thinking that rails/version is already loaded
+# some gems (e.g. actionmailer) define module 'Rails' leading Passenger to try
+# to preload it, which fails, since this is not a rails app
+#
+module Rails
+  module VERSION
+  end
+end
