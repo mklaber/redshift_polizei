@@ -32,7 +32,7 @@ Capistrano::Configuration.instance.load do
     end
 
     def que_command
-      fetch(:que_command, "#{fetch(:current_path)}/scripts/que")
+      fetch(:que_command, "bundle exec #{fetch(:current_path)}/scripts/que")
     end
 
     desc 'Stop the que process'
