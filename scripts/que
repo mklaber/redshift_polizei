@@ -9,7 +9,9 @@ require 'daemons'
 #
 
 current_dir = Dir.pwd
-Daemons.run_proc(__FILE__) do
+options = {}
+options = { dir_mode: :normal, dir: ARGV[1] } if ARGV.size > 1
+Daemons.run_proc(File.basename(__FILE__), options) do
   Dir.chdir(current_dir)
   Rake.application.init
   Rake.application.load_rakefile

@@ -35,19 +35,23 @@ Capistrano::Configuration.instance.load do
       fetch(:que_command, "bundle exec ./scripts/que")
     end
 
+    def pid_dir
+      fetch(:pid_dir, "#{fetch(:current_path)}/tmp/pids")
+    end
+
     desc 'Stop the que process'
     task :stop, :roles => lambda { roles } do
-      run "cd #{current_path};#{env} #{workers} #{que_command} stop"
+      run "cd #{current_path};#{env} #{workers} #{que_command} stop #{pid_dir}"
     end
 
     desc 'Start the que process'
     task :start, :roles => lambda { roles } do
-      run "cd #{current_path};#{env} #{workers} #{que_command} start"
+      run "cd #{current_path};#{env} #{workers} #{que_command} start #{pid_dir}"
     end
 
     desc 'Restart the que process'
     task :restart, :roles => lambda { roles } do
-      run "cd #{current_path};#{env} #{workers} #{que_command} restart"
+      run "cd #{current_path};#{env} #{workers} #{que_command} restart #{pid_dir}"
     end
   end
 end
