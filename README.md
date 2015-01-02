@@ -38,6 +38,21 @@ Configuration
 5. Set the mail settings in `config/mail.yml`
   - All settings will be directly injected into ActionMailer 'smtp_settings' (see http://guides.rubyonrails.org/action_mailer_basics.html#action-mailer-configuration)
 
+Reports
+---------------------
+1. Running Queries
+Displays currently executing queries on your RedShift cluster. Always retrieved uncached from system table 'stv_inflight'.
+2. Audit Log
+Shows queries which were run on the cluster in the past (by default max 30 days). Retrieved from Postgres database and system table 'SVL_STATEMENTTEXT'. The redshift audit logs are parsed regularly by a cron job to fill the pg database. All queries run after the last available audit log are retrieved uncached from the system table 'svl_statementtext'. The audit log parser can be manually trigger by running `rake redshift:auditlog:import` (see [Data Acquisition](#data-acquisition) below).
+3. Tables
+Displays size, keys, skew and more for all tables. Read from system tables, then saved in Postgres from where the informations is retrieved to display it. Automatically updated via cronjob. Manually updateable with 'rake redshift:tablereport:update' (see [Data Acquisition](#data-acquisition) below) or through the Update button in the web frontend.
+4. Permissions
+Displays permissions users or groups have on tables. Retrieved from system tables and cached as defined in 'cache.yml'
+5. Disk Space
+Retrieved uncached from CloudWatch using the 'PercentageDiskSpaceUsed' metric.
+6. Exports
+Job details are saved and queued in the pg database. Background processes retrieve queued jobs and execute their queries on the cluster, saving the results to S3.
+
 Data Acquisition
 ---------------------
 The Audit Log relies on RedShift Audit Logs stored on S3, which is why `Reports::AuditLog.update_from_s3` has to be run regularly.
