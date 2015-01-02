@@ -32,7 +32,7 @@ Capistrano::Configuration.instance.load do
     end
 
     def que_command
-      fetch(:que_command, 'script/que')
+      fetch(:que_command, 'scripts/que')
     end
 
     desc 'Stop the que process'
