@@ -10,18 +10,19 @@ module Jobs
     end
 
     def run(job_id, user_id, options={})
-      super(job_id, user_id, options)
-      job = Models::ExportJob.find(job_id)
-      user = Models::User.find(user_id)
-      base_connection_id = "redshift_#{Sinatra::Application.environment}".to_sym
-      job_name = job[:name].gsub(/\s+/, '').camelize
-      time = Time.now.utc.strftime('%Y_%m_%dT%H_%M_%S_%LZ')
-      export_id = "polizei_export_#{job.id.to_i}_#{job_name}_#{user.id}_#{user.name}_#{time}"
-      csv_name = "#{export_id}.csv"
-      s3_bucket = AWSConfig['export_bucket']
-      s3_object = csv_name
-
       begin
+        PolizeiLogger.logger.info "Starting to execute export job #{job_id} for user #{user_id}"
+        super(job_id, user_id, options)
+        job = Models::ExportJob.find(job_id)
+        user = Models::User.find(user_id)
+        base_connection_id = "redshift_#{Sinatra::Application.environment}".to_sym
+        job_name = job[:name].gsub(/\s+/, '').camelize
+        time = Time.now.utc.strftime('%Y_%m_%dT%H_%M_%S_%LZ')
+        export_id = "polizei_export_#{job.id.to_i}_#{job_name}_#{user.id}_#{user.name}_#{time}"
+        csv_name = "#{export_id}.csv"
+        s3_bucket = AWSConfig['export_bucket']
+        s3_object = csv_name
+
         # database reader, streams rows without loading everything in memory
         db_reader = CSVStreams::ActiveRecordCustomConnectionCursorReader.new(
           export_id,
@@ -41,8 +42,6 @@ module Jobs
         s3writer = CSVStreams::S3Writer.new(s3_bucket, s3_object)
         s3writer.write_from(csv_reader)
 
-        puts ActionMailer::Base.delivery_method
-        puts ActionMailer::Base.smtp_settings
         Mailers::ExportJob.success_email(job_id, s3writer.public_url).deliver_now
 
         # everything is done, remove the job
@@ -51,6 +50,8 @@ module Jobs
         # error occurred
         failed(error: e.message, backtrace: e.backtrace.join("\n "))
         Mailers::ExportJob.failure_email(job_id, e).deliver_now
+      ensure
+        PolizeiLogger.logger.info "Done executing export job #{job_id} for user #{user_id}"
       end
     end
   end

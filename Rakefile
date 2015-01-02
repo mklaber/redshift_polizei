@@ -1,5 +1,3 @@
-$: << File.join(File.dirname(__FILE__), 'app')
-
 require 'bundler'
 Bundler.require
 # activerecord tasks

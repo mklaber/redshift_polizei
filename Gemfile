@@ -22,6 +22,8 @@ gem 'whenever', :require => false # cronjobs
 
 gem 'que' # background jobs
 
+gem 'daemons' # background processes
+
 group :development do
   gem 'shotgun'
   gem 'puma'
