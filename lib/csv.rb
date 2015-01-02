@@ -148,7 +148,7 @@ module CSVStreams
       redshift_config['username'] = username
       redshift_config['password'] = password
       DummyModelARCursorReader.establish_connection(redshift_config)
-      super(name, query, connection: DummyModelARCursorReader)
+      super(name, query, options.merge(connection: DummyModelARCursorReader))
     end
 
     class DummyModelARCursorReader < ActiveRecord::Base
