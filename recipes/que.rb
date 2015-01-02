@@ -24,7 +24,7 @@ Capistrano::Configuration.instance.load do
     end
 
     def workers
-      fetch(:que_num_workers, false) ? "QUE_WORKER_COUNT#{fetch(:que_num_workers)}" : ''
+      fetch(:que_num_workers, false) ? "QUE_WORKER_COUNT=#{fetch(:que_num_workers)}" : ''
     end
 
     def roles
@@ -37,17 +37,17 @@ Capistrano::Configuration.instance.load do
 
     desc 'Stop the que process'
     task :stop, :roles => lambda { roles } do
-      run "cd #{current_path};#{rails_env} #{workers} #{que_command} stop"
+      run "cd #{current_path};#{env} #{workers} #{que_command} stop"
     end
 
     desc 'Start the que process'
     task :start, :roles => lambda { roles } do
-      run "cd #{current_path};#{rails_env} #{workers} #{que_command} start"
+      run "cd #{current_path};#{env} #{workers} #{que_command} start"
     end
 
     desc 'Restart the que process'
     task :restart, :roles => lambda { roles } do
-      run "cd #{current_path};#{rails_env} #{workers} #{que_command} restart"
+      run "cd #{current_path};#{env} #{workers} #{que_command} restart"
     end
   end
 end
