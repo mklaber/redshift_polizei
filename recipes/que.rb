@@ -20,7 +20,7 @@
 Capistrano::Configuration.instance.load do
   namespace :que do
     def env
-      fetch(:env, false) ? "RACK_ENV=#{fetch(:env)}" : ''
+      fetch(:rails_env, false) ? "RACK_ENV=#{fetch(:rails_env)}" : ''
     end
 
     def workers
