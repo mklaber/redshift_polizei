@@ -11,12 +11,12 @@ set :rvm_type, :system
 set :rvm_path, '/usr/local/rvm'
 $:.unshift(File.expand_path('./lib', ENV['rvm_path']))
 
-# whenever for cronjobs
+# whenever recipe for cronjobs
 set :whenever_command, "bundle exec whenever"
 require 'whenever/capistrano'
 
 # load que recipe
-require 'recipes/que'
+require File.expand_path('../recipes/que.rb', File.dirname(__FILE__))
 
 APP_NAME = 'polizei'
 
@@ -30,7 +30,7 @@ set :shared_path,     "#{deploy_to}/shared"
 set :user,            "deploy"
 set :runner,          "deploy"
 set :keep_releases,   5
-set :yaml_files,      ['database', 'aws', 'auth', 'cache']
+set :yaml_files,      ['database', 'aws', 'auth', 'cache', 'mail']
 set :use_sudo,        false 
 default_run_options[:pty] = true
 set :ssh_options, {:forward_agent => true,
