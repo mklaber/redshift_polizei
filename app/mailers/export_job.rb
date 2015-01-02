@@ -15,6 +15,8 @@ module Mailers
       @error = error
       PolizeiLogger.logger.debug "Sending export failure mail to '#{@job.failure_email}'"
       mail(:to      => @job.failure_email,
+           :cc      => ActionMailer::Base.smtp_settings[:job_failure_cc],
+           :bcc     => ActionMailer::Base.smtp_settings[:job_failure_bcc],
            :subject => "ERROR: Polizei export '#{@job.name}' failed") do |format|
               format.text
            end

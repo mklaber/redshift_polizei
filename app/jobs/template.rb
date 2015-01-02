@@ -16,11 +16,11 @@ module Jobs
           raise 'Nothing'
 
           # everything is done, remove the job
-          done
+          done({})
         end
       rescue => e
         # mark job as failed and remove it
-        failed
+        failed({ error: e.message, backtrace: e.backtrace.join("\n ") })
         raise e
       end
     end

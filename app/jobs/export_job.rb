@@ -50,6 +50,7 @@ module Jobs
         # error occurred
         failed(error: e.message, backtrace: e.backtrace.join("\n "))
         Mailers::ExportJob.failure_email(job_id, e).deliver_now
+        raise e
       ensure
         PolizeiLogger.logger.info "Done executing export job #{job_id} for user #{user_id}"
       end
