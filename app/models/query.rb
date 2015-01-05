@@ -50,11 +50,20 @@ module Models
       end
       is_select   = (qstr.start_with?('select'))
       is_select ||= (qstr.start_with?('show'))
+      is_select ||= (qstr.start_with?('analyze'))
+      is_select ||= (qstr.start_with?('declare'))
+      is_select ||= (qstr.start_with?('fetch'))
+      is_select ||= (qstr.start_with?('close'))
       is_select ||= (qstr.start_with?('set client_encoding'))
       is_select ||= (qstr.start_with?('set statement_timeout'))
       is_select ||= (qstr.start_with?('set query_group'))
       is_select ||= (qstr.start_with?('set search_path'))
       is_select ||= (qstr.start_with?('set datestyle'))
+      is_select ||= (qstr == 'begin;')
+      # select into is a manipulative query!
+      if qstr.start_with?('select') && (m = qstr.match(/select[\s]+into/))
+        is_select ||= false
+      end
       return ((is_select) ? 0 : 1)
     end
   end
