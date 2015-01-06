@@ -62,6 +62,10 @@ There are two cronjobs running in the background to keep data up to date. They a
 - `rake redshift:tablereport:update`: Updates all the table statistics
 The cron jobs are configured using 'whenever' in 'config/schedule.rb' and updated automatically on deployment. To enable them locally run 'whenever --update-crontab'.
 
+Export Execution
+---------------------
+Exports are executed in long-running background processes. To start this background process locally run `./scripts/que run`. On a server capistrano will run `./scripts/que start|restart|stop` to manage these background processes.
+
 Running
 ---------------------
 `shotgun`
