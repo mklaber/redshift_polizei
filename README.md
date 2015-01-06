@@ -45,7 +45,7 @@ Displays currently executing queries on your RedShift cluster. Always retrieved 
 2. Audit Log
 Shows queries which were run on the cluster in the past (by default max 30 days). Retrieved from Postgres database and system table 'SVL_STATEMENTTEXT'. The redshift audit logs are parsed regularly by a cron job to fill the pg database. All queries run after the last available audit log are retrieved uncached from the system table 'svl_statementtext'. The audit log parser can be manually trigger by running `rake redshift:auditlog:import` (see [Data Acquisition](#data-acquisition) below).
 3. Tables
-Displays size, keys, skew and more for all tables. Read from system tables, then saved in Postgres from where the informations is retrieved to display it. Automatically updated via cronjob. Manually updateable with 'rake redshift:tablereport:update' (see [Data Acquisition](#data-acquisition) below) or through the Update button in the web frontend.
+Displays size, keys, skew and more for all tables. Read from system tables, then saved in Postgres from where the informations is retrieved to display it. Automatically updated via cronjob. Manually updateable with `rake redshift:tablereport:update` (see [Data Acquisition](#data-acquisition) below) or through the Update button in the web frontend.
 4. Permissions
 Displays permissions users or groups have on tables. Retrieved from system tables and cached as defined in 'cache.yml'
 5. Disk Space
@@ -55,9 +55,7 @@ Job details are saved and queued in the pg database. Background processes retrie
 
 Data Acquisition
 ---------------------
-The Audit Log relies on RedShift Audit Logs stored on S3, which is why `Reports::AuditLog.update_from_s3` has to be run regularly.
-
-All Reports can be kept in cache be running `app/renew_reports.rb` regularly. Otherwise the cache will be updated once the reports data is expired and accessed.
+All cached and generated data can be updated using `rake reports:update`. This takes quite a long time if there are a lot of audit logs to be parsed. This command can be used to update cached data before the cache expired or to precache on new deployments.
 
 There are two cronjobs running in the background to keep data up to date. They are rake tasks and can be manually run by executing
 - `rake redshift:auditlog:import`: Retrieves newest queries from the Redshift audit logs.

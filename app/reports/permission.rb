@@ -10,7 +10,7 @@ module Reports
     def run
       users, groups, tables = self.result
       users.each  { |user| self.get_tables_for_user(user) }
-      groups.each { |group| self.get_tables_with_group(group) }
+      groups.each { |group| self.get_tables_for_group(group) }
       tables.each do |table|
         table_parts = table.split("-->")
         self.get_users_with_access(table_parts[0], table_parts[1])

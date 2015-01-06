@@ -6,9 +6,16 @@ module Reports
   class Query < Base
 
     #
-    # retrieves currently still executing queries
+    # updates audit log of past queries
     #
     def run
+      Tasks::AuditLog.update_from_s3
+    end
+
+    #
+    # retrieves currently still executing queries
+    #
+    def running
       sql = self.class.sanitize_sql(<<-SQL
         select
           'STV_INFLIGHT' as "source",

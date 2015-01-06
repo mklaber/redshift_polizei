@@ -24,6 +24,12 @@ task :environment do
 end
 
 
+namespace :reports do
+  desc 'Updates the caches of all reports'
+  task :update do
+    Tasks::ReportsUpdate.renew_all
+  end
+end
 
 namespace :redshift do
   namespace :auditlog do

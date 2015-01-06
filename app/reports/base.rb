@@ -22,7 +22,7 @@ module Reports
     end
 
     #
-    # commong base method to cache Reports if possible
+    # commong base method to update caches of Report
     #
     def run
       raise NotImplementedError
