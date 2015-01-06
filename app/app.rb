@@ -121,7 +121,7 @@ class Polizei < Sinatra::Application
 
   get '/queries/running' do
     query_report = Reports::Query.new
-    queries = query_report.run
+    queries = query_report.running_queries
     # We want to strip out block comments before passing it on to the view
     queries.each do |q|
       q["query"] = CodeRay.scan(Models::Query.query_for_display(q['query']), :sql).div()

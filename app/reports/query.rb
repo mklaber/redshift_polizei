@@ -15,7 +15,7 @@ module Reports
     #
     # retrieves currently still executing queries
     #
-    def running
+    def running_queries
       sql = self.class.sanitize_sql(<<-SQL
         select
           'STV_INFLIGHT' as "source",
