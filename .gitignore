@@ -44,3 +44,5 @@ config/mail.yml
 **.swp
 
 log/*
+
+*.pid
