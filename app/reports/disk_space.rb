@@ -1,6 +1,7 @@
 module Reports
   #
   # Report retrieving disk space usage directly from cluster using SQL
+  # also includes additional internal memory allocated by RedShift for operations
   #
   class DiskSpace < Base
 
