@@ -144,7 +144,8 @@ module CSVStreams
   class ActiveRecordCustomConnectionCursorReader < ActiveRecordCursorReader
     def initialize(name, query, configuration, username, password, options={})
       # construct connection config with the provided credentials
-      redshift_config = ActiveRecord::Base.configurations[configuration.to_s]
+      # important to clone the config, otherwise we'll chnage the ActiveRecord internal connection credentials
+      redshift_config = ActiveRecord::Base.configurations[configuration.to_s].clone
       redshift_config['username'] = username
       redshift_config['password'] = password
       DummyModelARCursorReader.establish_connection(redshift_config)
