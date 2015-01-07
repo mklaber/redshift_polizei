@@ -2,15 +2,10 @@ require 'bundler'
 Bundler.require
 # activerecord tasks
 require "sinatra/activerecord/rake"
-namespace :db do
-  task :load_config do
-    require "./app/app"
-  end
-end
 # load que rake tasks
 require 'que/rake_tasks'
 
-require './app/main'
+require './app/app'
 
 # Rake error handling should use our logger
 class Rake::Application
