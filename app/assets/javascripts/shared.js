@@ -83,7 +83,7 @@ $.fn.dataTable.pipeline = function (opts) {
                 "data":     request,
                 "dataType": "json",
                 "cache":    false,
-                "timeout":  15000,
+                "timeout":  30000,
                 "success":  function (json, textStatus, req) {
                     cacheLastJson = $.extend(true, {}, json);
 
