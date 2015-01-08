@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 9) do
+ActiveRecord::Schema.define(version: 10) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -87,6 +87,7 @@ ActiveRecord::Schema.define(version: 9) do
     t.integer  "query_type",  null: false
   end
 
+  add_index "queries", ["query_type"], name: "index_queries_on_query_type", using: :btree
   add_index "queries", ["record_time"], name: "index_queries_on_record_time", order: {"record_time"=>:desc}, using: :btree
 
   create_table "table_reports", force: :cascade do |t|
