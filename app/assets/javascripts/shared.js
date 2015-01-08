@@ -96,7 +96,7 @@ $.fn.dataTable.pipeline = function (opts) {
                 },
                 "error": function (req, textStatus, errorThrown) {
                     var errorContainer = 'div#' + settings.sTableId + '_processing';
-                    var errorMsg = "Error loading table date, reason: '" + textStatus + "'";
+                    var errorMsg = "Error loading table data, reason: '" + textStatus + "'";
                     $(errorContainer).text(errorMsg);
                 }
             });
