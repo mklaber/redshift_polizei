@@ -98,7 +98,7 @@ module Reports
       SQL
       sql_from += " and TIMESTAMP_CMP(queries.starttime, '#{new_queries_from}') > 0" if not new_queries_from.nil?
       sql_filter  = ''
-      sql_filter += " and queries.user LIKE '%%%s%%' OR queries.query LIKE '%%%s%%'" if not (search.nil? || search.empty?)
+      sql_filter += " and users.usename LIKE '%%%s%%' OR queries.text LIKE '%%%s%%'" if not (search.nil? || search.empty?)
       columns = [ 'queries.starttime', 'users.usename', 'queries.xid', 'queries.text' ]
       sql_order  = ''
       sql_order += " order by #{columns[order]}"
