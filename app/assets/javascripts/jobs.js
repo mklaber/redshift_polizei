@@ -7,6 +7,11 @@ $(document).ready(function() {
   $('table#jobs > tbody > tr').click(function() {
     window.document.location = $(this).attr("href");
   });
+  // tooltip for email input fields in export jobs
+  $('#inputEmailSuccess, #inputEmailFailure').tooltip({
+    'trigger': 'focus',
+    'title': 'whoever executes the export receives all emails by default, comma-separate multiple additional emails'
+  });
   $('input#inputExportOption').val(
     $('#export_options > li.export_option.active').text().toLowerCase()
   );
@@ -58,7 +63,6 @@ $(document).ready(function() {
       },
       "dataType": 'json',
       "cache":    false,
-      "timeout":  90000,
       "success":  function (json, textStatus, req) {
         if (json['error']) {
           $('#querytest_loading').hide();
