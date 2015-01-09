@@ -58,7 +58,7 @@ $(document).ready(function() {
       },
       "dataType": 'json',
       "cache":    false,
-      "timeout":  60000,
+      "timeout":  90000,
       "success":  function (json, textStatus, req) {
         if (json['error']) {
           $('#querytest_loading').hide();
