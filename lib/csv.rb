@@ -97,7 +97,7 @@ module CSVStreams
     end
   end
 
-  class ActiveRecordCursorReader < Reader
+  class DatabaseCursorReader < Reader
     def initialize(name, query, options={})
       super()
       @name = name
@@ -105,10 +105,8 @@ module CSVStreams
       @options = {
         fetch_size: 1000,
       }.merge(options)
-      # we need to use the same connection throughout
-      @conn = (@options[:connection] || ActiveRecord::Base).connection
       # create the cursor
-      @conn.execute("BEGIN; DECLARE #{@name} CURSOR FOR #{@query};")
+      self.execute("BEGIN; DECLARE #{@name} CURSOR FOR #{@query};")
       # create fetch query
       @fetchq = "FETCH FORWARD #{@options[:fetch_size].to_i} FROM #{@name};"
       @closeq = "CLOSE #{@name}; END;"
@@ -126,40 +124,56 @@ module CSVStreams
         @buff = nil
         return tmp
       end
-      tmp = @conn.select_all(@fetchq)
+      tmp = self.execute(@fetchq).to_a
       @eof = true if tmp.empty?
       yield(tmp) if block_given?
       tmp
     end
 
     def close
-      @conn.execute(@closeq)
+      self.execute(@closeq)
     end
 
     def eof?
       @eof
     end
+
+    protected
+      def execute(sql)
+        raise NotImplementedError
+      end
   end
 
-  class ActiveRecordCustomConnectionCursorReader < ActiveRecordCursorReader
-    def initialize(name, query, configuration, username, password, options={})
-      # construct connection config with the provided credentials
-      # important to clone the config, otherwise we'll chnage the ActiveRecord internal connection credentials
-      redshift_config = ActiveRecord::Base.configurations[configuration.to_s].clone
-      redshift_config['username'] = username
-      redshift_config['password'] = password
-      DummyModelARCursorReader.establish_connection(redshift_config)
-      super(name, query, options.merge(connection: DummyModelARCursorReader))
+  class PGCursorReader < DatabaseCursorReader
+    def initialize(name, query, ar_configuration, username, password, options={})
+      @conn = self.class.dedicated_connection(ar_configuration, username, password)
+      super(name, query, options)
     end
 
-    class DummyModelARCursorReader < ActiveRecord::Base
-      # common base class for RedShift communication
-      self.abstract_class = true
-      # even with abstract_class it looks for the table, this fixes that
-      def self.columns
-        @columns ||= []
-      end
+    def close
+      super()
+      @conn.close
     end
+
+    protected
+      def execute(sql)
+        PolizeiLogger.logger.debug "PGCursorReader SQL: #{sql}"
+        @conn.exec(sql)
+      end
+
+    private
+      def self.dedicated_connection(ar_config, username, password)
+      # construct connection config with the provided credentials
+      # important to clone the config, otherwise we'll change the ActiveRecord internal connection credentials
+      conf = ActiveRecord::Base.configurations[ar_config.to_s].clone
+      conf['username'] = username
+      conf['password'] = password
+      PG.connect(host: conf['host'],
+        port: conf['port'],
+        user: conf['username'],
+        password: conf['password'],
+        dbname: conf['database'])
+      end
   end
 
   class S3Writer
@@ -168,13 +182,15 @@ module CSVStreams
       @o = AWSConfig.s3_sdk(options).buckets[bucket].objects.create(name, '')
     end
 
-    def public_url
-      @o.url_for(:read).to_s
+    def public_url(expires=(7 * 86400))
+      @o.url_for(:read, expires: expires).to_s
     end
 
     def write_from(reader)
       begin
-        @o.write(estimated_content_length: 1024) do |buffer, bytes|
+        # we have no idea of the file size, but we're gonna force aws to upload using multipart upload,
+        # just so the whole file won't be in memory at some point
+        @o.write(estimated_content_length: AWS.config.s3_multipart_threshold + 1) do |buffer, bytes|
           while bytes > 0 && not(reader.eof?)
             t = reader.read
             buffer.write(t)
@@ -193,7 +209,7 @@ end
 if __FILE__ == $0
   c = CSVStreams::CSVRecordHashReader.new(
     "jop",
-    CSVStreams::ActiveRecordCustomConnectionCursorReader.new("test_cursor", "SELECT * FROM tobias.test ORDER BY id", :redshift_development, 'tobias', 'KXSJwdjo32987', fetch_size: 3),
+    CSVStreams::PGCursorReader.new("test_cursor", "SELECT * FROM tobias.test ORDER BY id", :redshift_development, 'tobias', 'KXSJwdjo32987', fetch_size: 3),
     delimiter: '|',
     newline: "\r\n",
     include_headers: true

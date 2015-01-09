@@ -24,7 +24,7 @@ module Jobs
         s3_object = csv_name
 
         # database reader, streams rows without loading everything in memory
-        db_reader = CSVStreams::ActiveRecordCustomConnectionCursorReader.new(
+        db_reader = CSVStreams::PGCursorReader.new(
           export_id,
           job[:query],
           base_connection_id,
@@ -33,18 +33,21 @@ module Jobs
           fetch_size: FETCH_SIZE
         )
 
-        # csv reader, transforms database rows to csv
-        csv_reader = CSVStreams::CSVRecordHashReader.new(csv_name, db_reader,
-          delimiter: job['export_options']['delimiter'],
-          include_headers: job['export_options']['include_header'])
+        begin
+          # csv reader, transforms database rows to csv
+          csv_reader = CSVStreams::CSVRecordHashReader.new(csv_name, db_reader,
+            delimiter: job['export_options']['delimiter'],
+            include_headers: job['export_options']['include_header'])
 
-        # stream write to S3 from csv reader
-        s3writer = CSVStreams::S3Writer.new(s3_bucket, s3_object)
-        s3writer.write_from(csv_reader)
+          # stream write to S3 from csv reader
+          s3writer = CSVStreams::S3Writer.new(s3_bucket, s3_object)
+          s3writer.write_from(csv_reader)
+        ensure
+          db_reader.close
+        end
 
+        # everything is done, send emails and remove the job
         Mailers::ExportJob.success_email(job_id, s3writer.public_url).deliver_now
-
-        # everything is done, remove the job
         done(url: s3writer.public_url)
       rescue => e
         # error occurred
