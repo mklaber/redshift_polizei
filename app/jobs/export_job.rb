@@ -48,9 +48,9 @@ module Jobs
         done(url: s3writer.public_url)
       rescue => e
         # error occurred
+        PolizeiLogger.logger.exception e
         failed(error: e.message, backtrace: e.backtrace.join("\n "))
         Mailers::ExportJob.failure_email(job_id, e).deliver_now
-        raise e
       ensure
         PolizeiLogger.logger.info "Done executing export job #{job_id} for user #{user_id}"
       end
