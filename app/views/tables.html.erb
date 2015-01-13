@@ -7,7 +7,7 @@
       <th>Table <small class="secondary">(table ID)</small></th>
       <th>Size in GB</th>
       <th>Sort Keys</th>
-      <th>Distribution Key</th>
+      <th>Distribution</th>
       <th>Column Encoding</th>
       <th>% Skew Across Slices <small class="secondary">(lower better)</small></th>
       <th>% Slices Populated <small class="secondary">(higher better)</small></th>
@@ -38,6 +38,12 @@
           <% end %>
         <% else %>
           <span class="label label-danger">None!</span>
+        <% end %>
+        <br />
+        <% if row['dist_style'].present? %>
+          <span class='label label-primary'><%= h row['dist_style'] %> distribution</span>
+        <% else %>
+          <span class="label label-danger">unknown distribution</span>
         <% end %>
       </td>
       <td>

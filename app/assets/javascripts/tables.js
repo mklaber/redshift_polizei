@@ -38,6 +38,10 @@ $(document).ready(function() {
           dist_key = '<span class="label label-info">' + json['dist_key'] + '</span>';
         else
           dist_key = '<span class="label label-danger">None!</span>';
+        if (json['dist_style'])
+          dist_key += '<br /><span class="label label-primary">' + json["dist_style"]+ ' distribution</span>';
+        else
+          dist_key += '<br /><span class="label label-danger">unknown distribution</span>';
         if (json['has_col_encodings'])
           col_encoding = '<span class="label label-success">Yes</span>';
         else

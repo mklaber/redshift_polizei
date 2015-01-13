@@ -46,6 +46,7 @@ module Reports
             t0.schemaname,
             t0.tablename,
             t0.tableid,
+            t0.diststyle,
             t1.size_in_mb,
             100 * CAST(t2.max_blocks_per_slice - t2.min_blocks_per_slice AS FLOAT)
                 / CASE WHEN (t2.min_blocks_per_slice = 0)
@@ -55,6 +56,7 @@ module Reports
             (select distinct(id) AS tableid
             ,trim(nspname) AS schemaname
             ,trim(relname) AS tablename
+            ,case when(reldiststyle = 0) then 'even' when(reldiststyle = 1) then 'key' when(reldiststyle = 8) then 'all' else NULL end as diststyle
             from stv_tbl_perm
             join pg_class on pg_class.oid = stv_tbl_perm.id
             join pg_namespace on pg_namespace.oid = relnamespace) AS t0,
@@ -82,6 +84,7 @@ module Reports
             schema_name: r['schemaname'].strip,
             table_name: r['tablename'].strip,
             table_id: r['tableid'],
+            dist_style: r['diststyle'],
             size_in_mb: r['size_in_mb'].to_i,
             pct_skew_across_slices: r['pct_skew_across_slices'].to_f,
             pct_slices_populated: r['pct_slices_populated'].to_f,

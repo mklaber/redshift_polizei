@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 10) do
+ActiveRecord::Schema.define(version: 11) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -102,6 +102,7 @@ ActiveRecord::Schema.define(version: 10) do
     t.boolean  "has_col_encodings",      null: false
     t.datetime "created_at"
     t.datetime "updated_at"
+    t.string   "dist_style"
   end
 
   add_index "table_reports", ["schema_name", "table_name"], name: "index_table_reports_on_schema_name_and_table_name", unique: true, using: :btree
