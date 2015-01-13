@@ -289,23 +289,20 @@ class Polizei < Sinatra::Application
     begin
       query_type = Models::Query.query_type(params[:query])
       if query_type == 0 # select query
-        # save previous connection config
-        previous_conn_config = ActiveRecord::Base.connection_config
-        # construct connection config with users credentials
-        redshift_config = ActiveRecord::Base.configurations["redshift_#{Sinatra::Application.environment}"]
-        redshift_config['username'] = params['redshift']['username']
-        redshift_config['password'] = params['redshift']['password']
-        username = current_user.name # save username, query will fail afterwards, because of different database connection
-        p redshift_config
-        ActiveRecord::Base.establish_connection(redshift_config)
-        # start querying database
-        r = CSVStreams::ActiveRecordCursorReader.new("#{username}_#{Time.now.to_i}", params[:query], fetch_size: 100)
-        begin
-          result = r.read
-        ensure
-          r.close
-          # restore previous connection config
-          ActiveRecord::Base.establish_connection(previous_conn_config)
+        export_test_id = "#{current_user.name}_#{Time.now.to_i}"
+        base_connection_id = "redshift_#{Sinatra::Application.environment}".to_sym
+        rs_username = params['redshift']['username']
+        rs_password = params['redshift']['password']
+        if rs_username.empty? || rs_password.empty?
+          error = "You forgot your database credentials!"
+        else
+          # start querying database
+          r = CSVStreams::PGCursorReader.new(export_test_id, params[:query], base_connection_id, rs_username, rs_password, fetch_size: 100)
+          begin
+            result = r.read
+          ensure
+            r.close
+          end
         end
       else
         error = "Only queries not changing data are allowed!"
