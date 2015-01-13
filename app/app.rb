@@ -249,6 +249,10 @@ class Polizei < Sinatra::Application
       @error = "Please give at least a name and a query."
       return erb :export, :locals => { :name => :export }
     end
+    if Models::Query.query_type(params[:query]) != 0
+      @error = "Only queries not changing data are allowed!"
+      return erb :export, :locals => { :name => :export }
+    end
 
     j.update_attributes({
       name: params['name'],
