@@ -54,6 +54,9 @@ module Tasks
       # if no exception was thrown, update was successful
       auditlogconfig.last_update = Time.now.to_i
       auditlogconfig.save
+    ensure
+      # we need to VACUUM regularly, so that postgres uses the primary key index for count queries
+      ActiveRecord::Base.connection.execute "VACUUM queries"
     end
 
     #
