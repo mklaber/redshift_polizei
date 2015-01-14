@@ -15,7 +15,6 @@ module Caches
   #
   class DynamoDBCache < BaseCache
     def initialize(options = {})
-      # TODO needs connection pool or provided by AWS SDK?
       if not options.member?('table')
         raise ArgumentError, 'the option "table" is required'
       end

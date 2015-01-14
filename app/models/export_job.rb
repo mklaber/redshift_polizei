@@ -15,6 +15,10 @@ module Models
 
     belongs_to :user
 
+    def enqueue(user, options={})
+      Jobs::ExportJob.enqueue(self.id, user.id, options)
+    end
+
     def last3_runs
       Models::JobRun.last3_job_runs(self)
     end

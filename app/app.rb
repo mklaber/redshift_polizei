@@ -8,8 +8,8 @@ class Polizei < Sinatra::Application
   set :views, "#{settings.root}/views"
   register Sinatra::AssetPack
   use Rack::Session::Cookie, :key => 'rack.session',
-                           :expire_after => 86400 * 7, # In seconds
-                           :secret => '*&(^q24t89y$*q27895#yjknsd%@f4'
+                             :expire_after => 86400 * 7, # In seconds
+                             :secret => '*&(^q24t89y$*q27895#yjknsd%@f4'
 
   # setup the custom logger
   configure do
@@ -35,10 +35,10 @@ class Polizei < Sinatra::Application
 
   # configure asset pipeline
   assets do
-    serve '/javascripts',    from: 'assets/javascripts'   # Optional
-    serve '/stylesheets',    from: 'assets/stylesheets'   # Optional
-    serve '/images',         from: 'assets/images'        # Optional
-    serve '/fonts',         from: 'assets/fonts'        # Optional
+    serve '/javascripts',    from: 'assets/javascripts'
+    serve '/stylesheets',    from: 'assets/stylesheets'
+    serve '/images',         from: 'assets/images'
+    serve '/fonts',          from: 'assets/fonts'
 
     # The second parameter defines where the compressed version will be served.
     # (Note: that parameter is optional, AssetPack will figure it out.)
@@ -63,7 +63,7 @@ class Polizei < Sinatra::Application
     ]
     js_compression  :jsmin       # Optional
     css_compression :simple      # Optional
-    prebuild true
+    prebuild false
   end
 
   before '/*' do
@@ -278,7 +278,7 @@ class Polizei < Sinatra::Application
         @error = "You forgot your database credentials!"
         return erb :export, :locals => { :name => :export }
       end
-      Jobs::ExportJob.enqueue(j.id, current_user.id, redshift_username: params['redshift_username'], redshift_password: params['redshift_password'])
+      j.enqueue(current_user, redshift_username: params['redshift_username'], redshift_password: params['redshift_password'])
     end
     redirect to('/jobs')
   end
