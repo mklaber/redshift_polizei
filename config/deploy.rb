@@ -15,8 +15,8 @@ $:.unshift(File.expand_path('./lib', ENV['rvm_path']))
 set :whenever_command, "bundle exec whenever"
 require 'whenever/capistrano'
 
-# load que recipe
-require File.expand_path('../recipes/que.rb', File.dirname(__FILE__))
+# load desmond recipe
+require 'desmond/capistrano'
 
 APP_NAME = 'polizei'
 
@@ -53,10 +53,10 @@ set :whenever_roles, defer { :app }
 after "deploy:update_code", "config:setup"
 after "deploy:restart", "deploy:migrate"
 
-# manage que background processes
-after "deploy:stop",    "que:stop"
-after "deploy:start",   "que:start"
-after "deploy:restart", "que:restart"
+# manage desmond background processes
+after "deploy:stop",    "desmond:stop"
+after "deploy:start",   "desmond:start"
+after "deploy:restart", "desmond:restart"
 
 namespace :deploy do
   [:start, :stop].each do |t|

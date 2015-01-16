@@ -15,36 +15,76 @@ module Models
 
     belongs_to :user
 
-    def enqueue(user, options={})
-      Jobs::ExportJob.enqueue(self.id, user.id, options)
+    def unique_id
+      "polizei_export_#{self.id}"
+    end
+
+    def enqueue(user, query, options={})
+      Desmond::ExportJob.enqueue(unique_id, user.id, query, options)
+    end
+
+    def self.test(user, query, options={})
+      Desmond::ExportJob.test(user.id, query, options)
     end
 
     def last3_runs
-      Models::JobRun.last3_job_runs(self)
-    end
-
-    def runs
-      Models::JobRun.job_runs(self)
+      export_runs(Desmond::ExportJob.last_runs(unique_id, 3))
     end
 
     def runs_unfinished(user=nil)
-      Models::JobRun.unfinished_job_runs(self, user)
+      export_runs(Desmond::ExportJob.runs_unfinished(unique_id, user.id))
     end
 
-    def runs_done(user=nil)
-      Models::JobRun.done_job_runs(self, user)
+    def success_email_to
+      "#{self.user.email}, #{self.success_email}"
     end
 
-    def running?
-      Models::JobRun.job_running?(self)
+    def failure_email_to
+      "#{self.user.email}, #{self.failure_email}"
     end
 
-    def queued?
-      Models::JobRun.job_queued?(self)
-    end
+    private
+      def export_runs(desmond_runs)
+        desmond_runs.map { |r| ExportJobRun.new(r) }
+      end
 
-    def done?
-      Models::JobRun.job_done?(self)
+    class ExportJobRun
+      def initialize(desmond_run)
+        @run = desmond_run
+        @datetime_format = '%F %T UTC'
+      end
+
+      def user
+        Models::User.find(@run.user_id)
+      end
+
+      def completed_at
+        @run.completed_at.strftime(@datetime_format)
+      end
+
+      def executed_at
+        @run.executed_at.strftime(@datetime_format)
+      end
+
+      def queued_at
+        @run.queued_at.strftime(@datetime_format)
+      end
+
+      def done?
+        @run.done?
+      end
+
+      def failed?
+        @run.failed?
+      end
+
+      def running?
+        @run.running?
+      end
+
+      def queued?
+        @run.queued?
+      end
     end
   end
 end

@@ -2,8 +2,8 @@ require 'bundler'
 Bundler.require
 # activerecord tasks
 require "sinatra/activerecord/rake"
-# load que rake tasks
-require 'que/rake_tasks'
+
+require 'desmond/rake'
 
 require './app/app'
 

@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 11) do
+ActiveRecord::Schema.define(version: 13) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -33,6 +33,20 @@ ActiveRecord::Schema.define(version: 11) do
 
   add_index "cache", ["hashid"], name: "index_cache_on_hashid", unique: true, using: :btree
 
+  create_table "desmond_job_runs", force: :cascade do |t|
+    t.string   "job_id",       null: false
+    t.string   "job_class",    null: false
+    t.string   "user_id",      null: false
+    t.string   "status",       null: false
+    t.datetime "queued_at",    null: false
+    t.datetime "executed_at"
+    t.datetime "completed_at"
+    t.json     "details",      null: false
+  end
+
+  add_index "desmond_job_runs", ["job_id"], name: "index_desmond_job_runs_on_job_id", using: :btree
+  add_index "desmond_job_runs", ["user_id"], name: "index_desmond_job_runs_on_user_id", using: :btree
+
   create_table "export_jobs", force: :cascade do |t|
     t.string   "name",           null: false
     t.integer  "user_id",        null: false
@@ -48,20 +62,6 @@ ActiveRecord::Schema.define(version: 11) do
 
   add_index "export_jobs", ["public"], name: "index_export_jobs_on_public", using: :btree
   add_index "export_jobs", ["user_id"], name: "index_export_jobs_on_user_id", using: :btree
-
-  create_table "job_runs", force: :cascade do |t|
-    t.integer  "job_id",      null: false
-    t.string   "job_class",   null: false
-    t.integer  "user_id",     null: false
-    t.string   "status",      null: false
-    t.datetime "executed_at"
-    t.json     "details",     null: false
-    t.datetime "created_at"
-    t.datetime "updated_at"
-  end
-
-  add_index "job_runs", ["job_id", "job_class"], name: "index_job_runs_on_job_id_and_job_class", using: :btree
-  add_index "job_runs", ["user_id"], name: "index_job_runs_on_user_id", using: :btree
 
   create_table "que_jobs", primary_key: "queue", force: :cascade do |t|
     t.integer  "priority",    limit: 2, default: 100,                                        null: false
