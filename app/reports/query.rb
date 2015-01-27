@@ -105,7 +105,7 @@ module Reports
       sql_order += " desc" if orderdir == 'desc'
       sql_order += " asc" if orderdir == 'asc'
 
-      total_count = self.class.select_all(sql_count + sql_from)[0]['cnt'].to_i
+      total_count = self.class.select_all(sql_count + sql_from, self.class.database_user)[0]['cnt'].to_i
       result = self.class.select_all(sql_select + sql_from + sql_filter + sql_order, self.class.database_user, search, search)
       if not selects
         result = result.select do |q|
