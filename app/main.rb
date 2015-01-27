@@ -27,6 +27,7 @@ Dir.glob('./tasks/*.rb').sort.each { |file| require file }
 Tilt.register Tilt::ErubisTemplate, "html.erb"
 
 ActiveRecord::Base.logger = PolizeiLogger.logger
+ActiveRecord::Base.schema_format = :sql # because we are using tsvector indeces, not known by ActiveRecord
 
 #
 # tricking passenger 4.0.56 into thinking that rails/version is already loaded.
