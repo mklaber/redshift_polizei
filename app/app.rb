@@ -273,7 +273,7 @@ class Polizei < Sinatra::Application
         @error = "You forgot your database credentials!"
         return erb :export, :locals => { :name => :export }
       end
-      j.enqueue(current_user, j.query, j.export_options.merge(
+      j.enqueue(current_user, j.query,
         job: {
           name: j.name,
           mail_success: j.success_email_to,
@@ -287,8 +287,12 @@ class Polizei < Sinatra::Application
         s3: {
           access_key_id: AWSConfig['access_key_id'],
           secret_access_key: AWSConfig['secret_access_key'],
-          bucket_name: AWSConfig['export_bucket']
-        }))
+          bucket: AWSConfig['export_bucket']
+        },
+        csv: {
+          col_sep: j.export_options['delimiter'],
+          return_headers: j.export_options['include_header']
+        })
     end
     redirect to('/jobs')
   end
@@ -298,26 +302,25 @@ class Polizei < Sinatra::Application
     error = nil
     query_type = Models::Query.query_type(params[:query])
     if query_type == 0 # select query
-      tmp = Models::ExportJob.test(current_user, params[:query], {
-        db: {
-          connection_id: "redshift_#{Sinatra::Application.environment}",
-          username: params['redshift']['username'],
-          password: params['redshift']['password']
-        }})
+      tmp = Models::ExportJob.test(current_user, params[:query],
+        connection_id: "redshift_#{Sinatra::Application.environment}",
+        username: params['redshift']['username'],
+        password: params['redshift']['password']
+      )
       if tmp.include?(:error)
         error = tmp[:error]
       else
-        result = tmp[:values]
+        result = tmp
       end
     else
       error = "Only queries not changing data are allowed!"
     end
     {
       draw: params[:draw].to_i,
-      recordsTotal: result.count,
-      recordsFiltered: result.count,
-      data: result.map { |r| r.values },
-      columns: result.map { |r| r.keys }[0] || [],
+      recordsTotal: result[:rows].count,
+      recordsFiltered: result[:rows].count,
+      data: result[:rows],
+      columns: result[:columns],
       error: error
     }.to_json
   end
