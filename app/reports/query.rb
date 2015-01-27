@@ -138,7 +138,7 @@ module Reports
       # filter by search query
       if not search.empty?
         q_query = q_query.where(
-          'to_tsvector(\'english\', queries.user) @@ to_tsquery(\'english\', ?) OR to_tsvector(\'english\', queries.query) @@ to_tsquery(\'english\', ?)', search, search
+          'to_tsvector(\'english\', \'queries.user\') @@ to_tsquery(\'english\', ?) OR to_tsvector(\'english\', queries.query) @@ to_tsquery(\'english\', ?)', search, search
         )
       end
       # figure out ordering
