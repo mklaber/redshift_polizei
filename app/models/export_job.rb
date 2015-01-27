@@ -15,36 +15,97 @@ module Models
 
     belongs_to :user
 
-    def enqueue(user, options={})
-      Jobs::ExportJob.enqueue(self.id, user.id, options)
+    def unique_id
+      "polizei_export_#{self.id}"
+    end
+
+    def enqueue(user, db_username, db_password, options={})
+      Desmond::ExportJob.enqueue(unique_id, user.id, {
+        job: {
+          name: self.name,
+          mail_success: self.success_email_to,
+          mail_failure: self.failure_email_to
+        },
+        db: {
+          connection_id: "redshift_#{Sinatra::Application.environment}",
+          username: db_username,
+          password: db_password,
+          query: self.query
+        },
+        s3: {
+          access_key_id: AWSConfig['access_key_id'],
+          secret_access_key: AWSConfig['secret_access_key'],
+          bucket: AWSConfig['export_bucket']
+        },
+        csv: {
+          col_sep: self.export_options['delimiter'],
+          return_headers: self.export_options['include_header']
+        }
+      }.merge(options))
+    end
+
+    def self.test(user, options={})
+      Desmond::ExportJob.test(user.id, options)
     end
 
     def last3_runs
-      Models::JobRun.last3_job_runs(self)
-    end
-
-    def runs
-      Models::JobRun.job_runs(self)
+      export_runs(Desmond::ExportJob.last_runs(unique_id, 3))
     end
 
     def runs_unfinished(user=nil)
-      Models::JobRun.unfinished_job_runs(self, user)
+      export_runs(Desmond::ExportJob.runs_unfinished(unique_id, user.id))
     end
 
-    def runs_done(user=nil)
-      Models::JobRun.done_job_runs(self, user)
+    def success_email_to
+      "#{self.user.email}, #{self.success_email}"
     end
 
-    def running?
-      Models::JobRun.job_running?(self)
+    def failure_email_to
+      "#{self.user.email}, #{self.failure_email}"
     end
 
-    def queued?
-      Models::JobRun.job_queued?(self)
-    end
+    private
+      def export_runs(desmond_runs)
+        desmond_runs.map { |r| ExportJobRun.new(r) }
+      end
 
-    def done?
-      Models::JobRun.job_done?(self)
+    class ExportJobRun
+      def initialize(desmond_run)
+        @run = desmond_run
+        @datetime_format = '%F %T UTC'
+      end
+
+      def user
+        Models::User.find(@run.user_id)
+      end
+
+      def completed_at
+        @run.completed_at.strftime(@datetime_format)
+      end
+
+      def executed_at
+        @run.executed_at.strftime(@datetime_format)
+      end
+
+      def queued_at
+        @run.queued_at.strftime(@datetime_format)
+      end
+
+      def done?
+        @run.done?
+      end
+
+      def failed?
+        @run.failed?
+      end
+
+      def running?
+        @run.running?
+      end
+
+      def queued?
+        @run.queued?
+      end
     end
   end
 end

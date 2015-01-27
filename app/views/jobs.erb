@@ -24,21 +24,21 @@
           <a href="/export/<%= h job['id'] %>">
             <%= h job['name'] %>
           </a></td>
-        <td><a href="mailto:<%= h Models::User.find(job['user_id']).email %>"><%= h Models::User.find(job['user_id']).name %></a></td>
+        <td><a href="mailto:<%= h job.user.email %>"><%= h job.user.name %></a></td>
         <td><%= h job['export_format'] %></td>
         <td>
-          <% if job['status'].empty? %>
+          <% if job.last3_runs.empty? %>
           <span class="label label-default">Not queued</span>
           <% else %>
-            <% job['status'].each do |run| %>
+            <% job.last3_runs.each do |run| %>
               <% if run.done? %>
-                <span class="label label-success">Completed at <%= run.done_time.strftime('%F %T UTC') %> for <%= run.user.name %></span>
+                <span class="label label-success">Completed at <%= run.completed_at %> for <%= run.user.name %></span>
               <% elsif run.failed? %>
-                <span class="label label-danger">Failed at <%= run.done_time.strftime('%F %T UTC') %> for <%= run.user.name %></span>
+                <span class="label label-danger">Failed at <%= run.completed_at %> for <%= run.user.name %></span>
               <% elsif run.running? %>
-                <span class="label label-warning">Running since <%= run.run_time %> for <%= run.user.name %></span>
+                <span class="label label-warning">Running since <%= run.executed_at %> for <%= run.user.name %></span>
               <% elsif run.queued? %>
-                <span class="label label-info">Queued at <%= run.queue_time %> for <%= run.user.name %></span>
+                <span class="label label-info">Queued at <%= run.queued_at %> for <%= run.user.name %></span>
               <% end %>
               <br />
             <% end %>

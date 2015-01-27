@@ -1,7 +1,6 @@
 require './app/main'
 
 class Polizei < Sinatra::Application
-  include ActionView::Helpers::NumberHelper
   AUTH_CONFIG = YAML::load_file(File.join('config', 'auth.yml'))
   
   set :root, File.dirname(__FILE__)
@@ -216,11 +215,7 @@ class Polizei < Sinatra::Application
   end
 
   get '/jobs' do
-    @jobs = Models::ExportJob.where("user_id = ? OR public", session[:uid]).order(created_at: :asc).map do |job|
-      new_job = job.attributes
-      new_job['status'] = job.last3_runs
-      new_job
-    end
+    @jobs = Models::ExportJob.where("user_id = ? OR public", session[:uid]).order(created_at: :asc)
     erb :jobs, :locals => { :name => :export }
   end
 
@@ -278,7 +273,7 @@ class Polizei < Sinatra::Application
         @error = "You forgot your database credentials!"
         return erb :export, :locals => { :name => :export }
       end
-      j.enqueue(current_user, redshift_username: params['redshift_username'], redshift_password: params['redshift_password'])
+      j.enqueue(current_user, params['redshift_username'], params['redshift_password'])
     end
     redirect to('/jobs')
   end
@@ -286,36 +281,28 @@ class Polizei < Sinatra::Application
   post '/query/test' do
     result = []
     error = nil
-    begin
-      query_type = Models::Query.query_type(params[:query])
-      if query_type == 0 # select query
-        export_test_id = "#{current_user.name}_#{Time.now.to_i}"
-        base_connection_id = "redshift_#{Sinatra::Application.environment}".to_sym
-        rs_username = params['redshift']['username']
-        rs_password = params['redshift']['password']
-        if rs_username.empty? || rs_password.empty?
-          error = "You forgot your database credentials!"
-        else
-          # start querying database
-          r = CSVStreams::PGCursorReader.new(export_test_id, params[:query], base_connection_id, rs_username, rs_password, fetch_size: 100)
-          begin
-            result = r.read
-          ensure
-            r.close
-          end
-        end
+    query_type = Models::Query.query_type(params[:query])
+    if query_type == 0 # select query
+      tmp = Models::ExportJob.test(current_user,
+        connection_id: "redshift_#{Sinatra::Application.environment}",
+        username: params['redshift']['username'],
+        password: params['redshift']['password'],
+        query: params[:query]
+      )
+      if tmp.include?(:error)
+        error = tmp[:error]
       else
-        error = "Only queries not changing data are allowed!"
+        result = tmp
       end
-    rescue ActiveRecord::StatementInvalid => e
-      error = e.message
+    else
+      error = "Only queries not changing data are allowed!"
     end
     {
       draw: params[:draw].to_i,
-      recordsTotal: result.count,
-      recordsFiltered: result.count,
-      data: result.map { |r| r.values },
-      columns: result.map { |r| r.keys }[0] || [],
+      recordsTotal: result[:rows].count,
+      recordsFiltered: result[:rows].count,
+      data: result[:rows],
+      columns: result[:columns],
       error: error
     }.to_json
   end
