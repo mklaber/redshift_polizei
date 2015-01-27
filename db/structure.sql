@@ -535,6 +535,13 @@ CREATE INDEX queries_query_fts_idx ON queries USING gin (to_tsvector('english'::
 
 
 --
+-- Name: queries_user_fts_idx; Type: INDEX; Schema: public; Owner: -; Tablespace: 
+--
+
+CREATE INDEX queries_user_fts_idx ON queries USING gin (to_tsvector('english'::regconfig, 'user'::text));
+
+
+--
 -- Name: unique_schema_migrations; Type: INDEX; Schema: public; Owner: -; Tablespace: 
 --
 
@@ -558,6 +565,8 @@ INSERT INTO schema_migrations (version) VALUES ('12');
 INSERT INTO schema_migrations (version) VALUES ('13');
 
 INSERT INTO schema_migrations (version) VALUES ('14');
+
+INSERT INTO schema_migrations (version) VALUES ('15');
 
 INSERT INTO schema_migrations (version) VALUES ('2');
 
