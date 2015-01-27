@@ -273,26 +273,7 @@ class Polizei < Sinatra::Application
         @error = "You forgot your database credentials!"
         return erb :export, :locals => { :name => :export }
       end
-      j.enqueue(current_user, j.query,
-        job: {
-          name: j.name,
-          mail_success: j.success_email_to,
-          mail_failure: j.failure_email_to
-        },
-        db: {
-          connection_id: "redshift_#{Sinatra::Application.environment}",
-          username: params['redshift_username'],
-          password: params['redshift_password']
-        },
-        s3: {
-          access_key_id: AWSConfig['access_key_id'],
-          secret_access_key: AWSConfig['secret_access_key'],
-          bucket: AWSConfig['export_bucket']
-        },
-        csv: {
-          col_sep: j.export_options['delimiter'],
-          return_headers: j.export_options['include_header']
-        })
+      j.enqueue(current_user, params['redshift_username'], params['redshift_password'])
     end
     redirect to('/jobs')
   end
@@ -302,10 +283,11 @@ class Polizei < Sinatra::Application
     error = nil
     query_type = Models::Query.query_type(params[:query])
     if query_type == 0 # select query
-      tmp = Models::ExportJob.test(current_user, params[:query],
+      tmp = Models::ExportJob.test(current_user,
         connection_id: "redshift_#{Sinatra::Application.environment}",
         username: params['redshift']['username'],
-        password: params['redshift']['password']
+        password: params['redshift']['password'],
+        query: params[:query]
       )
       if tmp.include?(:error)
         error = tmp[:error]

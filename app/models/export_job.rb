@@ -19,12 +19,33 @@ module Models
       "polizei_export_#{self.id}"
     end
 
-    def enqueue(user, query, options={})
-      Desmond::ExportJob.enqueue(unique_id, user.id, query, options)
+    def enqueue(user, db_username, db_password, options={})
+      Desmond::ExportJob.enqueue(unique_id, user.id, {
+        job: {
+          name: self.name,
+          mail_success: self.success_email_to,
+          mail_failure: self.failure_email_to
+        },
+        db: {
+          connection_id: "redshift_#{Sinatra::Application.environment}",
+          username: db_username,
+          password: db_password,
+          query: self.query
+        },
+        s3: {
+          access_key_id: AWSConfig['access_key_id'],
+          secret_access_key: AWSConfig['secret_access_key'],
+          bucket: AWSConfig['export_bucket']
+        },
+        csv: {
+          col_sep: self.export_options['delimiter'],
+          return_headers: self.export_options['include_header']
+        }
+      }.merge(options))
     end
 
-    def self.test(user, query, options={})
-      Desmond::ExportJob.test(user.id, query, options)
+    def self.test(user, options={})
+      Desmond::ExportJob.test(user.id, options)
     end
 
     def last3_runs
