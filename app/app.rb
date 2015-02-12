@@ -232,7 +232,10 @@ class Polizei < Sinatra::Application
   end
 
   get '/jobs' do
-    @jobs = Models::ExportJob.where("user_id = ? OR public", session[:uid]).order(created_at: :asc)
+    @jobs = Models::ExportJob.where("user_id = ? OR public", session[:uid]).sort do |j1, j2|
+      # most recently run job at the top
+      -(j1.last_run.queued_at_time <=> j2.last_run.queued_at_time)
+    end
     erb :jobs, :locals => { :name => :export }
   end
 

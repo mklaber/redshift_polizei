@@ -39,6 +39,12 @@ module Models
       Jobs::PolizeiExportJob.test(user.id, options)
     end
 
+    def last_run
+      tmp = export_runs(Jobs::PolizeiExportJob.last_runs(self.id, 1))
+      return nil if tmp.nil? || tmp.empty?
+      tmp[0]
+    end
+
     def last3_runs
       export_runs(Jobs::PolizeiExportJob.last_runs(self.id, 3))
     end
@@ -80,6 +86,10 @@ module Models
 
       def queued_at
         @run.queued_at.strftime(@datetime_format)
+      end
+
+      def queued_at_time
+        @run.queued_at
       end
 
       def done?
