@@ -15,17 +15,8 @@ module Models
 
     belongs_to :user
 
-    def unique_id
-      "polizei_export_#{self.id}"
-    end
-
     def enqueue(user, db_username, db_password, options={})
-      Desmond::ExportJob.enqueue(unique_id, user.id, {
-        job: {
-          name: self.name,
-          mail_success: self.success_email_to,
-          mail_failure: self.failure_email_to
-        },
+      Jobs::PolizeiExportJob.enqueue(self.id, user.id, {
         db: {
           connection_id: "redshift_#{Sinatra::Application.environment}",
           username: db_username,
@@ -45,15 +36,15 @@ module Models
     end
 
     def self.test(user, options={})
-      Desmond::ExportJob.test(user.id, options)
+      Jobs::PolizeiExportJob.test(user.id, options)
     end
 
     def last3_runs
-      export_runs(Desmond::ExportJob.last_runs(unique_id, 3))
+      export_runs(Jobs::PolizeiExportJob.last_runs(self.id, 3))
     end
 
     def runs_unfinished(user=nil)
-      export_runs(Desmond::ExportJob.runs_unfinished(unique_id, user.id))
+      export_runs(Jobs::PolizeiExportJob.runs_unfinished(self.id, user.id))
     end
 
     def success_email_to

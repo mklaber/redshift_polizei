@@ -1,4 +1,2 @@
+app_id: polizei
 database: config/database.yml
-mail: config/mail.yml
-mail_export_success: app/views/mailers/export_success.yml
-mail_export_failure: app/views/mailers/export_failure.yml

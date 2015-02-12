@@ -20,6 +20,8 @@ gem 'whenever', :require => false # cronjobs
 
 gem 'desmond', git: 'git@github.com:AnalyticsMediaGroup/desmond.git' # sql exporting
 
+gem 'pony' # sending emails
+
 group :development do
   gem 'shotgun'
   gem 'puma'

@@ -1,11 +1,14 @@
 require './app/main'
 
 class Polizei < Sinatra::Application
+  POLIZEI_CONFIG_FILE = 'config/polizei.yml'
   AUTH_CONFIG = YAML::load_file(File.join('config', 'auth.yml'))
   
   set :root, File.dirname(__FILE__)
   set :views, "#{settings.root}/views"
   register Sinatra::AssetPack
+  register Sinatra::AWSExtension
+  register Sinatra::PonyMailExtension
   use Rack::Session::Cookie, :key => 'rack.session',
                              :expire_after => 86400 * 7, # In seconds
                              :secret => '*&(^q24t89y$*q27895#yjknsd%@f4'
@@ -16,6 +19,8 @@ class Polizei < Sinatra::Application
     set :logging, nil
     # set activerecords logger
     ActiveRecord::Base.logger = PolizeiLogger.logger
+    # config files
+    load_config_file :polizei, POLIZEI_CONFIG_FILE
   end
   # set logger in environment variable for rack to pick it up
   before do
