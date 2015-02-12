@@ -56,7 +56,7 @@ module Reports
             (select distinct(id) AS tableid
             ,trim(nspname) AS schemaname
             ,trim(relname) AS tablename
-            ,case when(reldiststyle = 0) then 'even' when(reldiststyle = 1) then 'key' when(reldiststyle = 8) then 'all' else NULL end as diststyle
+            ,decode(c.reldiststyle,0,'even',1,'key',8,'all') as diststyle
             from stv_tbl_perm
             join pg_class on pg_class.oid = stv_tbl_perm.id
             join pg_namespace on pg_namespace.oid = relnamespace) AS t0,
