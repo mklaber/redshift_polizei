@@ -11,8 +11,8 @@ module Jobs
     # error hook
     #
     def error(job_run, job_id, user_id, options={})
-      subject = "ERROR: Your RedShift table structures export failed"
-      body = "Sorry, your table structures export failed.
+      subject = "ERROR: Your RedShift table schemas export failed"
+      body = "Sorry, your table schemas export failed.
 This can happen if tables get deleted during the export, so please try once more and then let engineering know."
       
       mail_options = {
@@ -35,8 +35,8 @@ This can happen if tables get deleted during the export, so please try once more
         :read,
         expires: (14 * 86400)
       ).to_s
-      subject = "Your RedShift table structures export succeeded"
-      body = "Congrats! Your table structures export is located
+      subject = "Your RedShift table schemas export succeeded"
+      body = "Congrats! Your table schemas export is located
 as a direct download here: #{dl_url}
 You can view it in your browser by using this link: #{view_url}"
 
