@@ -14,7 +14,6 @@ $(document).ready(function() {
       {
         'targets': 2,
         'render': function(data, type, row) {
-          console.log(row['start_time']);
           var date = $.format.date(row['start_time'] * 1000, 'MM/dd/yyyy');
           var time = $.format.date(row['start_time'] * 1000, 'HH:mm:ss');
           return date + ' at ' + time;
