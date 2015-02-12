@@ -40,7 +40,7 @@ $(document).ready(function() {
       },
       {
         'targets': 4,
-        'data': 'xid'
+        'data': 'pid'
       },
       {
         'targets': 5,
