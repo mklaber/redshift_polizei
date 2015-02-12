@@ -195,6 +195,15 @@ class Polizei < Sinatra::Application
     Reports::Table.new.update_one(params[:tableid]).to_json
   end
 
+  post '/tables/structure_export' do
+    if Jobs::TableStructureExportJob.runs_unfinished(1, current_user.id).empty?
+      email = current_user.email
+      email += ", #{params[:email]}" unless params[:email].nil? || params[:email].empty?
+      Jobs::TableStructureExportJob.enqueue(1, current_user.id, email: email)
+    end
+    redirect to('/tables')
+  end
+
   get '/permissions' do
     @users, @groups, @tables = Reports::Permission.new.result
     @p_types = ["select", "insert", "update", "delete", "references"]
