@@ -320,7 +320,7 @@ end
 
 if __FILE__ == $0
   puts Jobs::TableStructureExportJob.new('').execute(1, 1, schema_name: ARGV[0], table_name: ARGV[1], s3: {
-    access_key_id: AWSConfig['access_key_id'],
-    secret_access_key: AWSConfig['secret_access_key']
+    access_key_id: Sinatra::Configurations.aws('access_key_id'),
+    secret_access_key: Sinatra::Configurations.aws('secret_access_key')
   })
 end

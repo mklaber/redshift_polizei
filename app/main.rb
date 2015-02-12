@@ -19,7 +19,6 @@ require 'desmond'
 require './app/monkey_patches'
 require './app/helpers'
 require './app/caches'
-require './app/awsconfig'
 require './app/logger'
 
 Dir.glob('./lib/*.rb').sort.each { |file| require file }

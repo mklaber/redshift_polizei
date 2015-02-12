@@ -19,7 +19,7 @@ module Caches
         raise ArgumentError, 'the option "table" is required'
       end
       super(options)
-      @handle = AWSConfig.dynamodb_sdk
+      @handle = AWS::DynamoDB.new
       # check that the given table is valid, will throw NoSuchMethodError if not
       table
     end

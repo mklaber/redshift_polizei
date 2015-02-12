@@ -10,13 +10,15 @@ module Reports
     # retrieves disk usage and capacity for RedShift from CloudWatch Metric
     #
     def run
-      cluster = AWSConfig.cluster_info
-      cloudwatch = AWSConfig.cloudwatch_sdk
+      cluster_identifier = Sinatra::Configurations.aws('cluster_identifier')
+      clusters = AWS::Redshift::Client.new.describe_clusters(cluster_identifier: cluster_identifier)
+      cluster = clusters[:clusters][0]
+      cloudwatch = AWS::CloudWatch::Client.new
       i = 0
       cluster[:cluster_nodes].select { |node| node[:node_role] != 'LEADER' }.map do |node|
         dimensions = [{
           name: "ClusterIdentifier",
-          value: AWSConfig['cluster_identifier']
+          value: cluster_identifier
         },{
           name: "NodeID",
           value: "Compute-#{i}"
