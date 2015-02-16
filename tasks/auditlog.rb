@@ -7,6 +7,14 @@ module Tasks
   # periodically built from the RedShift Audit Logs
   #
   class AuditLog
+    def self.logger
+      if @logger.nil?
+        @logger = PolizeiLogger.logger('auditlog')
+        ActiveRecord::Base.logger = @logger
+      end
+      @logger
+    end
+
     #
     # retrieves unprocessed audit logs from S3 and calls
     # `run` on them to parse them into the database.
@@ -14,8 +22,7 @@ module Tasks
     # also runs `enforce_retention_period`
     #
     def self.update_from_s3
-      PolizeiLogger.logger.info "Updating Audit Log from S3 ..."
-      logger = PolizeiLogger.logger
+      self.logger.info "Updating Audit Log from S3 ..."
       auditlog = self.new
       auditlog.enforce_retention_period
       auditlogconfig = Models::AuditLogConfig.get
@@ -43,11 +50,11 @@ module Tasks
             auditlog.run(Zlib::GzipReader.new(reader), obj.key)
           end
         rescue
-          logger.error "Error parsing s3 object #{obj.key}"
+          self.logger.error "Error parsing s3 object #{obj.key}"
           raise
         end
       end
-      PolizeiLogger.logger.info "... done updating Audit Log from S3 ..."
+      self.logger.info "... done updating Audit Log from S3 ..."
     rescue
       raise
     else
@@ -92,7 +99,6 @@ module Tasks
     #
     def run(ua_log, logfile)
       self.enforce_retention_period
-      logger = PolizeiLogger.logger
 
       # read user activity log
       lineno = 0
@@ -141,7 +147,7 @@ module Tasks
         begin
           q.save
         rescue
-          logger.error "Database error on line #{lineno}"
+          self.logger.error "Database error on line #{lineno}"
           raise
         end
       end
@@ -162,7 +168,7 @@ if __FILE__ == $0
     end
   rescue Interrupt
     # discard StackTrace if ctrl + c was pressed
-    PolizeiLogger.logger.info "Ctrl + C => exiting ..."
+    puts "Ctrl + C => exiting ..."
     exit
   end
 end

@@ -29,6 +29,8 @@ end
 # common Logger for Sinatra, ActiveRecord and everything else
 #
 class PolizeiLogger < Logger
+  @_logger_hash = {}
+
   def initialize(logdev, *args)
     super(logdev, *args)
     @logdev = logdev
@@ -37,29 +39,29 @@ class PolizeiLogger < Logger
   #
   # singleton method to retrieve logger instance
   #
-  def self.logger
-    if @_logger.nil?
+  def self.logger(name='')
+    if @_logger_hash[name].nil?
       # create logger
       env = Sinatra::Application.environment
       if env == :development
         # development logs to stdout
-        @_logger = self.new STDOUT
+        @_logger_hash[name] = self.new STDOUT
       else
         # everything else to file
         # create log directory if it doesn't exist
         logdirectory = '../log'
         FileUtils::mkdir_p File.expand_path(logdirectory, File.dirname(__FILE__ ))
         # generate log file name
-        logfile = "#{logdirectory}/#{env}.log"
+        logfile = "#{logdirectory}/#{env}#{(name.empty?) ? '' : '_' + name }.log"
         # open environment log file while removing color coding from messages
         f = File.expand_path(logfile, File.dirname(__FILE__ ))
-        @_logger = self.new(ColorBlindLogFile.new(f), shift_age='daily')
+        @_logger_hash[name] = self.new(ColorBlindLogFile.new(f), shift_age='daily')
       end
       # set up logger settings
-      @_logger.level = Logger::DEBUG
-      @_logger.datetime_format = '%FT%T.%N%z'
+      @_logger_hash[name].level = Logger::DEBUG
+      @_logger_hash[name].datetime_format = '%FT%T.%N%z'
     end
-    @_logger
+    @_logger_hash[name]
   end
 
   # Rack expects a write, puts and flush method for its logger

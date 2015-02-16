@@ -21,14 +21,11 @@ require './app/helpers'
 require './app/caches'
 require './app/logger'
 
-Dir.glob('./lib/*.rb').sort.each { |file| require file }
-Dir.glob('./app/{models,reports,caches,jobs,mailers}/*.rb').sort.each { |file| require file }
-Dir.glob('./tasks/*.rb').sort.each { |file| require file }
-
+# setup before app code, so the logger can be override by some components
 Tilt.register Tilt::ErubisTemplate, "html.erb"
-
 ActiveRecord::Base.logger = PolizeiLogger.logger
 ActiveRecord::Base.schema_format = :sql # because we are using tsvector indeces, not known by ActiveRecord
+DesmondConfig.logger = PolizeiLogger.logger('desmond')
 
 #
 # tricking passenger 4.0.56 into thinking that rails/version is already loaded.
@@ -42,3 +39,6 @@ module Rails
     Sinatra::Application.environment
   end
 end
+
+Dir.glob('./lib/*.rb').sort.each { |file| require file }
+Dir.glob('./app/{models,reports,caches,jobs,mailers}/*.rb').sort.each { |file| require file }

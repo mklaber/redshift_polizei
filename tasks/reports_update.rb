@@ -54,7 +54,7 @@ module Tasks
             # run the report
             report.new.run
           rescue NotImplementedError
-            PolizeiLogger.logger.error "Error running report #{report}"
+            PolizeiLogger.logger('reportsupdate').error "Error running report #{report}"
             raise
           end
         end

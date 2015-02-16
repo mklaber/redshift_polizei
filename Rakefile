@@ -5,12 +5,14 @@ require "sinatra/activerecord/rake"
 
 require 'desmond/rake'
 
-require './app/app'
+require_relative 'app/main'
+
+Dir.glob('./tasks/*.rb').sort.each { |file| require file }
 
 # Rake error handling should use our logger
 class Rake::Application
   def display_error_message(ex)
-    PolizeiLogger.logger.exception ex
+    PolizeiLogger.logger('rake').exception ex
   end
 end
 
