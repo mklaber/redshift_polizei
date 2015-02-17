@@ -40,6 +40,10 @@ module Jobs
         reports = save_table_reports(c, table)
         self.failed(doesnotexist: true) if reports.nil?
       end
+    rescue => e
+      self.logger.error "Error executing TableReports job with #{options}:"
+      self.logger.exception e
+      raise e
     ensure
       self.logger.info "... done updating Table Reports"
     end

@@ -92,6 +92,10 @@ You can view it in your browser by using this link: #{view_url}"
       ensure
         s3writer.close unless s3writer.nil?
       end
+    rescue => e
+      self.logger.error "Error executing TableStructureExport job for #{user_id} with #{options}:"
+      self.logger.exception e
+      raise e
     end
 
     private
