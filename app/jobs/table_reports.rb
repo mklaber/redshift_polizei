@@ -46,6 +46,7 @@ module Jobs
       self.logger.exception e
       raise e
     ensure
+      c.close
       self.logger.info "... done updating Table Reports"
     end
 
@@ -150,8 +151,4 @@ module Jobs
       results
     end
   end
-end
-
-if __FILE__ == $0
-  Jobs::TableReports.run(1, 1)
 end
