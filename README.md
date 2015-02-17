@@ -76,6 +76,10 @@ To get a console
 ---------------------
 `tux`
 
+Running tests
+---------------------
+First make sure you configured 'config/tests.yml', then run `rspec`
+
 To deploy
 ---------------------
 `cap staging deploy`
