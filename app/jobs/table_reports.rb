@@ -14,8 +14,9 @@ module Jobs
 
     ##
     # optional +options+:
-    # - tables: hash consisting of :schema_name and :table_name
-    # will update all reports if 'tables' option not given
+    # - :schema_name
+    # - :table_name
+    # will update all reports if not given
     #
     def execute(job_id, user_id, options={})
       self.logger.info "Updating Table Reports ..."
@@ -29,7 +30,7 @@ module Jobs
       # execute update in transaction so that reports stay available
       reports = {}
       Models::TableReport.transaction do
-        # check all the saved tables for updates => deleting non-existant tables
+        # check the saved reports for updates => deleting non-existant tables
         all_tables = get_all_table_names(c, table)
         existing_reports = Models::TableReport.all if table.nil?
         existing_reports = Models::TableReport.where(table) unless table.nil?
