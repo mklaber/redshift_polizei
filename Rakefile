@@ -51,5 +51,8 @@ namespace :redshift do
     task :update do
       Jobs::TableReports.run(1, 1)
     end
+    task :clear do
+      Models::TableReport.destroy_all
+    end
   end
 end
