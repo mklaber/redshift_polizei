@@ -33,6 +33,7 @@ GEM
       minitest (~> 5.1)
       thread_safe (~> 0.3, >= 0.3.4)
       tzinfo (~> 1.1)
+    addressable (2.3.7)
     arel (6.0.0)
     aws-sdk (1.60.2)
       aws-sdk-v1 (= 1.60.2)
@@ -51,6 +52,11 @@ GEM
     coderay (1.1.0)
     daemon_controller (1.2.0)
     daemons (1.1.9)
+    diff-lcs (1.2.5)
+    docile (1.1.5)
+    email_spec (1.6.0)
+      launchy (~> 2.1)
+      mail (~> 2.2)
     erubis (2.7.0)
     faraday (0.9.0)
       multipart-post (>= 1.2, < 3)
@@ -60,6 +66,8 @@ GEM
     jsmin (1.0.1)
     json (1.8.2)
     jwt (1.2.0)
+    launchy (2.4.3)
+      addressable (~> 2.3)
     mail (2.6.3)
       mime-types (>= 1.16, < 3)
     mime-types (2.4.3)
@@ -120,10 +128,28 @@ GEM
       rack (>= 1.0)
       rack-test (~> 0.6.2)
       ripl (>= 0.7.0)
+    rspec (3.2.0)
+      rspec-core (~> 3.2.0)
+      rspec-expectations (~> 3.2.0)
+      rspec-mocks (~> 3.2.0)
+    rspec-core (3.2.0)
+      rspec-support (~> 3.2.0)
+    rspec-expectations (3.2.0)
+      diff-lcs (>= 1.2.0, < 2.0)
+      rspec-support (~> 3.2.0)
+    rspec-mocks (3.2.0)
+      diff-lcs (>= 1.2.0, < 2.0)
+      rspec-support (~> 3.2.0)
+    rspec-support (3.2.1)
     rvm-capistrano (1.5.5)
       capistrano (~> 2.15.4)
     shotgun (0.9)
       rack (>= 1.0)
+    simplecov (0.9.1)
+      docile (~> 1.1.0)
+      multi_json (~> 1.0)
+      simplecov-html (~> 0.8.0)
+    simplecov-html (0.8.0)
     sinatra (1.4.5)
       rack (~> 1.4)
       rack-protection (~> 1.4)
@@ -159,6 +185,7 @@ DEPENDENCIES
   capistrano (~> 2.15.5)
   coderay
   desmond!
+  email_spec
   erubis
   mail
   omniauth-google-oauth2
@@ -166,10 +193,13 @@ DEPENDENCIES
   pg
   pony
   puma
+  rack-test
   rack_csrf
   rake
+  rspec
   rvm-capistrano
   shotgun
+  simplecov
   sinatra
   sinatra-activerecord
   sinatra-assetpack

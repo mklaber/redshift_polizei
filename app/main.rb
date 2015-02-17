@@ -44,4 +44,4 @@ module Rails
   end
 end
 
-Dir.glob('./app/{models,reports,caches,jobs,mailers}/*.rb').sort.each { |file| require file }
+Dir.glob('./app/{models,reports,caches,jobs}/*.rb').sort.each { |file| require file }

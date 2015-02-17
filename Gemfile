@@ -34,3 +34,10 @@ group :staging, :production do
   gem 'yui-compressor'
   gem 'passenger'
 end
+
+group :development, :test do
+  gem 'rspec'
+  gem 'rack-test'
+  gem 'email_spec'
+  gem 'simplecov', :require => false
+end

@@ -41,6 +41,7 @@ config/shards.yml
 config/aws.yml
 config/mail.yml
 config/polizei.yml
+config/tests.yml
 *.swp
 **.swp
 
