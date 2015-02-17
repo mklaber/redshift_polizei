@@ -190,12 +190,30 @@ class Polizei < Sinatra::Application
   end
   
   get '/tables' do
-    @tables = Reports::Table.new.retrieve_all
+    @tables = Models::TableReport.order(size_in_mb: :desc)
     erb :tables, :locals => { :name => :tables }
   end
 
-  get '/tables/report' do
-    Reports::Table.new.update_one(params[:tableid]).to_json
+  post '/tables/report' do
+    content_type :json
+    # TODO put into work queue and poll/sse/websocket until frontend timeout
+    run = Jobs::TableReports.run(
+      1,
+      1,
+      schema_name: params[:schema_name],
+      table_name: params[:table_name]
+    )
+    if run.done?
+      Models::TableReport.where(
+        schema_name: params[:schema_name],
+        table_name: params[:table_name]
+      ).first.to_json
+    elsif run.details['doesnotexist']
+      run.details.to_json
+    else
+      status 500
+      run.details.to_json
+    end
   end
 
   post '/tables/structure_export' do

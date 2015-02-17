@@ -3,16 +3,9 @@ require './app/main'
 module Reports
   class Table < Base
 
+    # TODO remove this, still needed by reports update task
     def run(tableids=nil)
-      Tasks::TableReports.run
-    end
-
-    def retrieve_all
-      Models::TableReport.order(size_in_mb: :desc)
-    end
-
-    def update_one(tableid)
-      update_table_reports([tableid])[0]
+      Jobs::TableReports.run(1, 1)
     end
   end
 end

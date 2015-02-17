@@ -54,3 +54,16 @@ tr.total {
 .secondary {
   color: #999;
 }
+
+tr.strikeout {
+  color: #ccc;
+}
+
+tr.strikeout span.label {
+  background-color: #ccc;
+}
+
+tr.strikeout button {
+  border-color: #ccc;
+  background-color: #ccc;
+}

@@ -49,7 +49,7 @@ namespace :redshift do
   namespace :tablereport do
     desc 'Update tables report'
     task :update do
-      Reports::Table.new.run
+      Jobs::TableReports.run(1, 1)
     end
   end
 end

@@ -16,12 +16,16 @@ require 'coderay'
 require 'aws'
 require 'desmond'
 
+
+require 'sql/sql'
+require './app/utils/pg_util'
 require './app/monkey_patches'
 require './app/helpers'
 require './app/caches'
 require './app/logger'
 
-# setup before app code, so the logger can be override by some components
+# setup before app code, so the logger can be overriden by some components
+SQL.directory = File.join(File.dirname(__FILE__), 'sql')
 Tilt.register Tilt::ErubisTemplate, "html.erb"
 ActiveRecord::Base.logger = PolizeiLogger.logger
 ActiveRecord::Base.schema_format = :sql # because we are using tsvector indeces, not known by ActiveRecord
@@ -40,5 +44,4 @@ module Rails
   end
 end
 
-Dir.glob('./lib/*.rb').sort.each { |file| require file }
 Dir.glob('./app/{models,reports,caches,jobs,mailers}/*.rb').sort.each { |file| require file }

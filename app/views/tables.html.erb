@@ -1,3 +1,5 @@
+<!-- TODO add analyze and vacuum option -->
+
 <div style="overflow: auto;">
   <div style="float: left;"><h2 name="tables" id="tables">Tables</h2></div>
   <div style="float: right;">
@@ -49,7 +51,7 @@
     </tr>
   </thead>
   <tbody>
-  <% @tables.each do |row| %>
+  <% @tables.each_with_index do |row, i| %>
     <tr>
       <td><%= row['schema_name'] %></td>
       <td><%= row['table_name'] %> <small class="secondary">(<%=row['table_id']%>)</small></td>
@@ -93,7 +95,7 @@
       <td>
         <span class='label label-<%= row['pct_slices_populated'].to_f < 50.0 ? 'danger' : 'success' %>'>
       <%= h row['pct_slices_populated'].round(2) %>%</span></td>
-      <td class="text-center"><button id="update_button_<%= row['table_id'] %>" type="button" data-id="<%= row['table_id'] %>" class="tbl-update btn btn-info btn-xs">Update</button><%= img '/images/ajax-loader.gif', id: "loading_img_#{row['table_id']}", height: '25px', style: 'display: none;' %></td>
+      <td class="text-center"><button id="update_button_<%= i %>" type="button" data-id="<%= i %>" data-schema-name="<%= row['schema_name'] %>" data-table-name="<%= row['table_name'] %>" class="tbl-update btn btn-info btn-xs">Update</button><%= img '/images/ajax-loader.gif', id: "loading_img_#{i}", height: '25px', style: 'display: none;' %></td>
     </tr >
   <% end %>
   </tbody>
