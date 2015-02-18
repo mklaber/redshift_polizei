@@ -10,7 +10,6 @@ module Tasks
     def self.logger
       if @logger.nil?
         @logger = PolizeiLogger.logger('auditlog')
-        ActiveRecord::Base.logger = @logger
       end
       @logger
     end

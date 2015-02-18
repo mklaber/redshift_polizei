@@ -18,8 +18,6 @@ class Polizei < Sinatra::Application
   configure do
     # disable Sinatra's default
     set :logging, nil
-    # set activerecords logger
-    ActiveRecord::Base.logger = PolizeiLogger.logger
     # config files
     load_config_file :auth, AUTH_CONFIG_FILE
     load_config_file :polizei, POLIZEI_CONFIG_FILE
