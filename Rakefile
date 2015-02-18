@@ -5,7 +5,9 @@ require "sinatra/activerecord/rake"
 
 require 'desmond/rake'
 
-require_relative 'app/main'
+# this loads several configuration files (e.g. mail.yml) need in background processes,
+# so we can't just load app/main
+require_relative 'app/app'
 
 Dir.glob('./tasks/*.rb').sort.each { |file| require file }
 
