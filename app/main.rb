@@ -16,7 +16,6 @@ require 'coderay'
 require 'aws'
 require 'desmond'
 
-
 require 'sql/sql'
 require './app/utils/pg_util'
 require './app/monkey_patches'
@@ -29,7 +28,7 @@ SQL.directory = File.join(File.dirname(__FILE__), 'sql')
 Tilt.register Tilt::ErubisTemplate, "html.erb"
 ActiveRecord::Base.logger = PolizeiLogger.logger
 env = Sinatra::Application.environment.to_sym
-if env == 'staging' || env == 'production'
+if env == :staging || env == :production
   ActiveRecord::Base.logger = nil
 end
 ActiveRecord::Base.schema_format = :sql # because we are using tsvector indeces, not known by ActiveRecord
