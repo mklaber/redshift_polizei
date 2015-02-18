@@ -15,6 +15,8 @@ module Models
 
     belongs_to :user
 
+    validate :email_list_validation
+
     def enqueue(user, db_username, db_password, options={})
       Jobs::PolizeiExportJob.enqueue(self.id, user.id, {
         db: {
@@ -62,6 +64,14 @@ module Models
     end
 
     private
+
+      def email_list_validation
+        email_list = PolizeiHelpers.validate_email_list(self.success_email)
+        errors.add :success_email, "invalid success emails" if email_list.nil?
+        email_list = PolizeiHelpers.validate_email_list(self.failure_email)
+        errors.add :failure_email, "invalid failure emails" if email_list.nil?
+      end
+
       def export_runs(desmond_runs)
         desmond_runs.map { |r| ExportJobRun.new(r) }
       end

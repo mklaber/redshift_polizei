@@ -6,6 +6,7 @@ class Polizei < Sinatra::Application
   
   set :root, File.dirname(__FILE__)
   set :views, "#{settings.root}/views"
+  helpers PolizeiHelpers
   register Sinatra::AssetPack
   register Sinatra::AWSExtension
   register Sinatra::PonyMailExtension
@@ -217,12 +218,12 @@ class Polizei < Sinatra::Application
   end
 
   post '/tables/structure_export' do
-    if Jobs::TableStructureExportJob.runs_unfinished(1, current_user.id).empty?
-      email = current_user.email
-      email += ", #{params[:email]}" unless params[:email].nil? || params[:email].empty?
-      Jobs::TableStructureExportJob.enqueue(1, current_user.id, email: email)
+    email_list = validate_email_list("#{current_user.email}, #{params[:email]}")
+    status 400 if email_list.nil?
+    if !email_list.nil? && Jobs::TableStructureExportJob.runs_unfinished(1, current_user.id).empty?
+      Jobs::TableStructureExportJob.enqueue(1, current_user.id, email: email_list.join(', '))
     end
-    redirect to('/tables')
+    ''
   end
 
   get '/permissions' do
@@ -291,20 +292,25 @@ class Polizei < Sinatra::Application
       return erb :export, :locals => { :name => :export }
     end
 
-    j.update_attributes({
-      name: params['name'],
-      user_id: session[:uid],
-      success_email: params['success_email'],
-      failure_email: params['failure_email'],
-      public: not(params['public'].nil?),
-      query: params['query'],
-      export_format: params['export_format'],
-      export_options: {
-        delimiter: params['csvDelimiter'],
-        include_header: not(params['csvIncludeHeader'].nil?)
-      }.to_json
-    })
-    j.save
+    begin
+      j.update!(
+        name: params['name'],
+        user: current_user,
+        success_email: params['success_email'],
+        failure_email: params['failure_email'],
+        public: !params['public'].nil?,
+        query: params['query'],
+        export_format: params['export_format'],
+        export_options: {
+          delimiter: params['csvDelimiter'],
+          include_header: !params['csvIncludeHeader'].nil?
+        }
+      )
+    rescue ActiveRecord::RecordInvalid => e
+      @error = e.message
+      return erb :export, :locals => { :name => :export }
+    end
+
     if params['execute'].to_i != 0
       # only schedule the job if is not already running for the user
       if not(j.runs_unfinished(current_user).empty?)
@@ -348,7 +354,7 @@ class Polizei < Sinatra::Application
       error: error
     }.to_json
   end
-   
+
   not_found do
     @error = 'This is nowhere to be found.'
     erb :error

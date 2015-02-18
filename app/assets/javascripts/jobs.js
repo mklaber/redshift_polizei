@@ -10,7 +10,7 @@ $(document).ready(function() {
   // tooltip for email input fields in export jobs
   $('#inputEmailSuccess, #inputEmailFailure').tooltip({
     'trigger': 'focus',
-    'title': 'whoever executes the export receives all emails by default, comma-separate multiple additional emails'
+    'title': 'whoever executes the export receives all emails by default, comma-separate multiple additional emails (optional)'
   });
   $('input#inputExportOption').val(
     $('#export_options > li.export_option.active').text().toLowerCase()

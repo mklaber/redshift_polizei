@@ -1,6 +1,4 @@
-require 'sinatra'
-
-helpers do
+module PolizeiHelpers
   def logged_in?
     (not(session[:uid].nil?) && Models::User.exists?(session[:uid]))
   end
@@ -20,4 +18,23 @@ helpers do
   def h(text)
     Rack::Utils.escape_html(text)
   end
+
+  def validate_email_list(emails, max=0)
+    return [] if emails.nil?
+    email_list = emails.split(',')
+    return [] if email_list.empty?
+    return nil if max > 0 && email_list.size > max
+    valid = true
+    validated_emails = email_list.select do |tmp|
+      !tmp.strip.empty?
+    end.map do |tmp|
+      email = tmp.strip
+      m = Mail::Address.new(email)
+      valid &&= (!m.domain.nil? && m.address == email)
+      m.address
+    end
+    return nil unless valid
+    validated_emails
+  end
+  module_function :validate_email_list
 end

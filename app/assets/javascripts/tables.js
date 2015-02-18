@@ -1,10 +1,37 @@
 $(document).ready(function() {
+  // export schemas button
+  $('#schema_export_submit').on('click', function(e) {
+    $('#schema_export_submit').hide();
+    $('#schema_export_loading').show();
+    $('#error_alert').hide();
+    $.ajax({
+      "type":     'POST',
+      "url":      'tables/structure_export',
+      "data":     'email=' + $('#inputEmail').val(),
+      "cache":    false,
+      "timeout":  45000,
+      "success":  function (json) {
+        $('div.modal').modal('toggle');
+      },
+      "error":  function (req, textStatus, errorThrown) {
+        $('#error_alert').text("Invalid emails");
+        $('#error_alert').show();
+      },
+      "complete": function (req, textStatus) {
+        $('#schema_export_submit').show();
+        $('#schema_export_loading').hide();
+      }
+    });
+    return false;
+  });
+
+  // update buttons
   $('#tablereports tbody').on('click', 'button.tbl-update', function(e) {
     var entry_id = $(e.target).attr("data-id");
     var table_name = $(e.target).attr("data-table-name");
     var schema_name = $(e.target).attr("data-schema-name");
 
-    // saved in case user goes to a different page, removing these out of view
+    // saved in case user goes to a different page, which may move these out of view
     var update_button = $('button#update_button_' + entry_id);
     var loading_img = $('img#loading_img_' + entry_id);
     update_button.hide();

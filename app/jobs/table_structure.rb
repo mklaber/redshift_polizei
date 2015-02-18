@@ -7,6 +7,13 @@ module Jobs
   # does NOT support compound pk, fk or unqiue constraints!
   #
   class TableStructureExportJob < Desmond::BaseJob
+    def self.logger
+      @logger ||= PolizeiLogger.logger('tablestructure')
+    end
+    def logger
+      self.class.logger
+    end
+
     ##
     # error hook
     #
