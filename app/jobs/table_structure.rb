@@ -136,7 +136,7 @@ You can view it in your browser by using this link: #{view_url}"
         column_type_sql += "(#{column['varchar_len']})" unless column['varchar_len'].nil?
         column_type_sql += "(#{column['numeric_precision']}, #{column['numeric_scale']})" if column['type'].downcase == 'decimal' || column['type'].downcase == 'numeric'
         column_encoding_sql = (column['encoding'].downcase == 'none') ? 'raw' : column['encoding']
-        "\t#{column_name_sql} #{column_type_sql}#{(column['identity'].nil?) ? '' : ' IDENTITY(' + column['identity'] + ')'}#{(column['default'].nil?) ? '' : ' DEFAULT' + column['default']} #{(column['is_nullable'] == 'YES') ? 'NULL' : 'NOT NULL'} ENCODE #{column_encoding_sql}"
+        "\t#{column_name_sql} #{column_type_sql} #{(column['is_nullable'] == 'YES') ? 'NULL' : 'NOT NULL'}#{(column['identity'].nil?) ? '' : ' IDENTITY(' + column['identity'] + ')'}#{(column['default'].nil?) ? '' : ' DEFAULT ' + column['default']} ENCODE #{column_encoding_sql}"
       end.join(",\n")
       structure_sql  += ",\n" unless constraints.empty?
       structure_sql  += constraints.map do |constraint|
@@ -182,22 +182,16 @@ You can view it in your browser by using this link: #{view_url}"
           cols.numeric_precision,
           cols.numeric_scale,
           cols.is_nullable,
-          cols.column_default as "default",
+          pg_get_expr(d1.adbin, d1.adrelid) as "default",
           format_encoding(a.attencodingtype::integer) as encoding,
-          i.identity_vals as "identity"
+          regexp_substr(regexp_substr(d2.adsrc, '''(.*)'''), '[0-9]+,[0-9]+') AS "identity"
         from information_schema.columns cols
         join pg_class c on c.relname = cols.table_name
         join pg_namespace n on n.oid = c.relnamespace and n.nspname = cols.table_schema
         join pg_attribute a on a.attnum > 0 and not a.attisdropped and c.oid = a.attrelid and cols.column_name = a.attname
-        left join (select c.oid as table_id, a.attname as column_name, d.adsrc as identity_def, substr(d.adsrc, (len(d.adsrc) - charindex(',', reverse(d.adsrc))), (len(d.adsrc) - charindex('''', reverse(d.adsrc)) - (len(d.adsrc) - charindex(',', reverse(d.adsrc)))) + 1) as identity_vals
-          from pg_class c, pg_attribute a, pg_attrdef d, pg_namespace n
-          where c.oid = a.attrelid
-          and c.relkind = 'r'
-          and n.oid = c.relnamespace
-          and a.attrelid = d.adrelid
-          and a.attnum = d.adnum
-          and d.adsrc like '%%identity%%') i on i.table_id = c.oid and i.column_name = cols.column_name
-        where trim(n.nspname) not in ('pg_catalog', 'information_schema')
+        left join pg_attrdef d1 on a.attrelid = d1.adrelid and a.attnum = d1.adnum and d1.adsrc not like '%%"identity"(%%'
+        left join pg_attrdef d2 on a.attrelid = d2.adrelid and a.attnum = d2.adnum and d2.adsrc like '%%"identity"(%%'
+        where trim(n.nspname) not in ('pg_catalog', 'pg_toast', 'information_schema')
       SQL
       sql += "and trim(n.nspname) = '%s'" unless schema_name.nil?
       sql += "and trim(c.relname) = '%s'" unless table_name.nil?
@@ -216,7 +210,7 @@ You can view it in your browser by using this link: #{view_url}"
           decode(c.reldiststyle,0,'even',1,'key',8,'all') as diststyle
         from pg_class c
         join pg_namespace n on n.oid = c.relnamespace
-        where trim(n.nspname) not in ('pg_catalog', 'information_schema')
+        where trim(n.nspname) not in ('pg_catalog', 'pg_toast', 'information_schema')
       SQL
       sql += "and trim(n.nspname) = '%s'" unless schema_name.nil?
       sql += "and trim(c.relname) = '%s'" unless table_name.nil?
@@ -242,7 +236,7 @@ You can view it in your browser by using this link: #{view_url}"
         join pg_namespace n on n.oid = c.relnamespace
         where (a.attsortkeyord > 0
         or a.attisdistkey is true)
-        and trim(n.nspname) not in ('pg_catalog', 'information_schema')
+        and trim(n.nspname) not in ('pg_catalog', 'pg_toast', 'information_schema')
       SQL
       sql += "and trim(n.nspname) = '%s'" unless schema_name.nil?
       sql += "and trim(c.relname) = '%s'" unless table_name.nil?
@@ -284,7 +278,7 @@ You can view it in your browser by using this link: #{view_url}"
         left join pg_class c2 on cs.confrelid = c2.oid
         left join pg_namespace n2 on n2.oid = c2.relnamespace
         left join pg_attribute t2 on t2.attrelid = cs.confrelid and t2.attnum = cs.confkey[1] and t2.attnum > 0 and not t2.attisdropped
-        where trim(n.nspname) not in ('pg_catalog', 'information_schema')
+        where trim(n.nspname) not in ('pg_catalog', 'pg_toast', 'information_schema')
       SQL
       sql += "and trim(n.nspname) = '%s'" unless schema_name.nil?
       sql += "and trim(c.relname) = '%s'" unless table_name.nil?
