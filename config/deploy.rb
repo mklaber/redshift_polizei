@@ -36,8 +36,8 @@ default_run_options[:pty] = true
 set :ssh_options, {:forward_agent => true,
                    :keys => [File.join(ENV["HOME"], ".ssh", "id_rsa")]}
 
-task :staging do
-  set :rails_env, "staging"
+task :production do
+  set :rails_env, "production"
   set :branch, "master"
   role :all,  "staging.amg.tv"
   role :app,  "staging.amg.tv"
