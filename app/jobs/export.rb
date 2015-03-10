@@ -10,13 +10,14 @@ module Jobs
     # in case of success
     #
     def success(job_run, job_id, user_id, options={})
+      # TODO write test that link in email is accessible
       export_job = Models::ExportJob.find(job_id)
-      dl_url = AWS::S3.new.buckets[job_run.details['bucket']].objects[job_run.details['key']].url_for(
+      dl_url = AWS::S3.new.buckets[job_run.result['bucket']].objects[job_run.result['key']].url_for(
         :read,
         expires: (7 * 86400),
         response_content_type: "application/octet-stream"
       ).to_s
-      view_url = AWS::S3.new.buckets[job_run.details['bucket']].objects[job_run.details['key']].url_for(
+      view_url = AWS::S3.new.buckets[job_run.result['bucket']].objects[job_run.result['key']].url_for(
         :read,
         expires: (7 * 86400)
       ).to_s

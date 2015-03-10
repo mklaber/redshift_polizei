@@ -207,11 +207,11 @@ class Polizei < Sinatra::Application
         schema_name: params[:schema_name],
         table_name: params[:table_name]
       ).first.to_json
-    elsif run.details['doesnotexist']
-      run.details.to_json
+    elsif run.result['doesnotexist']
+      run.result.to_json
     else
       status 500
-      run.details.to_json
+      run.result.to_json
     end
   end
 

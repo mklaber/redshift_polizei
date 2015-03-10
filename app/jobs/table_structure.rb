@@ -33,12 +33,12 @@ This can happen if tables get deleted during the export, so please try once more
     # success hook
     #
     def success(job_run, job_id, user_id, options={})
-      dl_url = AWS::S3.new.buckets[job_run.details['bucket']].objects[job_run.details['key']].url_for(
+      dl_url = AWS::S3.new.buckets[job_run.result['bucket']].objects[job_run.result['key']].url_for(
         :read,
         expires: (14 * 86400),
         response_content_type: "application/octet-stream"
       ).to_s
-      view_url = AWS::S3.new.buckets[job_run.details['bucket']].objects[job_run.details['key']].url_for(
+      view_url = AWS::S3.new.buckets[job_run.result['bucket']].objects[job_run.result['key']].url_for(
         :read,
         expires: (14 * 86400)
       ).to_s
