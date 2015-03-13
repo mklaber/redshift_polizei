@@ -16,6 +16,9 @@ class Polizei < Sinatra::Application
 
   # setup the custom logger
   configure do
+    # Disable internal middleware for presenting errors
+    # as useful HTML pages
+    set :show_exceptions, false
     # disable Sinatra's default
     set :logging, nil
     # config files
