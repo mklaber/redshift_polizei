@@ -18,6 +18,8 @@ module Jobs
     # - :table_name
     # will update all reports if not given
     #
+    # returns false if table does not exist anymore, true otherwise
+    #
     def execute(job_id, user_id, options={})
       schema_name = options[:schema_name] || nil
       table_name  = options[:table_name] || nil
