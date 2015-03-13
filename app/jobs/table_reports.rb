@@ -106,7 +106,7 @@ module Jobs
     def get_sort_and_dist_keys(connection, table)
       tmp = execute_grouped_by_table(connection, 'tables/sort_dist_keys', sql_append(table))
       tmp.hmap do |full_table_name, result|
-        sort_keys = result.select { |r| (r['attsortkeyord'].to_i > 0) }.map do |r|
+        sort_keys = result.sort_by { |r| r['attsortkeyord'].to_i }.select { |r| (r['attsortkeyord'].to_i > 0) }.map do |r|
           r['attname']
         end
         dist_key = nil
