@@ -1,7 +1,7 @@
 ##
 # 'pg' gem utility functions based of same Desmond class
 #
-class PGUtil < Desmond::PGUtil
+class RSUtil < Desmond::PGUtil
   ##
   # returns a dedicted RedShift connection
   # required +options+ if `DesmondConfig.system_connection_allowed?` is false:
@@ -13,6 +13,7 @@ class PGUtil < Desmond::PGUtil
   # - timeout: connection timeout to use
   #
   def self.dedicated_connection(options={})
-    super({ connection_id: "redshift_#{Sinatra::Application.environment}" }.merge(options))
+    super({ system_connection_allowed: true,
+      connection_id: "redshift_#{DesmondConfig.environment}" }.merge(options))
   end
 end

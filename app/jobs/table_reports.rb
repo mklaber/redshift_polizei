@@ -26,27 +26,27 @@ module Jobs
       table = { schema_name: schema_name, table_name: table_name } unless schema_name.nil? || table_name.nil?
 
       # get connection to RedShift
-      c = PGUtil.dedicated_connection(system_connection_allowed: true)
-      # execute update in transaction so that reports stay available
-      reports = {}
-      Models::TableReport.transaction do
-        # check the saved reports for updates => deleting non-existant tables
-        all_tables = get_all_table_names(c, table)
-        existing_reports = Models::TableReport.all if table.nil?
-        existing_reports = Models::TableReport.where(table) unless table.nil?
-        existing_reports.each do |tr|
-          tr.destroy if !all_tables.has_key?("#{tr['schema_name']}.#{tr['table_name']}")
+      RSPool.with do |c|
+        # execute update in transaction so that reports stay available
+        reports = {}
+        Models::TableReport.transaction do
+          # check the saved reports for updates => deleting non-existant tables
+          all_tables = get_all_table_names(c, table)
+          existing_reports = Models::TableReport.all if table.nil?
+          existing_reports = Models::TableReport.where(table) unless table.nil?
+          existing_reports.each do |tr|
+            tr.destroy if !all_tables.has_key?("#{tr['schema_name']}.#{tr['table_name']}")
+          end
+          # get and save new table reports
+          reports = save_table_reports(c, table)
+          self.failed(doesnotexist: true) if reports.nil?
         end
-        # get and save new table reports
-        reports = save_table_reports(c, table)
-        self.failed(doesnotexist: true) if reports.nil?
       end
     rescue => e
       self.logger.error "Error executing TableReports job with #{options}:"
       self.logger.exception e
       raise e
     ensure
-      c.close
       self.logger.info "... done updating Table Reports"
     end
 

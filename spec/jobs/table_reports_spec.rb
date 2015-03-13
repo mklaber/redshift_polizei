@@ -3,15 +3,18 @@ require_relative '../spec_helper'
 describe Jobs::TableReports do
   def create_report(options={})
     connection_id = 'redshift_test'
-    c = PGUtil.dedicated_connection(connection_id: connection_id, system_connection_allowed: true)
-    schema_name = options[:schema_name] || @config[:export_schema]
-    table_name = options[:table_name] || "polizei_test_#{rand(1024)}"
-    create_sql = options[:create_sql] || "CREATE TABLE #{schema_name}.#{table_name}(id INT, txt VARCHAR)"
-    c.exec(create_sql) unless options[:donotcreate]
-    Jobs::TableReports.enqueue(1, 1, { schema_name: schema_name, table_name: table_name }.merge(options))
-  ensure
-    c.exec("DROP TABLE IF EXISTS #{schema_name}.#{table_name}") unless options[:donotcreate]
-    c.close
+    RSPool.with do |c|
+      begin
+        schema_name = options[:schema_name] || @config[:export_schema]
+        table_name = options[:table_name] || "polizei_test_#{rand(1024)}"
+        create_sql = options[:create_sql] || "CREATE TABLE #{schema_name}.#{table_name}(id INT, txt VARCHAR)"
+        c.exec(create_sql) unless options[:donotcreate]
+        Jobs::TableReports.enqueue(1, 1, { schema_name: schema_name, table_name: table_name }.merge(options))
+      ensure
+        c.exec("DROP TABLE IF EXISTS #{schema_name}.#{table_name}") unless options[:donotcreate]
+        c.close
+      end
+    end
   end
 
   def create_and_return_report(options={})
@@ -102,15 +105,12 @@ describe Jobs::TableReports do
   end
 
   it 'should create a report on all tables without arguments' do
-    begin
-      c = PGUtil.dedicated_connection(connection_id: 'redshift_test', system_connection_allowed: true)
+    RSPool.with do |c|
       tbl_count = c.exec("select count(*) as cnt
 from pg_class c join pg_namespace n on n.oid = c.relnamespace
 where trim(n.nspname) not in ('pg_catalog', 'pg_toast', 'information_schema')")[0]['cnt'].to_i
       create_report(schema_name: nil, table_name: nil, donotcreate: true)
       expect(Models::TableReport.count).to eq(tbl_count)
-    ensure
-      c.close
     end
   end
 end

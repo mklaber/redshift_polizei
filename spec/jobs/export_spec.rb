@@ -6,7 +6,7 @@ describe Jobs::PolizeiExportJob do
   #
   def run_export(model_options={}, enqueue_options={}, options={})
     connection_id = 'redshift_test'
-    c = PGUtil.dedicated_connection(connection_id: connection_id, username: @config[:export_username], password: @config[:export_password])
+    c = RSUtil.dedicated_connection(connection_id: connection_id, username: @config[:export_username], password: @config[:export_password])
     table = "#{@config[:export_schema]}.polizei_test_#{rand(1024)}"
     c.exec("CREATE TABLE #{table}(id INT, txt VARCHAR)")
     c.exec("INSERT INTO #{table} VALUES(0, 'null')")

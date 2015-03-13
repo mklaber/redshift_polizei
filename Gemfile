@@ -22,6 +22,8 @@ gem 'desmond', git: 'git@github.com:AnalyticsMediaGroup/desmond.git' # sql expor
 
 gem 'pony' # sending emails
 
+gem 'connection_pool' # for background jobs connections
+
 group :development do
   gem 'shotgun'
   gem 'puma'

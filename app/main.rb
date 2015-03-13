@@ -15,9 +15,12 @@ require 'erubis'
 require 'coderay'
 require 'aws'
 require 'desmond'
+require 'connection_pool'
 
 require 'sql/sql'
-require './app/utils/pg_util'
+
+require 'redshift/pool'
+
 require './app/monkey_patches'
 require './app/helpers'
 require './app/caches'
@@ -47,4 +50,4 @@ module Rails
   end
 end
 
-Dir.glob('./app/{models,reports,caches,jobs}/*.rb').sort.each { |file| require file }
+Dir.glob('./app/{models,reports,caches,jobs}/**/*.rb').sort.each { |file| require file }
