@@ -365,7 +365,7 @@ class Polizei < Sinatra::Application
   end
 
   error do
-    @error = 'Sorry, there was a nasty error - ' + env['sinatra.error'].name.to_s
+    @error = 'Sorry, there was a nasty error - ' + env['sinatra.error'].to_s
     erb :error
   end
 
