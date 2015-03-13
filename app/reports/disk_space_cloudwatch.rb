@@ -5,7 +5,7 @@ module Reports
   # Report retireving the disk space usage from CloudWatch
   #
   class DiskSpaceCloudwatch < Base
-
+    DISK_SPACE_PERIOD = 60
     #
     # retrieves disk usage and capacity for RedShift from CloudWatch Metric
     #
@@ -15,7 +15,7 @@ module Reports
       cluster = clusters[:clusters][0]
       cloudwatch = AWS::CloudWatch::Client.new
       i = 0
-      cluster[:cluster_nodes].select { |node| node[:node_role] != 'LEADER' }.map do |node|
+      node_space = cluster[:cluster_nodes].select { |node| node[:node_role] != 'LEADER' }.map do |node|
         dimensions = [{
           name: "ClusterIdentifier",
           value: cluster_identifier
@@ -26,9 +26,9 @@ module Reports
         i += 1
         req = {namespace: "AWS/Redshift",
           metric_name: "PercentageDiskSpaceUsed",
-          start_time: (Time.now - 86400).iso8601,
-          end_time: (Time.now - 1).iso8601,
-          period: 86400,
+          start_time: (Time.now - DISK_SPACE_PERIOD).iso8601,
+          end_time: (Time.now).iso8601,
+          period: DISK_SPACE_PERIOD,
           statistics: ["Average"],
           dimensions: dimensions}
         # query results from CloudWatch
@@ -44,6 +44,8 @@ module Reports
           }
         end
       end
+
+      { period: DISK_SPACE_PERIOD, data: node_space }
     end
   end
 end

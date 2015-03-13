@@ -187,7 +187,9 @@ class Polizei < Sinatra::Application
 
   get '/disk_space' do
     disk_space_report = Reports::DiskSpaceCloudwatch.new
-    @disks = disk_space_report.run
+    data = disk_space_report.run
+    @period = data[:period]
+    @disks = data[:data]
     erb :disk_space, :locals => {:name => :disk_space}
   end
   
