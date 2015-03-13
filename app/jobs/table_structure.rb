@@ -25,8 +25,8 @@ This can happen if tables get deleted during the export, so please try once more
       mail_options = {
         cc: Sinatra::Configurations.polizei('job_failure_cc'),
         bcc: Sinatra::Configurations.polizei('job_failure_bcc')
-      }.merge(options.fetch('mail', {}))
-      mail(options['email'], subject, body, mail_options)
+      }.merge(options.fetch(:mail, {}))
+      mail(options[:email], subject, body, mail_options)
     end
 
     ##
@@ -47,7 +47,7 @@ This can happen if tables get deleted during the export, so please try once more
 as a direct download here: #{dl_url}
 You can view it in your browser by using this link: #{view_url}"
 
-      mail(options['email'], subject, body, options.fetch('mail', {}))
+      mail(options[:email], subject, body, options.fetch(:mail, {}))
     end
 
     ##
@@ -95,14 +95,10 @@ You can view it in your browser by using this link: #{view_url}"
           s3writer.write(table_sql)
           s3writer.write("\n\n")
         end
-        done(bucket: s3_bucket, key: s3_key)
+        { bucket: s3_bucket, key: s3_key }
       ensure
         s3writer.close unless s3writer.nil?
       end
-    rescue => e
-      self.logger.error "Error executing TableStructureExport job for #{user_id} with #{options}:"
-      self.logger.exception e
-      raise e
     end
 
     private
