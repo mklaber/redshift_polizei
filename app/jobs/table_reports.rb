@@ -29,6 +29,7 @@ module Jobs
       c = PGUtil.dedicated_connection(system_connection_allowed: true)
       # execute update in transaction so that reports stay available
       reports = {}
+      still_exists = true
       Models::TableReport.transaction do
         # check the saved reports for updates => deleting non-existant tables
         all_tables = get_all_table_names(c, table)
@@ -39,8 +40,9 @@ module Jobs
         end
         # get and save new table reports
         reports = save_table_reports(c, table)
-        self.failed(doesnotexist: true) if reports.nil?
+        still_exists = false if reports.nil?
       end
+      still_exists
     rescue => e
       self.logger.error "Error executing TableReports job with #{options}:"
       self.logger.exception e
