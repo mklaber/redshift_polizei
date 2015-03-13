@@ -10,7 +10,7 @@ module Reports
     # retrieves disk usage and capacity for RedShift from CloudWatch Metric
     #
     def run
-      cluster_identifier = Sinatra::Configurations.aws('cluster_identifier')
+      cluster_identifier = GlobalConfig.aws('cluster_identifier')
       clusters = AWS::Redshift::Client.new.describe_clusters(cluster_identifier: cluster_identifier)
       cluster = clusters[:clusters][0]
       cloudwatch = AWS::CloudWatch::Client.new

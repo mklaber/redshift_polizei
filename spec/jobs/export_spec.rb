@@ -71,8 +71,8 @@ describe Jobs::PolizeiExportJob do
 
     open_last_email
     expect(current_email).to deliver_to(user.email)
-    expect(current_email).to cc_to(Sinatra::Configurations.polizei('job_failure_cc'))
-    expect(current_email).to bcc_to(Sinatra::Configurations.polizei('job_failure_bcc'))
+    expect(current_email).to cc_to(GlobalConfig.polizei('job_failure_cc'))
+    expect(current_email).to bcc_to(GlobalConfig.polizei('job_failure_bcc'))
     expect(current_email).to have_subject(/failed/)
     expect(current_email).to have_body_text(/failed/)
   end

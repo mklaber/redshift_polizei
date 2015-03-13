@@ -34,9 +34,9 @@ class Polizei < Sinatra::Application
 
   # configure OAuth authentication
   use OmniAuth::Builder do
-    provider Sinatra::Configurations.auth('provider'),
-      Sinatra::Configurations.auth('client_id'),
-      Sinatra::Configurations.auth('client_secret')
+    provider GlobalConfig.auth('provider'),
+      GlobalConfig.auth('client_id'),
+      GlobalConfig.auth('client_secret')
   end
 
   # configure asset pipeline
@@ -106,7 +106,7 @@ class Polizei < Sinatra::Application
     google_email = auth_hash['info']['email']
     # make sure only valid domains can login
     parsed_google_email = Mail::Address.new(google_email)
-    error 403 if not Sinatra::Configurations.auth('valid_domains').member?(parsed_google_email.domain)
+    error 403 if not GlobalConfig.auth('valid_domains').member?(parsed_google_email.domain)
     # successfully logged in, make sure we have user in the database
     user = Models::User.find_or_initialize_by(email: parsed_google_email.address)
     user.google_id = auth_hash['uid']

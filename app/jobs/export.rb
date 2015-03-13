@@ -41,8 +41,8 @@ You can view it in your browser by using this link: #{view_url}"
 The following error description might be helpful: '#{job_run.error}'"
 
       mail_options = {
-        cc: Sinatra::Configurations.polizei('job_failure_cc'),
-        bcc: Sinatra::Configurations.polizei('job_failure_bcc')
+        cc: GlobalConfig.polizei('job_failure_cc'),
+        bcc: GlobalConfig.polizei('job_failure_bcc')
       }.merge(options.fetch('mail', {}))
       to  = Models::User.find(user_id).email
       to += ", #{export_job.failure_email}" unless export_job.failure_email.nil?

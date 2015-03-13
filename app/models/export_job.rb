@@ -26,9 +26,9 @@ module Models
           query: self.query
         },
         s3: {
-          access_key_id: Sinatra::Configurations.aws('access_key_id'),
-          secret_access_key: Sinatra::Configurations.aws('secret_access_key'),
-          bucket: Sinatra::Configurations.aws('export_bucket')
+          access_key_id: GlobalConfig.aws('access_key_id'),
+          secret_access_key: GlobalConfig.aws('secret_access_key'),
+          bucket: GlobalConfig.aws('export_bucket')
         },
         csv: {
           col_sep: self.export_options['delimiter'],

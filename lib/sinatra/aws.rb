@@ -9,7 +9,7 @@ module Sinatra
 
     def self.registered(app)
       app.register Sinatra::ConfigurationsExtension
-      app.helpers AWSHelpers
+      #app.helpers AWSHelpers
       app.set :aws_file, DEFAULT_CONFIG_FILE if File.exists?(DEFAULT_CONFIG_FILE)
     end
 
@@ -23,15 +23,15 @@ module Sinatra
       end
     end
 
-    def aws_config(key=nil)
-      config(CONFIG_NAME, key)
-    end
+    #def aws_config(key=nil)
+    #  config(CONFIG_NAME, key)
+    #end
 
-    module AWSHelpers
-      def aws_config(key=nil)
-        config(CONFIG_NAME, key)
-      end
-    end
+    #module AWSHelpers
+    #  def aws_config(key=nil)
+    #    config(CONFIG_NAME, key)
+    #  end
+    #end
   end
 
   register AWSExtension

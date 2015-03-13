@@ -23,8 +23,8 @@ module Jobs
 This can happen if tables get deleted during the export, so please try once more and then let engineering know."
       
       mail_options = {
-        cc: Sinatra::Configurations.polizei('job_failure_cc'),
-        bcc: Sinatra::Configurations.polizei('job_failure_bcc')
+        cc: GlobalConfig.polizei('job_failure_cc'),
+        bcc: GlobalConfig.polizei('job_failure_bcc')
       }.merge(options.fetch('mail', {}))
       mail(options['email'], subject, body, mail_options)
     end
@@ -55,7 +55,7 @@ You can view it in your browser by using this link: #{view_url}"
     #
     def execute(job_id, user_id, options={})
       time = Time.now.utc.strftime('%Y_%m_%dT%H_%M_%S_%LZ')
-      s3_bucket = Sinatra::Configurations.aws('export_bucket')
+      s3_bucket = GlobalConfig.aws('export_bucket')
       s3_key = "table_structure_export_#{user_id}_#{time}.sql"
 
       schema_name = options[:schema_name]
@@ -325,7 +325,7 @@ end
 
 if __FILE__ == $0
   puts Jobs::TableStructureExportJob.new('').execute(1, 1, schema_name: ARGV[0], table_name: ARGV[1], s3: {
-    access_key_id: Sinatra::Configurations.aws('access_key_id'),
-    secret_access_key: Sinatra::Configurations.aws('secret_access_key')
+    access_key_id: GlobalConfig.aws('access_key_id'),
+    secret_access_key: GlobalConfig.aws('secret_access_key')
   })
 end
