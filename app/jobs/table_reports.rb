@@ -19,8 +19,6 @@ module Jobs
     # will update all reports if not given
     #
     def execute(job_id, user_id, options={})
-      self.logger.info "Updating Table Reports ..."
-
       schema_name = options[:schema_name] || nil
       table_name  = options[:table_name] || nil
       table = { schema_name: schema_name, table_name: table_name } unless schema_name.nil? || table_name.nil?
@@ -43,13 +41,8 @@ module Jobs
         still_exists = false if reports.nil?
       end
       still_exists
-    rescue => e
-      self.logger.error "Error executing TableReports job with #{options}:"
-      self.logger.exception e
-      raise e
     ensure
       c.close
-      self.logger.info "... done updating Table Reports"
     end
 
     private
