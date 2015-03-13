@@ -61,7 +61,7 @@
         <% if row['sort_keys'].present? %>
           <%= row['sort_keys'].collect{|k|
                 "<span class='label label-#{(k == row['sort_keys'].first ? 'primary' : 'info')}'>#{k}</span>"
-              }.join(', ') %>
+              }.join('<br />') %>
         <% else %>
           <span class="label label-danger">None!</span>
         <% end %>

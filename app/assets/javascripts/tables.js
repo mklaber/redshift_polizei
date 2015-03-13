@@ -62,13 +62,13 @@ $(document).ready(function() {
             sort_keys = '<span class="label label-danger">None!</span>';
           else {
             for (var i = 0; i < json_sort_keys.length; i++) {
-              sort_keys += ', ';
+              sort_keys += '<br />';
               if (i == 0)
                 sort_keys += '<span class="label label-primary">' + json_sort_keys[i] + '</span>';
               else
                 sort_keys += '<span class="label label-info">' + json_sort_keys[i] + '</span>';
             }
-            sort_keys = sort_keys.substring(2);
+            sort_keys = sort_keys.substring(6);
           }
           if (json['dist_key']) {
             if (json['dist_key'] == json_sort_keys[0]) {
