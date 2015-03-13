@@ -16,6 +16,9 @@ class Polizei < Sinatra::Application
 
   # setup the custom logger
   configure do
+    # Disable internal middleware for presenting errors
+    # as useful HTML pages
+    set :show_exceptions, false
     # disable Sinatra's default
     set :logging, nil
     # config files
@@ -184,7 +187,9 @@ class Polizei < Sinatra::Application
 
   get '/disk_space' do
     disk_space_report = Reports::DiskSpaceCloudwatch.new
-    @disks = disk_space_report.run
+    data = disk_space_report.run
+    @period = data[:period]
+    @disks = data[:data]
     erb :disk_space, :locals => {:name => :disk_space}
   end
   
@@ -196,22 +201,25 @@ class Polizei < Sinatra::Application
   post '/tables/report' do
     content_type :json
     # TODO put into work queue and poll/sse/websocket until frontend timeout
-    run = Jobs::TableReports.run(
-      1,
-      1,
-      schema_name: params[:schema_name],
-      table_name: params[:table_name]
-    )
-    if run.done?
-      Models::TableReport.where(
+    begin
+      still_exists = Jobs::TableReports.run(
+        1,
+        current_user.id,
         schema_name: params[:schema_name],
         table_name: params[:table_name]
-      ).first.to_json
-    elsif run.result['doesnotexist']
-      run.result.to_json
-    else
+      )
+    rescue => e
       status 500
-      run.result.to_json
+      { error: e.message }.to_json
+    else
+      if still_exists
+        Models::TableReport.where(
+          schema_name: params[:schema_name],
+          table_name: params[:table_name]
+        ).first.to_json
+      else
+        { doesnotexist: true }.to_json
+      end
     end
   end
 
@@ -359,7 +367,7 @@ class Polizei < Sinatra::Application
   end
 
   error do
-    @error = 'Sorry, there was a nasty error - ' + env['sinatra.error'].name.to_s
+    @error = 'Sorry, there was a nasty error - ' + env['sinatra.error'].to_s
     erb :error
   end
 

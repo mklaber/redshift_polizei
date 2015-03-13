@@ -41,6 +41,8 @@ describe Jobs::TableReports do
 
   it 'should extract sort key' do
     schema_name = @config[:export_schema]
+
+    # test normal
     table_name = "polizei_test_#{rand(1024)}"
     report = create_and_return_report(
       schema_name: schema_name,
@@ -48,6 +50,15 @@ describe Jobs::TableReports do
       create_sql: "CREATE TABLE #{schema_name}.#{table_name}(id INT, txt VARCHAR) SORTKEY(id, txt)"
     )
     expect(report.sort_keys).to eq(['id', 'txt'])
+
+    # test reversed
+    table_name = "polizei_test_#{rand(1024)}"
+    report = create_and_return_report(
+      schema_name: schema_name,
+      table_name: table_name,
+      create_sql: "CREATE TABLE #{schema_name}.#{table_name}(id INT, txt VARCHAR) SORTKEY(txt, id)"
+    )
+    expect(report.sort_keys).to eq(['txt', 'id'])
   end
 
   it 'should extract dist key with style' do

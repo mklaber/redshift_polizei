@@ -18,17 +18,18 @@ module Jobs
     # - :table_name
     # will update all reports if not given
     #
+    # returns false if table does not exist anymore, true otherwise
+    #
     def execute(job_id, user_id, options={})
-      self.logger.info "Updating Table Reports ..."
-
       schema_name = options[:schema_name] || nil
       table_name  = options[:table_name] || nil
       table = { schema_name: schema_name, table_name: table_name } unless schema_name.nil? || table_name.nil?
 
       # get connection to RedShift
+      reports = {}
+      still_exists = true
       RSPool.with do |c|
         # execute update in transaction so that reports stay available
-        reports = {}
         Models::TableReport.transaction do
           # check the saved reports for updates => deleting non-existant tables
           all_tables = get_all_table_names(c, table)
@@ -39,15 +40,10 @@ module Jobs
           end
           # get and save new table reports
           reports = save_table_reports(c, table)
-          self.failed(doesnotexist: true) if reports.nil?
+          still_exists = false if reports.nil?
         end
       end
-    rescue => e
-      self.logger.error "Error executing TableReports job with #{options}:"
-      self.logger.exception e
-      raise e
-    ensure
-      self.logger.info "... done updating Table Reports"
+      still_exists
     end
 
     private
@@ -111,7 +107,7 @@ module Jobs
     def get_sort_and_dist_keys(connection, table)
       tmp = execute_grouped_by_table(connection, 'tables/sort_dist_keys', sql_append(table))
       tmp.hmap do |full_table_name, result|
-        sort_keys = result.select { |r| (r['attsortkeyord'].to_i > 0) }.map do |r|
+        sort_keys = result.sort_by { |r| r['attsortkeyord'].to_i }.select { |r| (r['attsortkeyord'].to_i > 0) }.map do |r|
           r['attname']
         end
         dist_key = nil
