@@ -14,9 +14,9 @@ class SQL
   # uses method `execute` and then groups the result into a hash.
   # the keys are determined by the given block.
   #
-  def self.execute_grouped(connection, name, append: nil)
+  def self.execute_grouped(connection, name, parameters: [], filters: {})
     results = {}
-    self.execute(connection, name, append: append).each do |result|
+    self.execute(connection, name, parameters: parameters, filters: filters).each do |result|
       key = yield(result)
       results[key] ||= []
       results[key] << result
@@ -28,14 +28,17 @@ class SQL
   # execute the sql query found as +name+ using +connection+.
   # the extension '.sql' is automatically appended if no file
   # extension given.
-  # +append+ can be used to append something to the SQL query.
-  # the value of +append+ is passed to `ActiveRecord::Base.sanitize_sql_array`
+  # +filters+ can be hash which will be appended as 'and key = value' filters.
   #
-  def self.execute(connection, name, append: nil, parameters: [])
+  def self.execute(connection, name, parameters: [], filters: {})
     raw_sql = self.load_file(name)
     parameters = [ parameters ] unless parameters.is_a?(Array)
     sql  = self.sanitize([ raw_sql ] + parameters)
-    sql += self.sanitize(append) unless append.nil?
+    unless filters.nil?
+      filters.each do |key, value|
+        sql += self.sanitize([ "and #{key} = ?", value]) unless key.nil? || value.nil?
+      end
+    end
     self.execute_raw(connection, sql)
   end
 

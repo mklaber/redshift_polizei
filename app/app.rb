@@ -3,6 +3,7 @@ require './app/main'
 class Polizei < Sinatra::Application
   POLIZEI_CONFIG_FILE = 'config/polizei.yml'
   AUTH_CONFIG_FILE = 'config/auth.yml'
+  JOB_WAIT_TIMEOUT = 30
   
   set :root, File.dirname(__FILE__)
   set :views, "#{settings.root}/views"
@@ -202,16 +203,13 @@ class Polizei < Sinatra::Application
     content_type :json
     # TODO put into work queue and poll/sse/websocket until frontend timeout
     begin
-      still_exists = Jobs::TableReports.run(
+      still_exists = Jobs::TableReports.enqueue_and_wait(
         1,
         current_user.id,
+        JOB_WAIT_TIMEOUT,
         schema_name: params[:schema_name],
         table_name: params[:table_name]
       )
-    rescue => e
-      status 500
-      { error: e.message }.to_json
-    else
       if still_exists
         Models::TableReport.where(
           schema_name: params[:schema_name],
@@ -220,6 +218,10 @@ class Polizei < Sinatra::Application
       else
         { doesnotexist: true }.to_json
       end
+    rescue => e
+      PolizeiLogger.logger.exception e
+      status 500
+      { error: e.message }.to_json
     end
   end
 

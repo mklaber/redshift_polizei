@@ -1,10 +1,10 @@
-require './app/main'
+require_relative '../../main'
 
 module Jobs
   #
   # Job retrieving reports about RedShift tables
   #
-  class TableReports < Desmond::BaseJob
+  class TableReports < BaseReport
     def self.logger
       @logger ||= PolizeiLogger.logger('tablereports')
     end
@@ -64,7 +64,7 @@ module Jobs
     end
 
     def get_table_reports(connection, table)
-      statistics = execute_grouped_by_table(connection, 'tables/size_skew_populated', sql_append(table))
+      statistics = execute_grouped_by_table(connection, 'tables/size_skew_populated', table)
       col_encodings = has_column_encodings(connection, table)
       dist_styles = get_dist_styles(connection, table)
       sort_dist_keys = get_sort_and_dist_keys(connection, table)
@@ -94,20 +94,24 @@ module Jobs
     end
 
     def get_all_table_names(connection, table)
-      execute_grouped_by_table(connection, 'tables/exists', sql_append(table))
+      execute_grouped_by_table(connection, 'tables/exists', table)
     end
 
     def get_dist_styles(connection, table)
-      tmp = execute_grouped_by_table(connection, 'tables/dist_style', sql_append(table))
+      tmp = execute_grouped_by_table(connection, 'tables/dist_style', table)
       tmp.hmap do |full_table_name, result|
         result[0]
       end
     end
 
     def get_sort_and_dist_keys(connection, table)
-      tmp = execute_grouped_by_table(connection, 'tables/sort_dist_keys', sql_append(table))
+      tmp = execute_grouped_by_table(connection, 'tables/sort_dist_keys', table)
       tmp.hmap do |full_table_name, result|
-        sort_keys = result.sort_by { |r| r['attsortkeyord'].to_i }.select { |r| (r['attsortkeyord'].to_i > 0) }.map do |r|
+        sort_keys = result.sort_by do |r|
+          r['attsortkeyord'].to_i
+        end.select do |r|
+          (r['attsortkeyord'].to_i > 0)
+        end.map do |r|
           r['attname']
         end
         dist_key = nil
@@ -118,33 +122,27 @@ module Jobs
     end
 
     def has_column_encodings(connection, table)
-      tmp = execute_grouped_by_table(connection, 'tables/has_encoding', sql_append(table))
+      tmp = execute_grouped_by_table(connection, 'tables/has_encoding', table)
       tmp.hmap do |full_table_name, encoding_columns|
         !encoding_columns.empty?
       end
     end
 
     ##
-    # returns option 'append' for `SQL.execute` for all used queries
-    #
-    def sql_append(table)
-      return { append: nil } if table.nil? || table[:schema_name].nil? || table[:table_name].nil?
-      return { append: ['and trim(n.nspname) = ? and trim(c.relname) = ?', table[:schema_name], table[:table_name]] }
-    end
-
-    ##
-    # groups results retrieved by `SQL.execute` in a hash by
-    # 'schema_name' and 'table_name' from the retrieved rows
+    # groups  SQL results in a hash by 'schema_name'
+    # and 'table_name' from the retrieved rows
     #
     def execute_grouped_by_table(*args)
-      results = {}
-      SQL.execute(*args).each do |result|
-        fail 'Missing schema_name or table_name' unless result.has_key?('schema_name') && result.has_key?('table_name')
+      tmp = args.pop || {}
+      filters = {}
+      filters['trim(n.nspname)'] = tmp[:schema_name] if tmp.has_key?(:schema_name)
+      filters['trim(c.relname)'] = tmp[:table_name] if tmp.has_key?(:table_name)
+      SQL.execute_grouped(*args, filters: filters) do |result|
+        unless result.has_key?('schema_name') && result.has_key?('table_name')
+          fail 'Missing schema_name or table_name'
+        end
         full_table_name = "#{result['schema_name']}.#{result['table_name']}"
-        results[full_table_name] ||= []
-        results[full_table_name] << result
       end
-      results
     end
   end
 end

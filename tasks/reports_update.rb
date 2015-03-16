@@ -27,18 +27,11 @@ module Tasks
     end
 
     #
-    # renews all reports
-    #
-    def self.renew_all
-      renew(nil)
-    end
-
-    #
     # Renews the given reports.
     # Accepts list of classes or strings.
     # If parameter is empty or nil, uses all Reports::Base subclasses
     #
-    def self.renew(reports)
+    def self.renew(reports=nil)
       return renew(Reports::Base.descendants) if reports.nil?
       return renew(Reports::Base.descendants) if reports.is_a?(Array) && reports.empty?
       return renew([reports]) if not reports.is_a?(Array)

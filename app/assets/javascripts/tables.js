@@ -109,7 +109,10 @@ $(document).ready(function() {
       "error": function (req, textStatus, errorThrown) {
         update_button.show();
         loading_img.hide();
-        alert("Error loading update, reason: '" + textStatus + "'");
+        var errorCause = errorThrown;
+        if (req.responseJSON['error'])
+          errorCause = req.responseJSON['error'];
+        alert("Error loading update, reason: '" + errorCause + "'");
       }
     });
     return false;

@@ -26,7 +26,8 @@ end
 namespace :reports do
   desc 'Updates the caches of all reports'
   task :update do
-    Tasks::ReportsUpdate.renew_all
+    Rake::Task["redshift:tablereports:update"].invoke
+    Tasks::ReportsUpdate.renew
   end
 end
 
@@ -48,10 +49,10 @@ namespace :redshift do
     end
   end
 
-  namespace :tablereport do
+  namespace :tablereports do
     desc 'Update tables report'
-    task :update do
-      Jobs::TableReports.run(1, 1)
+    task :update, :schema_name, :table_name do |t, args|
+      Jobs::TableReports.run(1, 1, args)
     end
     task :clear do
       Models::TableReport.destroy_all
