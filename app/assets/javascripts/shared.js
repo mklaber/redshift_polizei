@@ -162,7 +162,6 @@ function regex_is_valid(regex) {
 function datatable_update_size() {
     $.each($('table.dataTable'), function(idx, table) {
         $(table).css({ width: $(table).parent().width() });
-        $(table).DataTable().columns.adjust();
     });
 }
 

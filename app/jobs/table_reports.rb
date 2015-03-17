@@ -23,6 +23,7 @@ module Jobs
     def execute(job_id, user_id, options={})
       schema_name = options[:schema_name] || nil
       table_name  = options[:table_name] || nil
+      table = {}
       table = { schema_name: schema_name, table_name: table_name } unless schema_name.nil? || table_name.nil?
 
       # get connection to RedShift

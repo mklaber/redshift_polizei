@@ -25,6 +25,29 @@ $(document).ready(function() {
     return false;
   });
 
+  $('#update_all_tables').click(function(e) {
+    $('#update_all_tables').hide();
+    $('#update_all_tables_loading').show();
+    $.ajax({
+      "type":     'POST',
+      "url":      'tables/report',
+      "data":     '',
+      "dataType": "json",
+      "cache":    false,
+      "timeout":  45000,
+      "success":  function (json) {
+        window.location.reload();
+      },
+      "error": function (req, textStatus, errorThrown) {
+        alert("Error during update, reason: '" + errorThrown + "'");
+      },
+      "complete": function (req, textStatus, errorThrown) {
+        $('#update_all_tables').show();
+        $('#update_all_tables_loading').hide();
+      }
+    });
+  });
+
   // update buttons
   $('#tablereports tbody').on('click', 'button.tbl-update', function(e) {
     var entry_id = $(e.target).attr("data-id");
