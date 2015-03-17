@@ -192,8 +192,9 @@ function datatable_server_init(table, options) {
     $(table).dataTable(options);
 
     // modify search box
-    var filterContainer = $('#' + table.id + '_filter');
-    var searchBox = $('#' + table.id + '_filter input');
+    var table_id = $(table).attr('id');
+    var filterContainer = $('div#' + table_id + '_filter');
+    var searchBox = $('div#' + table_id + '_filter input');
     searchBox.unbind(); // remove default action
     searchBox.bind('keyup', function (e) {
         if (e.keyCode == 13) { // search when enter is pressed
@@ -219,35 +220,18 @@ function datatable_ajax_init(table, url, options) {
 }
 
 function datatable_client_init(table, user_options) {
-    options = { 'dom': 'lrtip', 'aaSorting': [] };
+    options = { 'aaSorting': [] };
     $.extend(options, user_options);
     $(table).dataTable(options);
-    var table_id = $(table).attr('id');
-    var wrapper_id = "div#" + table_id + "_wrapper";
-    var length_id = "div#" + table_id + "_length";
-    var info_id = "div#" + table_id + "_info";
-    var paginate_id = "div#" + table_id + "_paginate";
-    // fix bootstrap table style with custom dom option
-    $(wrapper_id).css('overflow', 'auto');
-    $(length_id).css('float', 'left');
-    $(info_id).css('float', 'left');
-    $(paginate_id).css('float', 'right');
-    // create custom filter input field
-    var filter_id = table_id + "_customfilter";
-    var cfilter = $('<div id="' + filter_id + '" class="dataTables_filter">' +
-            '<label>' +
-                '<span class="label label-default" style="position: relative; left: 195px;">RegEx</span>' +
-                'Search:' +
-                '<input ' +
-                    'type="search" ' +
-                    'class="form-control input-sm" ' +
-                    'placeholder="" ' +
-                    'aria-controls="' + table_id + '">' +
-            '</label>' +
-        '</div>');
-    cfilter.insertAfter($(length_id));
 
-    $('div#' + filter_id + ' input').on('keyup click', function () {
+    var table_id = $(table).attr('id');
+    var filterContainer = $('div#' + table_id + '_filter label');
+    var searchBox = $('div#' + table_id + '_filter input');
+    var cfilter = $('<span class="label label-default" style="position: relative; left: 195px;">RegEx</span>');
+    filterContainer.prepend(cfilter);
+
+    searchBox.unbind();
+    searchBox.on('keyup click', function () {
         var search_term = $(this).val();
         $(table).DataTable().search(
             search_term,
