@@ -159,6 +159,13 @@ function regex_is_valid(regex) {
     }
 }
 
+function datatable_update_size() {
+    $.each($('table.dataTable'), function(idx, table) {
+        $(table).css({ width: $(table).parent().width() });
+        $(table).DataTable().columns.adjust();
+    });
+}
+
 function datatable_init(table, options) {
     if($(table).attr('data-server'))
         datatable_server_init(table, options);
@@ -255,6 +262,11 @@ $(document).ready(function() {
     $.each($('table.table'), function(idx, table) {
         if ($(table).attr('data-auto'))
             datatable_init(table);
+    });
+    // datatables need to be resized when window is resized
+    $(window).resize(function() {
+        clearTimeout(window.refresh_size);
+        window.refresh_size = setTimeout(function() { datatable_update_size(); }, 250);
     });
 
     //We want the first tab in the permissions page to be on by default
