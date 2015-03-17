@@ -14,6 +14,7 @@ require File.join root_path, 'app/app.rb'
 require 'email_spec'
 
 # recreate test database from migrations
+#DesmondConfig.logger = Logger.new STDOUT
 ActiveRecord::Schema.verbose = false # no output for migrations
 Rake::Task['db:drop'].invoke
 Rake::Task['db:reset'].invoke

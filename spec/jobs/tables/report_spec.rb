@@ -1,4 +1,4 @@
-require_relative '../spec_helper'
+require_relative '../../spec_helper'
 
 describe Jobs::TableReports do
   def create_report(options={})
@@ -12,7 +12,6 @@ describe Jobs::TableReports do
         Jobs::TableReports.enqueue(1, 1, { schema_name: schema_name, table_name: table_name }.merge(options))
       ensure
         c.exec("DROP TABLE IF EXISTS #{schema_name}.#{table_name}") unless options[:donotcreate]
-        c.close
       end
     end
   end

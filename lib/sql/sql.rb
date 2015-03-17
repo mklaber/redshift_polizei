@@ -36,7 +36,7 @@ class SQL
     sql  = self.sanitize([ raw_sql ] + parameters)
     unless filters.nil?
       filters.each do |key, value|
-        sql += self.sanitize([ "and #{key} = ?", value]) unless key.nil? || value.nil?
+        sql += self.sanitize([ " and #{key} = ?", value]) unless key.nil? || value.nil?
       end
     end
     self.execute_raw(connection, sql)
