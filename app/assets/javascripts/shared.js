@@ -83,7 +83,7 @@ $.fn.dataTable.pipeline = function (opts) {
                 "data":     request,
                 "dataType": "json",
                 "cache":    false,
-                "timeout":  30000,
+                "timeout":  90000,
                 "success":  function (json, textStatus, req) {
                     cacheLastJson = $.extend(true, {}, json);
 
@@ -183,6 +183,22 @@ function datatable_server_init(table, options) {
         })
     });
     $(table).dataTable(options);
+
+    // modify search box
+    var filterContainer = $('#' + table.id + '_filter');
+    var searchBox = $('#' + table.id + '_filter input');
+    searchBox.unbind(); // remove default action
+    searchBox.bind('keyup', function (e) {
+        if (e.keyCode == 13) { // search when enter is pressed
+            $(table).DataTable().search(this.value).draw();
+        }
+    });
+    // insert new search button
+    var searchButton = $('<button type="button" class="btn btn-primary btn-sm" style="margin-left: 5px;">Search</button>');
+    filterContainer.append(searchButton);
+    searchButton.click(function (e) {
+        $(table).DataTable().search(searchBox.val()).draw();
+    });
 }
 
 function datatable_ajax_init(table, url, options) {
