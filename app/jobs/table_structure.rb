@@ -1,4 +1,5 @@
 require_relative '../main'
+require 'set'
 
 module Jobs
   ##
@@ -61,8 +62,13 @@ You can view it in your browser by using this link: #{view_url}"
       schema_name = options[:schema_name]
       table_name = options[:table_name]
 
+      # keeping track of tables so they can be exported in the right order
+      # regarding their foreign key dependencies
+      @exported_tables = Set.new
+      @waiting_tables = {}
+
       begin
-        s3writer = Desmond::Streams::S3::S3Writer.new(s3_bucket, s3_key, options.fetch(:s3, {}))
+        s3_writer = Desmond::Streams::S3::S3Writer.new(s3_bucket, s3_key, options.fetch(:s3, {}))
 
         # occasionally one of these queries can fail with the error:
         # relation with OID XXXX does not exist
@@ -80,8 +86,20 @@ You can view it in your browser by using this link: #{view_url}"
           }
         end
 
-        s3writer.write("---------- #{tables.size} tables exported ----------\n")
+        s3_writer.write("---------- #{tables.size} tables exported ----------\n")
         tables.map do |tbl|
+          # figure out other tables this one dependens on
+          foreign_keys = []
+          unless constraints[tbl[:full_table_name]].nil?
+            foreign_keys = constraints[tbl[:full_table_name]].select do |con|
+              con['constraint_type'] == 'f'
+            end
+          end
+          dependens_on = Set.new(foreign_keys.map do |fk|
+            self.class.build_full_table_name(fk['ref_namespace'], fk['ref_tablename'])
+          end)
+
+          # build sql
           table_sql = build_sql(
             tbl[:schema_name],
             tbl[:table_name],
@@ -91,13 +109,28 @@ You can view it in your browser by using this link: #{view_url}"
             sort_dist_keys[tbl[:full_table_name]]
           )
 
-          s3writer.write("\n---------- #{tbl[:schema_name]}.#{tbl[:table_name]} ----------\n")
-          s3writer.write(table_sql)
-          s3writer.write("\n\n")
+          if @exported_tables.superset?(dependens_on)
+            # write SQL to file if all dependencies have been written
+           write_to_s3(s3_writer, tbl[:schema_name], tbl[:table_name], table_sql)
+          else
+            # not all dependencies have been written, wait until they have been
+            @waiting_tables[tbl[:full_table_name]] = {
+              schema_name: tbl[:schema_name],
+              table_name: tbl[:table_name],
+              sql: table_sql,
+              dependens_on: dependens_on
+            }
+          end
         end
+
+        # make sure all tables have been written
+        unless @waiting_tables.empty?
+          fail "Cyclic dependency? Could not clear all dependencies: #{@waiting_tables.keys}"
+        end
+        # everything went well
         { bucket: s3_bucket, key: s3_key }
       ensure
-        s3writer.close unless s3writer.nil?
+        s3_writer.close unless s3_writer.nil?
       end
     end
 
@@ -109,6 +142,29 @@ You can view it in your browser by using this link: #{view_url}"
     def mail(to, subject, body, options={})
       pony_options = { to: to, subject: subject, body: body }.merge(options)
       Pony.mail(pony_options)
+    end
+
+    ##
+    # write +table_sql+ out to S3 and check if new dependencies have been fulfilled
+    #
+    def write_to_s3(s3_writer, schema_name, table_name, table_sql)
+      # write table out
+      full_table_name = self.class.build_full_table_name(schema_name, table_name)
+      s3_writer.write("\n---------- #{full_table_name} ----------\n")
+      s3_writer.write(table_sql)
+      s3_writer.write("\n\n")
+      @exported_tables << full_table_name
+      # check if any new dependencies were fulfilled
+      dependencies_fulfilled = @waiting_tables.select do |full_table_name, tbl|
+        @exported_tables.superset?(tbl[:dependens_on])
+      end
+      @waiting_tables = @waiting_tables.delete_if do |full_table_name, tbl|
+        dependencies_fulfilled.has_key?(full_table_name)
+      end
+      # write newly fulfilled tables out recursivly
+      dependencies_fulfilled.each do |full_table_name, tbl|
+        write_to_s3(s3_writer, tbl[:schema_name], tbl[:table_name], tbl[:sql])
+      end
     end
 
     ##
@@ -282,6 +338,13 @@ You can view it in your browser by using this link: #{view_url}"
     end
 
     ##
+    # returns the full table name based on schema and table name
+    #
+    def self.build_full_table_name(schema_name, table_name)
+      "#{schema_name}.#{table_name}"
+    end
+
+    ##
     # proxy to `Reports::Base.select_all`
     #
     def self.select_all(sql, *args)
@@ -297,7 +360,7 @@ You can view it in your browser by using this link: #{view_url}"
       results = {}
       select_all(sql, *args).each do |result|
         fail 'Missing schema_name or table_name' unless result.has_key?('schema_name') && result.has_key?('table_name')
-        full_table_name = "#{result['schema_name']}.#{result['table_name']}"
+        full_table_name = build_full_table_name(result['schema_name'], result['table_name'])
         results[full_table_name] ||= []
         results[full_table_name] << result
       end
