@@ -78,7 +78,8 @@ class Polizei < Sinatra::Application
   before '/*' do
     is_login_site = (request.path_info == '/login')
     is_auth_site = request.path_info.start_with?('/auth')
-    is_asset = (request.path_info.start_with?('/fonts') ||
+    is_asset = (request.path_info.start_with?('/assets') ||
+      request.path_info.start_with?('/fonts') ||
       request.path_info.start_with?('/images') ||
       request.path_info.start_with?('/javascripts') ||
       request.path_info.start_with?('/stylesheets'))
