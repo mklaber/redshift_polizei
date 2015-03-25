@@ -8,6 +8,13 @@
 #
 class TableUtils
   ##
+  # returns the full table name based on schema and table name
+  #
+  def self.build_full_table_name(schema_name, table_name)
+    "#{schema_name}.#{table_name}"
+  end
+
+  ##
   # return all table names in the connected database
   #
   def self.get_all_table_names(connection, table={})
@@ -97,7 +104,7 @@ class TableUtils
       unless result.has_key?('schema_name') && result.has_key?('table_name')
         fail 'Missing schema_name or table_name'
       end
-      full_table_name = "#{result['schema_name']}.#{result['table_name']}"
+      self.build_full_table_name(result['schema_name'], result['table_name'])
     end
   end
 end
