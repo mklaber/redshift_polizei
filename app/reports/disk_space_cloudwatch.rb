@@ -5,7 +5,9 @@ module Reports
   # Report retireving the disk space usage from CloudWatch
   #
   class DiskSpaceCloudwatch < Base
-    DISK_SPACE_PERIOD = 60
+    REPORT_PERIOD_SECS = 60
+    NUM_SAFETY_PERIODS = 10 # to make sure clock drift doesn't affect us
+
     #
     # retrieves disk usage and capacity for RedShift from CloudWatch Metric
     #
@@ -26,13 +28,14 @@ module Reports
         i += 1
         req = {namespace: "AWS/Redshift",
           metric_name: "PercentageDiskSpaceUsed",
-          start_time: (Time.now - DISK_SPACE_PERIOD).iso8601,
-          end_time: (Time.now).iso8601,
-          period: DISK_SPACE_PERIOD,
+          start_time: (Time.now - REPORT_PERIOD_SECS * NUM_SAFETY_PERIODS).iso8601,
+          end_time: (Time.now +  REPORT_PERIOD_SECS * NUM_SAFETY_PERIODS).iso8601,
+          period: REPORT_PERIOD_SECS,
           statistics: ["Average"],
           dimensions: dimensions}
         # query results from CloudWatch
         result = cloudwatch.get_metric_statistics(req)
+        result[:datapoints].sort_by! { |datapoint| datapoint[:timestamp] }
         # transform result for frontend
         if result[:datapoints].empty?
           { 'node' => node[:node_role],
@@ -40,12 +43,12 @@ module Reports
           }
         else
           { 'node' => node[:node_role],
-            'pct' => result[:datapoints][0][:average]
+            'pct' => result[:datapoints].last[:average]
           }
         end
       end
 
-      { period: DISK_SPACE_PERIOD, data: node_space }
+      { period: REPORT_PERIOD_SECS, data: node_space }
     end
   end
 end

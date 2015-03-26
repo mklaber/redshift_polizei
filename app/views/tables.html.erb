@@ -3,6 +3,10 @@
 <div style="overflow: auto;">
   <div style="float: left;"><h2 name="tables" id="tables">Tables</h2></div>
   <div style="float: right;">
+    <button type="button" class="btn btn-primary btn-default" style="margin-top: 25px;" id="update_all_tables">
+      Check for new tables now
+    </button>
+    <%= img '/images/ajax-loader.gif', id: "update_all_tables_loading", height: '25px', style: 'padding: 0 15px; margin-top: 25px; margin-left: 5px; display: none;' %>
     <button type="button" class="btn btn-primary btn-default" data-toggle="modal" data-target="#export_structure_modal" style="margin-top: 25px;">
       Export all table schemas
     </button>
