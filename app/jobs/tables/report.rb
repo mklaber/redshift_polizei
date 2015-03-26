@@ -71,7 +71,7 @@ module Jobs
 
       statistics.hmap do |full_table_name, stats|
         begin
-          r = stats[0]
+          r = stats[0] # TODO this can fail???, stats is sometimes nil, why?
           col_encoding = col_encodings[full_table_name] || false
           dist_style = dist_styles[full_table_name]
           sort_dist_key = sort_dist_keys[full_table_name] || {}
