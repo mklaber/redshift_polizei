@@ -130,11 +130,12 @@ describe Jobs::TableStructureExportJob do
     begin
       table_name = new_table_name
       table_name2 = new_table_name
-      create_table("CREATE TABLE #{schema_name}.\"#{table_name2}\"(\n\t\"id\" integer NULL UNIQUE ENCODE raw\n)\nDISTSTYLE all")
+      table2_sql = "CREATE TABLE #{schema_name}.\"#{table_name2}\"(\n\t\"id\" integer NULL ENCODE raw,\n\tUNIQUE (\"id\")\n)\nDISTSTYLE all"
+      create_table(table2_sql)
       table_sql = "CREATE TABLE #{schema_name}.\"#{table_name}\"(\n\t\"id\" integer NULL ENCODE raw,\n\tFOREIGN KEY (\"id\") REFERENCES #{schema_name}.\"#{table_name2}\" (\"id\")\n)\nDISTSTYLE all";
       create_table(table_sql)
       schema_sql = retrieve_schema(table_name)
-      expect(schema_sql).to eq(table_sql + "\n;")
+      expect(schema_sql).to eq(table2_sql + "\n;" + table_sql + "\n;")
     ensure
       RSPool.with { |c| c.exec("DROP TABLE IF EXISTS #{@config[:test_schema]}.#{table_name2}") }
     end

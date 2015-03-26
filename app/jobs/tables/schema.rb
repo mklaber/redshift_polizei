@@ -72,50 +72,26 @@ You can view it in your browser by using this link: #{view_url}"
       begin
         s3_writer = Desmond::Streams::S3::S3Writer.new(s3_bucket, s3_key, options.fetch(:s3, {}))
 
-        # occasionally one of these queries can fail with the error:
-        # relation with OID XXXX does not exist
-        # see: http://www.postgresql.org/message-id/29508.1187413841@sss.pgh.pa.us
-        columns, constraints, diststyle, sort_dist_keys = nil
+        # get data for tables
         tables = []
         RSPool.with do |connection|
-          columns        = TableUtils.get_columns(connection, table)
-          constraints    = TableUtils.get_table_constraints(connection, table)
-          diststyle      = TableUtils.get_dist_styles(connection, table)
-          sort_dist_keys = TableUtils.get_sort_and_dist_keys(connection, table)
-          columns.each do |full_table_name, col_defs|
-            tables << {
-              schema_name: col_defs[0]['schema_name'],
-              table_name: col_defs[0]['table_name'],
-              full_table_name: full_table_name
-            }
-          end
+          tables = get_tables_data_with_dependencies(connection, table)
         end
 
         s3_writer.write("---------- #{tables.size} tables exported ----------\n") unless options[:nospacer]
         tables.map do |tbl|
-          # figure out other tables this one dependens on
-          foreign_keys = []
-          unless constraints[tbl[:full_table_name]].nil?
-            foreign_keys = constraints[tbl[:full_table_name]].select do |con|
-              con['constraint_type'] == 'f'
-            end
-          end
-          dependens_on = Set.new(foreign_keys.map do |fk|
-            TableUtils.build_full_table_name(fk['ref_namespace'], fk['ref_tablename'])
-          end)
-
           # build sql
           table_sql = build_sql(
             tbl[:schema_name],
             tbl[:table_name],
-            columns[tbl[:full_table_name]],
-            constraints[tbl[:full_table_name]],
-            diststyle[tbl[:full_table_name]],
-            sort_dist_keys[tbl[:full_table_name]]
+            tbl[:columns],
+            tbl[:constraints],
+            tbl[:dist_style],
+            tbl[:sort_dist_keys]
           )
 
           # write to S3
-          if @exported_tables.superset?(dependens_on)
+          if @exported_tables.superset?(tbl[:dependencies])
             # write SQL to file if all dependencies have been written
            write_to_s3(s3_writer, tbl[:schema_name], tbl[:table_name], table_sql, options)
           else
@@ -124,7 +100,7 @@ You can view it in your browser by using this link: #{view_url}"
               schema_name: tbl[:schema_name],
               table_name: tbl[:table_name],
               sql: table_sql,
-              dependens_on: dependens_on
+              dependens_on: tbl[:dependencies]
             }
           end
         end
@@ -148,6 +124,77 @@ You can view it in your browser by using this link: #{view_url}"
     def mail(to, subject, body, options={})
       pony_options = { to: to, subject: subject, body: body }.merge(options)
       Pony.mail(pony_options) unless options[:nomailer]
+    end
+
+    ##
+    # returns an unique identifier for an table.
+    # hash containing:
+    # - schema_name
+    # - table_name
+    # - full_table_name
+    #
+    def build_table_descriptor(schema_name, table_name)
+      { schema_name: schema_name,
+        table_name: table_name,
+        full_table_name: TableUtils.build_full_table_name(schema_name, table_name) }
+    end
+
+    ##
+    # returns all describing data about a table in a hash structure
+    #
+    def get_tables_data_with_dependencies(connection, table)
+      # occasionally one of these queries can fail with the error:
+      # relation with OID XXXX does not exist
+      # see: http://www.postgresql.org/message-id/29508.1187413841@sss.pgh.pa.us
+      columns        = TableUtils.get_columns(connection, table)
+      constraints    = TableUtils.get_table_constraints(connection, table)
+      dist_style     = TableUtils.get_dist_styles(connection, table)
+      sort_dist_keys = TableUtils.get_sort_and_dist_keys(connection, table)
+
+      table_names    = Set.new(columns.keys)
+      dependencies   = calculate_tables_dependencies(constraints)
+
+      tables = []
+      columns.each do |full_table_name, col_defs|
+        table_dependencies = dependencies[full_table_name] || Set.new
+
+        # make sure we have the data for all dependencies
+        unless table_names.superset?(table_dependencies)
+          table_dependencies.each do |table_dependency|
+            tables += get_tables_data_with_dependencies(connection, table_dependency)
+          end
+        end
+
+        # merge data and save in array of all tables
+        tables << {
+          schema_name: col_defs[0]['schema_name'],
+          table_name: col_defs[0]['table_name'],
+          full_table_name: full_table_name,
+          dependencies: table_dependencies,
+          columns: columns[full_table_name],
+          constraints: constraints[full_table_name],
+          dist_style: dist_style[full_table_name],
+          sort_dist_keys: sort_dist_keys[full_table_name]
+        }
+      end
+      return tables
+    end
+
+    ##
+    # returns the dependencies of tables given its constraints
+    #
+    def calculate_tables_dependencies(constraints)
+      constraints.hmap do |full_table_name, tbl_constraints|
+        foreign_keys = []
+        unless tbl_constraints.nil? || tbl_constraints.empty?
+          foreign_keys = tbl_constraints.select do |constraint|
+            constraint['constraint_type'] == 'f'
+          end
+        end
+        Set.new(foreign_keys.map do |fk|
+          build_table_descriptor(fk['ref_namespace'], fk['ref_tablename'])
+        end)
+      end
     end
 
     ##
@@ -209,7 +256,7 @@ You can view it in your browser by using this link: #{view_url}"
       s3_writer.write("\n---------- #{full_table_name} ----------\n") unless options[:nospacer]
       s3_writer.write(table_sql)
       s3_writer.write("\n\n") unless options[:nospacer]
-      @exported_tables << full_table_name
+      @exported_tables << build_table_descriptor(schema_name, table_name)
       # check if any new dependencies were fulfilled
       dependencies_fulfilled = @waiting_tables.select do |full_table_name, tbl|
         @exported_tables.superset?(tbl[:dependens_on])
