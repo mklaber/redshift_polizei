@@ -1,3 +1,14 @@
+##
+# as of 03/26/2015 with 2tb nodes (dw1.xlarge):
+# - each node (host) has 3 disks (1tb) with 2 partitions each.
+#   - the node uses one partition on each disk for himself
+#     - 50% more space for temporary tables etc
+# - each partition is replicated onto another partition on another node once
+#   - node 1 can replicate 2 partitions on node 2
+#
+# other node types might have a different number of disks or partitions,
+# but probably follow the same schema
+#
 module Reports
   #
   # Report retrieving disk space usage directly from cluster using SQL
