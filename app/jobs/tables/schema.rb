@@ -79,7 +79,7 @@ You can view it in your browser by using this link: #{view_url}"
         end
 
         s3_writer.write("---------- #{tables.size} tables exported ----------\n") unless options[:nospacer]
-        tables.map do |tbl|
+        tables.each do |tbl|
           # build sql
           table_sql = build_sql(
             tbl[:schema_name],
@@ -124,19 +124,6 @@ You can view it in your browser by using this link: #{view_url}"
     def mail(to, subject, body, options={})
       pony_options = { to: to, subject: subject, body: body }.merge(options)
       Pony.mail(pony_options) unless options[:nomailer]
-    end
-
-    ##
-    # returns an unique identifier for an table.
-    # hash containing:
-    # - schema_name
-    # - table_name
-    # - full_table_name
-    #
-    def build_table_descriptor(schema_name, table_name)
-      { schema_name: schema_name,
-        table_name: table_name,
-        full_table_name: TableUtils.build_full_table_name(schema_name, table_name) }
     end
 
     ##
@@ -192,7 +179,7 @@ You can view it in your browser by using this link: #{view_url}"
           end
         end
         Set.new(foreign_keys.map do |fk|
-          build_table_descriptor(fk['ref_namespace'], fk['ref_tablename'])
+          TableUtils.build_full_table_name(fk['ref_namespace'], fk['ref_tablename'])
         end)
       end
     end
@@ -256,7 +243,8 @@ You can view it in your browser by using this link: #{view_url}"
       s3_writer.write("\n---------- #{full_table_name} ----------\n") unless options[:nospacer]
       s3_writer.write(table_sql)
       s3_writer.write("\n\n") unless options[:nospacer]
-      @exported_tables << build_table_descriptor(schema_name, table_name)
+      @exported_tables << TableUtils.build_full_table_name(schema_name, table_name)
+
       # check if any new dependencies were fulfilled
       dependencies_fulfilled = @waiting_tables.select do |full_table_name, tbl|
         @exported_tables.superset?(tbl[:dependens_on])
