@@ -21,7 +21,8 @@ module Models
       # convert unexpanded newlines
       t = q.gsub('\n', "\n")
       t = self.strip_comments(t)
-      t.strip
+      t = t.strip
+      t = t.gsub(/(\s)\s+/, '\1') # replace multiple whitespaces with the first one
     end
 
     #
@@ -31,8 +32,9 @@ module Models
     # - multi-line /**/ comments
     #
     def self.strip_comments(q)
-      q = q.gsub(/--(.*)/, '') # singe line -- comments
-      q = q.gsub(/(\/\*).+?(\*\/)/m, '') # multi-line /**/ comments
+      # replaced with space since it functions as a separator and removing it might make statement invalid
+      q = q.gsub(/--(.*)\n/, ' ') # singe line -- comments
+      q = q.gsub(/(\/\*).+?(\*\/)/m, ' ') # multi-line /**/ comments
     end
 
     #

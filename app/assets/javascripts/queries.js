@@ -1,5 +1,9 @@
 $(document).ready(function() {
-  datatable_init($('#queries_running_tbl')[0], {
+  datatable_init($('#queries_recent_tbl')[0], {
+    'createdRow': function (row, data, index) {
+      if (data['status'] == 'Running')
+        $(row).addClass('running');
+    },
     'columnDefs': [
       {
         'targets': 0,
@@ -9,32 +13,46 @@ $(document).ready(function() {
       },
       {
         'targets': 1,
-        'data': 'status'
+        'render': function(data, type, row) {
+          var start_moment = moment(row['start_time'], "X");
+          var absolute = $('<span/>').addClass('absolute').text(start_moment.format("MM/DD, HH:mm:ss a")).hide();
+          var relative = $('<span/>').addClass('relative').text(start_moment.fromNow());
+          var container = $('<span/>').addClass('abs_rel').attr('title', absolute.text());
+          container.append(absolute);
+          container.append(relative);
+          return container[0].outerHTML;
+        }
       },
       {
         'targets': 2,
         'render': function(data, type, row) {
-          var date = $.format.date(row['start_time'] * 1000, 'MM/dd/yyyy');
-          var time = $.format.date(row['start_time'] * 1000, 'HH:mm:ss');
-          return date + ' at ' + time;
+          if (row['status'] == 'Running') {
+            return '<i class="fa fa-cogs orange"></i>';
+          } else if (row['status'] == 'Completed') {
+            return '<i class="fa fa-check-circle green"></i>';
+          } else {
+            return row['status'];
+          }
         }
       },
       {
         'targets': 3,
         'render': function(data, type, row) {
           var duration;
-          if (row['duration']) {
-            duration = row['duration'];
+          if (row['status'] == 'Completed') {
+            duration = row['end_time'] - row['start_time'];
           } else {
             duration = (new Date().getTime() / 1000) - row['start_time'];
           }
           if (duration < 0) duration = 0;
-          var mins = Math.round(duration / 60);
-          var secs = Math.round(duration % 60);
-          if (mins > 0)
-            return mins + ' min ' + secs + ' sec';
-          else
-            return secs + ' sec';
+
+          var duration_moment = moment.duration(duration, 'seconds');
+          var absolute = $('<span/>').addClass('absolute').text(duration_moment.format()).hide();
+          var relative = $('<span/>').addClass('relative').text(duration_moment.humanize());
+          var container = $('<span/>').addClass('abs_rel').attr('title', absolute.text());
+          container.append(absolute);
+          container.append(relative);
+          return container[0].outerHTML;
         }
       },
       {
@@ -46,5 +64,18 @@ $(document).ready(function() {
         'data': 'query'
       }
     ]
+  });
+
+  function abs_rel_toggle() {
+    $(this).find('span.absolute').toggle();
+    $(this).find('span.relative').toggle();
+  }
+
+  $('#queries_recent_tbl').on('init.dt', function() {
+    $('table#queries_recent_tbl tbody').on('click', 'tr > td:nth-child(2)', abs_rel_toggle);
+    $('table#queries_recent_tbl tbody').on('click', 'tr > td:nth-child(4)', abs_rel_toggle);
+  });
+  $('#queries_recent_tbl').on('draw.dt', function() {
+    $('.abs_rel').tooltip();
   });
 });

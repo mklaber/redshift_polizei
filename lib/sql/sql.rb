@@ -31,15 +31,7 @@ class SQL
   # +filters+ can be hash which will be appended as 'and key = value' filters.
   #
   def self.execute(connection, name, parameters: [], filters: {})
-    raw_sql = self.load_file(name)
-    parameters = [ parameters ] unless parameters.is_a?(Array)
-    sql  = self.sanitize([ raw_sql ] + parameters)
-    unless filters.nil?
-      filters.each do |key, value|
-        sql += self.sanitize([ " and #{key} = ?", value]) unless key.nil? || value.nil?
-      end
-    end
-    self.execute_raw(connection, sql)
+    self.execute_raw(connection, self.load(name, parameters: parameters, filters: filters))
   end
 
   ##
@@ -53,6 +45,23 @@ class SQL
     else
       fail 'Unsupported connection'
     end
+  end
+
+  ##
+  # loads sql query and applies +parameters+ (to `?` placeholders) and
+  # appends additional +filters+.
+  # +filters+ should be hash which will be appended as 'and key = value' filters.
+  #
+  def self.load(name, parameters: [], filters: {})
+    raw_sql = self.load_file(name)
+    parameters = [ parameters ] unless parameters.is_a?(Array)
+    sql  = self.sanitize([ raw_sql ] + parameters)
+    unless filters.nil?
+      filters.each do |key, value|
+        sql += self.sanitize([ " and #{key} = ?", value]) unless key.nil? || value.nil?
+      end
+    end
+    return sql
   end
 
   private
