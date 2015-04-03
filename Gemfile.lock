@@ -61,6 +61,7 @@ GEM
       launchy (~> 2.1)
       mail (~> 2.2)
     erubis (2.7.0)
+    execjs (2.4.0)
     faraday (0.9.0)
       multipart-post (>= 1.2, < 3)
     hashie (3.3.2)
@@ -174,9 +175,11 @@ GEM
       sinatra (>= 1.2.1)
     tzinfo (1.2.2)
       thread_safe (~> 0.1)
+    uglifier (2.7.1)
+      execjs (>= 0.3.0)
+      json (>= 1.8.0)
     whenever (0.9.4)
       chronic (>= 0.6.3)
-    yui-compressor (0.12.0)
 
 PLATFORMS
   ruby
@@ -208,5 +211,5 @@ DEPENDENCIES
   sinatra-activerecord
   sinatra-assetpack
   tux
+  uglifier
   whenever
-  yui-compressor

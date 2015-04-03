@@ -72,9 +72,8 @@ class Polizei < Sinatra::Application
       '/stylesheets/screen.css',
       '/stylesheets/social-buttons.css'
     ]
-    js_compression  :uglify      # jsmin can't handle momentjs, yui needs java -.-
-    css_compression :simple      # Optional
     prebuild false
+    js_compression :uglify # jsmin is unmantained and fails, yui needs java, closeure didn't try, this works
   end
 
   before '/*' do
