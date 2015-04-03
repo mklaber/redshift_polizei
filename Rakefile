@@ -50,7 +50,7 @@ namespace :redshift do
   namespace :tablereports do
     desc 'Update tables report'
     task :update, :schema_name, :table_name do |t, args|
-      Jobs::TableReports.enqueue_and_wait(1, 0, args)
+      Jobs::TableReports.enqueue_and_wait(1, 0, nil, args)
     end
     task :clear do
       Models::TableReport.destroy_all
