@@ -72,7 +72,7 @@ class Polizei < Sinatra::Application
       '/stylesheets/screen.css',
       '/stylesheets/social-buttons.css'
     ]
-    js_compression  :jsmin       # Optional
+    js_compression  :yui         # jsmin can't handle momentjs
     css_compression :simple      # Optional
     prebuild false
   end

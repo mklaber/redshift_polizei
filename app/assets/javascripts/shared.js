@@ -1,11 +1,11 @@
 // exact formatting of a moment.js duration object
 moment.duration.fn.format = function(){
-    str = ""
-    if (this.days() > 1) str = str + Math.floor(this.days()) + " d "
-    if (this.hours() > 1) str = str + Math.floor(this.hours()) + " h "
-    if (this.minutes() > 1) str = str + Math.floor(this.minutes()) + " min "
-    str = str + Math.floor(this.seconds()) + " sec "
-    return str
+    str = "";
+    if (this.days() > 1) str = str + Math.floor(this.days()) + " d ";
+    if (this.hours() > 1) str = str + Math.floor(this.hours()) + " h ";
+    if (this.minutes() > 1) str = str + Math.floor(this.minutes()) + " min ";
+    str = str + Math.floor(this.seconds()) + " sec ";
+    return str;
 }
 
 $.fn.dataTable.pipeline = function (opts) {
