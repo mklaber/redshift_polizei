@@ -148,7 +148,9 @@ You can view it in your browser by using this link: #{view_url}"
         # make sure we have the data for all dependencies
         unless table_names.superset?(table_dependencies)
           table_dependencies.each do |table_dependency|
-            tables += get_tables_data_with_dependencies(connection, table_dependency)
+            schema_name, table_name = deconstruct_full_table_name(table_dependency)
+            tables += get_tables_data_with_dependencies(connection,
+              schema_name: schema_name, table_name: table_name)
           end
         end
 
@@ -182,6 +184,16 @@ You can view it in your browser by using this link: #{view_url}"
           TableUtils.build_full_table_name(fk['ref_namespace'], fk['ref_tablename'])
         end)
       end
+    end
+
+    ##
+    # returns schema_name and table_name out of a full table name
+    #
+    def deconstruct_full_table_name(full_table_name)
+      fail 'Not a full table name!' if full_table_name.count('.') == 0
+      fail 'Dots in schema or table name not supported!' if full_table_name.count('.') > 1
+      parts = full_table_name.split('.')
+      return parts[0], parts[1]
     end
 
     ##

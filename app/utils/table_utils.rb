@@ -29,7 +29,7 @@ class TableUtils
   def self.get_columns(connection, table={})
     tmp = execute_grouped_by_table(connection, 'tables/columns', table)
     tmp.hmap do |full_table_name, columns|
-      columns.sort_by { |col| col['position'] }
+      columns.sort_by { |col| col['position'].to_i } # missing pg type conversion -.-
     end
   end
 

@@ -1,0 +1,5 @@
+'2015-03-31T20:00:00Z UTC [ db=dev user=rdsdb pid=15312 userid=1 xid=834920 ]' LOG: SELECT 1
+'2015-03-31T20:00:08Z UTC [ db=amg user=polizei_bot pid=31260 userid=137 xid=834929 ]' LOG: select
+  1,
+  2
+from polizei

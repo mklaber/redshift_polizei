@@ -140,4 +140,17 @@ describe Jobs::TableStructureExportJob do
       RSPool.with { |c| c.exec("DROP TABLE IF EXISTS #{@config[:test_schema]}.#{table_name2}") }
     end
   end
+
+  it 'should create schema from basic table with more than 10 columns for ordering issues' do
+    table_name = new_table_name
+    table_sql = "CREATE TABLE #{schema_name}.\"#{table_name}\"(\n\t\"id\" integer NULL ENCODE raw,"\
+      "\n\t\"id2\" integer NULL ENCODE raw,\n\t\"id3\" integer NULL ENCODE raw,"\
+      "\n\t\"id4\" integer NULL ENCODE raw,\n\t\"id5\" integer NULL ENCODE raw,"\
+      "\n\t\"id6\" integer NULL ENCODE raw,\n\t\"id7\" integer NULL ENCODE raw,"\
+      "\n\t\"id8\" integer NULL ENCODE raw,\n\t\"id9\" integer NULL ENCODE raw,"\
+      "\n\t\"id10\" integer NULL ENCODE raw\n)\nDISTSTYLE all";
+    create_table(table_sql)
+    schema_sql = retrieve_schema(table_name)
+    expect(schema_sql).to eq(table_sql + "\n;")
+  end
 end

@@ -1,3 +1,13 @@
+// exact formatting of a moment.js duration object
+moment.duration.fn.format = function(){
+    str = "";
+    if (this.days() > 1) str = str + Math.floor(this.days()) + " d ";
+    if (this.hours() > 1) str = str + Math.floor(this.hours()) + " h ";
+    if (this.minutes() > 1) str = str + Math.floor(this.minutes()) + " min ";
+    str = str + Math.floor(this.seconds()) + " sec ";
+    return str;
+}
+
 $.fn.dataTable.pipeline = function (opts) {
     // Configuration options
     var conf = $.extend({
@@ -123,10 +133,7 @@ $.fn.dataTable.Api.register('clearPipeline()', function () {
 $.fn.dataTable.ajaxload = function (opts) {
     // Configuration options
     var conf = $.extend({
-        pages: 5,     // number of pages to cache
         url: '',      // script url
-        data: null,   // function or object with parameters to send to the server
-                      // matching how `ajax.data` works in DataTables
         method: 'GET' // Ajax HTTP method
     }, opts);
 
@@ -137,7 +144,7 @@ $.fn.dataTable.ajaxload = function (opts) {
             "data":     request,
             "dataType": "json",
             "cache":    false,
-            "timeout":  15000,
+            "timeout":  30000,
             "success":  function (json, textStatus, req) {
                 drawCallback(json);
             },
@@ -219,7 +226,9 @@ function datatable_ajax_init(table, url, options) {
 }
 
 function datatable_client_init(table, user_options) {
-    options = { 'aaSorting': [] };
+    options = {
+        'aaSorting': []
+    };
     $.extend(options, user_options);
     $(table).dataTable(options);
 

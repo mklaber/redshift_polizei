@@ -56,12 +56,13 @@ class Polizei < Sinatra::Application
       '/javascripts/lib/jquery-1.10.2.min.js',
       '/javascripts/lib/bootstrap.min.js',
       '/javascripts/lib/jquery.dataTables.min.js',
-      '/javascripts/lib/jquery-dateFormat.min.js',
       '/javascripts/lib/dataTables.bootstrap.min.js',
+      '/javascripts/lib/moment.min.js',
       '/javascripts/shared.js'
     ]
     js :tables, ['/javascripts/tables.js']
     js :queries, ['/javascripts/queries.js']
+    js :auditlog, ['/javascripts/auditlog.js']
     js :jobs, ['/javascripts/jobs.js']
     css :application, [
       '/stylesheets/lib/bootstrap.min.css',
@@ -71,9 +72,8 @@ class Polizei < Sinatra::Application
       '/stylesheets/screen.css',
       '/stylesheets/social-buttons.css'
     ]
-    js_compression  :jsmin       # Optional
-    css_compression :simple      # Optional
     prebuild false
+    js_compression :uglify # jsmin is unmantained and fails, yui needs java, closeure didn't try, this works
   end
 
   before '/*' do
@@ -130,12 +130,16 @@ class Polizei < Sinatra::Application
     erb :index, :locals => { :name => :home }
   end
 
-  get '/queries/running' do
-    query_report = Reports::Query.new
-    queries = query_report.running_queries
+  get '/queries/recent' do
+    # get date from where to retrieve recent queries
+    audit_log_newest_query = Models::Query.order('record_time DESC').first
+    audit_log_date = 0
+    audit_log_date = audit_log_newest_query.record_time unless audit_log_newest_query.nil?
+
+    queries = Jobs::Queries::Recent.run(current_user.id, date: Time.at(audit_log_date))
     # We want to strip out block comments before passing it on to the view
     queries.each do |q|
-      q["query"] = CodeRay.scan(Models::Query.query_for_display(q['query']), :sql).div()
+      q['query'] = CodeRay.scan(Models::Query.query_for_display(q['query']), :sql).div()
     end
     { data: queries }.to_json
   end
@@ -161,30 +165,13 @@ class Polizei < Sinatra::Application
       order_dir = order['0']['dir']
     end
 
-    total_count = 0
-    filtered_count = 0
-    queries = []
-    report = Reports::Query.new
-    # get newest queries not yet in the audit log
-    t1, t2, t3 = report.new_queries(selects, start, length, order_column, order_dir, search)
-    total_count += t1
-    filtered_count += t2
-    queries += t3
-    start += queries.size
-    length -= queries.size
     # get the rest from auit log, always needs to be executed to get accurate counts
-    t1, t2, t3 = report.audit_queries(selects, start, length, order_column, order_dir, search)
-    total_count += t1
-    filtered_count += t2
-    queries += t3
+    queries_data = Jobs::Queries::AuditLog::Get.run(1,
+      selects: selects, start: start, length: length,
+      order: order_column, orderdir: order_dir, search: search)
 
     # generate output format
-    {
-      draw: draw,
-      recordsTotal: total_count,
-      recordsFiltered: filtered_count,
-      data: queries
-    }.to_json
+    queries_data.merge(draw: draw).to_json
   end
 
   get '/disk_space' do
@@ -202,7 +189,6 @@ class Polizei < Sinatra::Application
 
   post '/tables/report' do
     content_type :json
-    # TODO put into work queue and poll/sse/websocket until frontend timeout
     begin
       still_exists = Jobs::TableReports.enqueue_and_wait(
         1,
@@ -262,7 +248,7 @@ class Polizei < Sinatra::Application
   get '/jobs' do
     @jobs = Models::ExportJob.where("user_id = ? OR public", current_user.id).sort do |j1, j2|
       # most recently run job at the top
-      t1 = Time.at(0).utc
+      t1 = Time.at(0).utc # default value in case it was never queued
       t2 = Time.at(0).utc
       t1 = j1.last_run.queued_at_time unless j1.last_run.nil?
       t2 = j2.last_run.queued_at_time unless j2.last_run.nil?

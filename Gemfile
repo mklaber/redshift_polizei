@@ -33,7 +33,7 @@ group :development do
 end
 
 group :staging, :production do
-  gem 'yui-compressor'
+  gem 'uglifier'
   gem 'passenger'
 end
 

@@ -4,7 +4,8 @@ module Jobs
   #
   # Job retrieving reports about RedShift tables
   #
-  class TableReports < BaseReport
+  class TableReports < Desmond::BaseJob # TODO doesn't need job id
+    extend Jobs::BaseReport
     def self.logger
       @logger ||= PolizeiLogger.logger('tablereports')
     end

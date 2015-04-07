@@ -13,14 +13,16 @@
   </div>
 </div>
 
-<table data-auto="true" data-server="true" class="table table-bordered table-striped table-condensed table-hover">
+<table id="auditlog_tbl" data-server="true" class="table table-bordered table-striped table-condensed table-hover">
   <thead>
     <tr>
       <th>Record time</th>
-      <th>User</th>
+      <th>User <small class="secondary">(ID)</small></th>
       <th>Transaction ID</th>
       <th>Query</th>
     </tr>
   </thead>
   <tbody></tbody>
 </table>
+
+<%= js :auditlog %>

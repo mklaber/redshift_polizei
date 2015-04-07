@@ -23,8 +23,13 @@ p {
 
 
 .CodeRay div {
-    text-overflow: clip;
+    overflow-y: auto;
     max-width: 400px;
+    max-height: 150px;
+}
+
+table#auditlog_tbl .CodeRay div {
+    max-width: 460px;
 }
 
 div.permissions_content {
@@ -43,6 +48,24 @@ div.permissions_content div.tabbedMenuContent {
     margin-left: 20px;
     margin-right: 20px;
     margin-bottom: 20px;
+}
+
+.orange {
+  color: darksalmon;
+}
+
+.green {
+  color: green;
+}
+
+/* recent queries */
+table#queries_recent_tbl  > tbody > tr > td:nth-child(3) {
+  text-align: center;
+}
+
+/* auditlog */
+div.dataTables_processing {
+  position: fixed;
 }
 
 /* disk_space */
