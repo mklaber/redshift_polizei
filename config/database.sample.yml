@@ -10,7 +10,7 @@ development:
 # to query the redshift cluster for general information
 redshift_development:
   adapter: redshift
-  host: analytics-dw-1.analyticsmediagroup.net
+  host: cluster1.redshift.example.com
   database: amg
   port: 5439
   username: username

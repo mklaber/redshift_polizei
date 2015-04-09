@@ -3,7 +3,7 @@ module Jobs
     #
     # base class for permissions jobs to share some code
     #
-    class Base < BaseReport
+    class Base < Desmond::BaseJobNoJobId
       def self.make_boolean(results)
         return results.hmap { |key, value| self.make_boolean(value) } if results.is_a?(Hash)
 

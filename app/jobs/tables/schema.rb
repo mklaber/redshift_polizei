@@ -7,7 +7,9 @@ module Jobs
   # in the background.
   # does NOT support compound pk, fk or unqiue constraints!
   #
-  class TableStructureExportJob < Desmond::BaseJob
+  class TableStructureExportJob < Desmond::BaseJob # TODO doesn't need job id
+    extend Jobs::BaseReport
+
     def self.logger
       @logger ||= PolizeiLogger.logger('tablestructure')
     end

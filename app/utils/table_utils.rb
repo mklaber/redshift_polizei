@@ -18,7 +18,10 @@ class TableUtils
   # return all table names in the connected database
   #
   def self.get_all_table_names(connection, table={})
-    execute_grouped_by_table(connection, 'tables/exists', table)
+    tmp = execute_grouped_by_table(connection, 'tables/exists', table)
+    tmp.hmap do |full_table_name, columns|
+      columns[0] # we don't need an array with one element
+    end
   end
 
   ##

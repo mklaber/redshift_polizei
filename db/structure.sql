@@ -95,6 +95,103 @@ ALTER SEQUENCE cache_id_seq OWNED BY cache.id;
 
 
 --
+-- Name: database_group_memberships; Type: TABLE; Schema: public; Owner: -; Tablespace: 
+--
+
+CREATE TABLE database_group_memberships (
+    id integer NOT NULL,
+    database_user_id integer NOT NULL,
+    database_group_id integer NOT NULL,
+    created_at timestamp without time zone NOT NULL,
+    updated_at timestamp without time zone NOT NULL
+);
+
+
+--
+-- Name: database_group_memberships_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE database_group_memberships_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: database_group_memberships_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE database_group_memberships_id_seq OWNED BY database_group_memberships.id;
+
+
+--
+-- Name: database_groups; Type: TABLE; Schema: public; Owner: -; Tablespace: 
+--
+
+CREATE TABLE database_groups (
+    id integer NOT NULL,
+    database_id integer,
+    name character varying NOT NULL,
+    created_at timestamp without time zone NOT NULL,
+    updated_at timestamp without time zone NOT NULL
+);
+
+
+--
+-- Name: database_groups_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE database_groups_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: database_groups_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE database_groups_id_seq OWNED BY database_groups.id;
+
+
+--
+-- Name: database_users; Type: TABLE; Schema: public; Owner: -; Tablespace: 
+--
+
+CREATE TABLE database_users (
+    id integer NOT NULL,
+    database_id integer NOT NULL,
+    name character varying NOT NULL,
+    superuser boolean NOT NULL,
+    created_at timestamp without time zone NOT NULL,
+    updated_at timestamp without time zone NOT NULL
+);
+
+
+--
+-- Name: database_users_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE database_users_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: database_users_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE database_users_id_seq OWNED BY database_users.id;
+
+
+--
 -- Name: desmond_job_runs; Type: TABLE; Schema: public; Owner: -; Tablespace: 
 --
 
@@ -166,6 +263,45 @@ CREATE SEQUENCE export_jobs_id_seq
 --
 
 ALTER SEQUENCE export_jobs_id_seq OWNED BY export_jobs.id;
+
+
+--
+-- Name: permissions; Type: TABLE; Schema: public; Owner: -; Tablespace: 
+--
+
+CREATE TABLE permissions (
+    id integer NOT NULL,
+    entity_id integer NOT NULL,
+    entity_type character varying NOT NULL,
+    dbobject_id integer NOT NULL,
+    dbobject_type character varying NOT NULL,
+    has_select boolean NOT NULL,
+    has_insert boolean NOT NULL,
+    has_update boolean NOT NULL,
+    has_delete boolean NOT NULL,
+    has_references boolean NOT NULL,
+    created_at timestamp without time zone NOT NULL,
+    updated_at timestamp without time zone NOT NULL
+);
+
+
+--
+-- Name: permissions_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE permissions_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: permissions_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE permissions_id_seq OWNED BY permissions.id;
 
 
 --
@@ -259,6 +395,39 @@ CREATE TABLE schema_migrations (
 
 
 --
+-- Name: schemas; Type: TABLE; Schema: public; Owner: -; Tablespace: 
+--
+
+CREATE TABLE schemas (
+    id integer NOT NULL,
+    database_id integer NOT NULL,
+    name character varying NOT NULL,
+    database_user_id integer NOT NULL,
+    created_at timestamp without time zone NOT NULL,
+    updated_at timestamp without time zone NOT NULL
+);
+
+
+--
+-- Name: schemas_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE schemas_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: schemas_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE schemas_id_seq OWNED BY schemas.id;
+
+
+--
 -- Name: table_reports; Type: TABLE; Schema: public; Owner: -; Tablespace: 
 --
 
@@ -296,6 +465,40 @@ CREATE SEQUENCE table_reports_id_seq
 --
 
 ALTER SEQUENCE table_reports_id_seq OWNED BY table_reports.id;
+
+
+--
+-- Name: tables; Type: TABLE; Schema: public; Owner: -; Tablespace: 
+--
+
+CREATE TABLE tables (
+    id integer NOT NULL,
+    schema_id integer NOT NULL,
+    database_id integer NOT NULL,
+    name character varying NOT NULL,
+    database_user_id integer NOT NULL,
+    created_at timestamp without time zone NOT NULL,
+    updated_at timestamp without time zone NOT NULL
+);
+
+
+--
+-- Name: tables_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE tables_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: tables_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE tables_id_seq OWNED BY tables.id;
 
 
 --
@@ -348,6 +551,27 @@ ALTER TABLE ONLY cache ALTER COLUMN id SET DEFAULT nextval('cache_id_seq'::regcl
 -- Name: id; Type: DEFAULT; Schema: public; Owner: -
 --
 
+ALTER TABLE ONLY database_group_memberships ALTER COLUMN id SET DEFAULT nextval('database_group_memberships_id_seq'::regclass);
+
+
+--
+-- Name: id; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY database_groups ALTER COLUMN id SET DEFAULT nextval('database_groups_id_seq'::regclass);
+
+
+--
+-- Name: id; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY database_users ALTER COLUMN id SET DEFAULT nextval('database_users_id_seq'::regclass);
+
+
+--
+-- Name: id; Type: DEFAULT; Schema: public; Owner: -
+--
+
 ALTER TABLE ONLY desmond_job_runs ALTER COLUMN id SET DEFAULT nextval('desmond_job_runs_id_seq'::regclass);
 
 
@@ -356,6 +580,13 @@ ALTER TABLE ONLY desmond_job_runs ALTER COLUMN id SET DEFAULT nextval('desmond_j
 --
 
 ALTER TABLE ONLY export_jobs ALTER COLUMN id SET DEFAULT nextval('export_jobs_id_seq'::regclass);
+
+
+--
+-- Name: id; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY permissions ALTER COLUMN id SET DEFAULT nextval('permissions_id_seq'::regclass);
 
 
 --
@@ -376,7 +607,21 @@ ALTER TABLE ONLY queries ALTER COLUMN id SET DEFAULT nextval('queries_id_seq'::r
 -- Name: id; Type: DEFAULT; Schema: public; Owner: -
 --
 
+ALTER TABLE ONLY schemas ALTER COLUMN id SET DEFAULT nextval('schemas_id_seq'::regclass);
+
+
+--
+-- Name: id; Type: DEFAULT; Schema: public; Owner: -
+--
+
 ALTER TABLE ONLY table_reports ALTER COLUMN id SET DEFAULT nextval('table_reports_id_seq'::regclass);
+
+
+--
+-- Name: id; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY tables ALTER COLUMN id SET DEFAULT nextval('tables_id_seq'::regclass);
 
 
 --
@@ -403,6 +648,30 @@ ALTER TABLE ONLY cache
 
 
 --
+-- Name: database_group_memberships_pkey; Type: CONSTRAINT; Schema: public; Owner: -; Tablespace: 
+--
+
+ALTER TABLE ONLY database_group_memberships
+    ADD CONSTRAINT database_group_memberships_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: database_groups_pkey; Type: CONSTRAINT; Schema: public; Owner: -; Tablespace: 
+--
+
+ALTER TABLE ONLY database_groups
+    ADD CONSTRAINT database_groups_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: database_users_pkey; Type: CONSTRAINT; Schema: public; Owner: -; Tablespace: 
+--
+
+ALTER TABLE ONLY database_users
+    ADD CONSTRAINT database_users_pkey PRIMARY KEY (id);
+
+
+--
 -- Name: desmond_job_runs_pkey; Type: CONSTRAINT; Schema: public; Owner: -; Tablespace: 
 --
 
@@ -416,6 +685,14 @@ ALTER TABLE ONLY desmond_job_runs
 
 ALTER TABLE ONLY export_jobs
     ADD CONSTRAINT export_jobs_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: permissions_pkey; Type: CONSTRAINT; Schema: public; Owner: -; Tablespace: 
+--
+
+ALTER TABLE ONLY permissions
+    ADD CONSTRAINT permissions_pkey PRIMARY KEY (id);
 
 
 --
@@ -435,11 +712,27 @@ ALTER TABLE ONLY queries
 
 
 --
+-- Name: schemas_pkey; Type: CONSTRAINT; Schema: public; Owner: -; Tablespace: 
+--
+
+ALTER TABLE ONLY schemas
+    ADD CONSTRAINT schemas_pkey PRIMARY KEY (id);
+
+
+--
 -- Name: table_reports_pkey; Type: CONSTRAINT; Schema: public; Owner: -; Tablespace: 
 --
 
 ALTER TABLE ONLY table_reports
     ADD CONSTRAINT table_reports_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: tables_pkey; Type: CONSTRAINT; Schema: public; Owner: -; Tablespace: 
+--
+
+ALTER TABLE ONLY tables
+    ADD CONSTRAINT tables_pkey PRIMARY KEY (id);
 
 
 --
@@ -455,6 +748,69 @@ ALTER TABLE ONLY users
 --
 
 CREATE UNIQUE INDEX index_cache_on_hashid ON cache USING btree (hashid);
+
+
+--
+-- Name: index_database_group_memberships_on_database_group_id; Type: INDEX; Schema: public; Owner: -; Tablespace: 
+--
+
+CREATE INDEX index_database_group_memberships_on_database_group_id ON database_group_memberships USING btree (database_group_id);
+
+
+--
+-- Name: index_database_group_memberships_on_database_user_id; Type: INDEX; Schema: public; Owner: -; Tablespace: 
+--
+
+CREATE INDEX index_database_group_memberships_on_database_user_id ON database_group_memberships USING btree (database_user_id);
+
+
+--
+-- Name: index_database_group_memberships_on_updated_at; Type: INDEX; Schema: public; Owner: -; Tablespace: 
+--
+
+CREATE INDEX index_database_group_memberships_on_updated_at ON database_group_memberships USING btree (updated_at);
+
+
+--
+-- Name: index_database_groups_on_database_id; Type: INDEX; Schema: public; Owner: -; Tablespace: 
+--
+
+CREATE UNIQUE INDEX index_database_groups_on_database_id ON database_groups USING btree (database_id);
+
+
+--
+-- Name: index_database_groups_on_name; Type: INDEX; Schema: public; Owner: -; Tablespace: 
+--
+
+CREATE UNIQUE INDEX index_database_groups_on_name ON database_groups USING btree (name);
+
+
+--
+-- Name: index_database_groups_on_updated_at; Type: INDEX; Schema: public; Owner: -; Tablespace: 
+--
+
+CREATE INDEX index_database_groups_on_updated_at ON database_groups USING btree (updated_at);
+
+
+--
+-- Name: index_database_users_on_database_id; Type: INDEX; Schema: public; Owner: -; Tablespace: 
+--
+
+CREATE UNIQUE INDEX index_database_users_on_database_id ON database_users USING btree (database_id);
+
+
+--
+-- Name: index_database_users_on_name; Type: INDEX; Schema: public; Owner: -; Tablespace: 
+--
+
+CREATE UNIQUE INDEX index_database_users_on_name ON database_users USING btree (name);
+
+
+--
+-- Name: index_database_users_on_updated_at; Type: INDEX; Schema: public; Owner: -; Tablespace: 
+--
+
+CREATE INDEX index_database_users_on_updated_at ON database_users USING btree (updated_at);
 
 
 --
@@ -486,6 +842,27 @@ CREATE INDEX index_export_jobs_on_user_id ON export_jobs USING btree (user_id);
 
 
 --
+-- Name: index_permissions_on_dbobject_type_and_dbobject_id; Type: INDEX; Schema: public; Owner: -; Tablespace: 
+--
+
+CREATE INDEX index_permissions_on_dbobject_type_and_dbobject_id ON permissions USING btree (dbobject_type, dbobject_id);
+
+
+--
+-- Name: index_permissions_on_entity_type_and_entity_id; Type: INDEX; Schema: public; Owner: -; Tablespace: 
+--
+
+CREATE INDEX index_permissions_on_entity_type_and_entity_id ON permissions USING btree (entity_type, entity_id);
+
+
+--
+-- Name: index_permissions_on_updated_at; Type: INDEX; Schema: public; Owner: -; Tablespace: 
+--
+
+CREATE INDEX index_permissions_on_updated_at ON permissions USING btree (updated_at);
+
+
+--
 -- Name: index_queries_on_query_type; Type: INDEX; Schema: public; Owner: -; Tablespace: 
 --
 
@@ -497,6 +874,27 @@ CREATE INDEX index_queries_on_query_type ON queries USING btree (query_type);
 --
 
 CREATE INDEX index_queries_on_record_time ON queries USING btree (record_time DESC);
+
+
+--
+-- Name: index_schemas_on_database_user_id; Type: INDEX; Schema: public; Owner: -; Tablespace: 
+--
+
+CREATE INDEX index_schemas_on_database_user_id ON schemas USING btree (database_user_id);
+
+
+--
+-- Name: index_schemas_on_name; Type: INDEX; Schema: public; Owner: -; Tablespace: 
+--
+
+CREATE UNIQUE INDEX index_schemas_on_name ON schemas USING btree (name);
+
+
+--
+-- Name: index_schemas_on_updated_at; Type: INDEX; Schema: public; Owner: -; Tablespace: 
+--
+
+CREATE INDEX index_schemas_on_updated_at ON schemas USING btree (updated_at);
 
 
 --
@@ -514,6 +912,34 @@ CREATE UNIQUE INDEX index_table_reports_on_table_id ON table_reports USING btree
 
 
 --
+-- Name: index_tables_on_database_user_id; Type: INDEX; Schema: public; Owner: -; Tablespace: 
+--
+
+CREATE INDEX index_tables_on_database_user_id ON tables USING btree (database_user_id);
+
+
+--
+-- Name: index_tables_on_name; Type: INDEX; Schema: public; Owner: -; Tablespace: 
+--
+
+CREATE INDEX index_tables_on_name ON tables USING btree (name);
+
+
+--
+-- Name: index_tables_on_schema_id; Type: INDEX; Schema: public; Owner: -; Tablespace: 
+--
+
+CREATE INDEX index_tables_on_schema_id ON tables USING btree (schema_id);
+
+
+--
+-- Name: index_tables_on_updated_at; Type: INDEX; Schema: public; Owner: -; Tablespace: 
+--
+
+CREATE INDEX index_tables_on_updated_at ON tables USING btree (updated_at);
+
+
+--
 -- Name: index_users_on_email; Type: INDEX; Schema: public; Owner: -; Tablespace: 
 --
 
@@ -525,6 +951,13 @@ CREATE UNIQUE INDEX index_users_on_email ON users USING btree (email);
 --
 
 CREATE UNIQUE INDEX index_users_on_google_id ON users USING btree (google_id);
+
+
+--
+-- Name: permissions_unique; Type: INDEX; Schema: public; Owner: -; Tablespace: 
+--
+
+CREATE UNIQUE INDEX permissions_unique ON permissions USING btree (entity_id, entity_type, dbobject_id, dbobject_type);
 
 
 --
@@ -567,6 +1000,8 @@ INSERT INTO schema_migrations (version) VALUES ('13');
 INSERT INTO schema_migrations (version) VALUES ('14');
 
 INSERT INTO schema_migrations (version) VALUES ('15');
+
+INSERT INTO schema_migrations (version) VALUES ('16');
 
 INSERT INTO schema_migrations (version) VALUES ('2');
 

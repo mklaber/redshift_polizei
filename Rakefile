@@ -21,10 +21,12 @@ task :environment do
 end
 
 
+# TODO desmond should allow `run` with persisted job_run optionally
 namespace :reports do
   desc 'Updates the caches of all reports'
   task :update do
     Rake::Task['redshift:tablereports:update'].invoke
+    Rake::Task['redshift:permissions:update'].invoke
     Rake::Task['redshift:auditlog:import'].invoke
   end
 end
@@ -52,8 +54,16 @@ namespace :redshift do
     task :update, :schema_name, :table_name do |t, args|
       Jobs::TableReports.enqueue_and_wait(1, 0, nil, args)
     end
+    desc 'Discard all table reports'
     task :clear do
       Models::TableReport.destroy_all
+    end
+  end
+
+  namespace :permissions do
+    desc 'Update permissions from RedShift'
+    task :update do
+      Jobs::Permissions::Update.enqueue_and_wait(0)
     end
   end
 end
