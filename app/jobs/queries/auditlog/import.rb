@@ -33,7 +33,8 @@ module Jobs
             block.call(File.open(file, 'r'), file)
           else
             bucket = AWS::S3.new.buckets[GlobalConfig.aws('redshift_audit_log_bucket')]
-            bucket.objects.each do |obj|
+            # start from the newest and work our way back
+            bucket.objects.sort_by { |obj| obj.last_modified }.reverse.each do |obj|
               begin
                 is_user_activity_log = (not obj.key.index('useractivitylog').nil?)
                 if is_user_activity_log && obj.last_modified > last_update
@@ -59,8 +60,7 @@ module Jobs
         end
 
         def import(reader, logfile_name)
-          Jobs::Queries::AuditLog::EnforceRetention.run(self.user_id)
-
+          Que.log level: :info, message: "Importing #{logfile_name}"
           # read user activity log
           lineno = 0
           prev_q = nil

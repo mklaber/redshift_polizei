@@ -34,8 +34,8 @@ end
 namespace :redshift do
   namespace :auditlog do
     desc 'Import audit log files into polizei'
-    task :import do
-      Jobs::Queries::AuditLog::Import.enqueue_and_wait(0)
+    task :import, :just_one do |t, args|
+      Jobs::Queries::AuditLog::Import.enqueue_and_wait(0, nil, just_one: args[:just_one])
     end
 
     desc 'Discard old audit log entries'
