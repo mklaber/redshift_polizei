@@ -326,7 +326,7 @@ class Polizei < Sinatra::Application
   end
 
   post '/query/test' do
-    result = []
+    result = { rows: [], columns: [] }
     error = nil
     query_type = Models::Query.query_type(params[:query])
     if query_type == 0 # select query
