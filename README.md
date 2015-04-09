@@ -82,7 +82,7 @@ First make sure you configured 'config/tests.yml', then run `rspec`
 
 To deploy
 ---------------------
-`cap staging deploy`
+`cap production deploy`
 
 View at
 ---------------------
