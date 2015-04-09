@@ -49,7 +49,7 @@ Shows queries which were run on the cluster in the past (by default max 30 days)
 3. Tables
 Displays size, keys, skew and more for all tables. Read from system tables, then saved in Postgres from where the informations is retrieved to display it. Automatically updated via cronjob. Manually updateable with `rake redshift:tablereports:update` (see [Data Acquisition](#data-acquisition) below) or through the Update button in the web frontend.
 4. Permissions
-Displays permissions users or groups have on tables. Retrieved from system tables and cached as defined in 'cache.yml'
+Displays permissions users or groups have on tables. Retrieved from system tables and cached in Permissions table in Postgres.
 5. Disk Space
 Retrieved uncached from CloudWatch using the 'PercentageDiskSpaceUsed' metric.
 6. Exports
@@ -57,11 +57,12 @@ Job details are saved and queued in the pg database. Background processes retrie
 
 Data Acquisition
 ---------------------
-All cached and generated data can be updated using `rake reports:update`. This takes quite a long time if there are a lot of audit logs to be parsed. This command can be used to update cached data before the cache expired or to precache on new deployments.
+All cached and generated data can be updated using `rake reports:update`. This takes quite a long time if there are a lot of audit logs to be parsed. This command can be used to update cached data before it is regularly updated or to precache on new deployments. Aborting these tasks through Ctrl + C won't abort the update.
 
-There are two cronjobs running in the background to keep data up to date. They are rake tasks and can be manually run by executing
+There are three cronjobs running in the background to keep data up to date. They are rake tasks and can be manually run by executing
 - `rake redshift:auditlog:import`: Retrieves newest queries from the Redshift audit logs.
-- `rake redshift:tablereports:update`: Updates all the table statistics
+- `rake redshift:tablereports:update`: Updates all the table statistics.
+- `rake redshift:permissions:update`: Updates permissions cached locally.
 The cron jobs are configured using 'whenever' in 'config/schedule.rb' and updated automatically on deployment. To enable them locally run 'whenever --update-crontab'.
 
 Export Execution
@@ -70,7 +71,7 @@ Exports are executed in long-running background processes. To start this backgro
 
 Running
 ---------------------
-`shotgun`
+`shotgun` for the webserver. `desmond run` for the background processes.
 
 To get a console
 ---------------------

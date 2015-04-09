@@ -63,6 +63,7 @@ class Polizei < Sinatra::Application
     js :tables, ['/javascripts/tables.js']
     js :queries, ['/javascripts/queries.js']
     js :auditlog, ['/javascripts/auditlog.js']
+    js :permissions, ['/javascripts/permissions.js']
     js :jobs, ['/javascripts/jobs.js']
     css :application, [
       '/stylesheets/lib/bootstrap.min.css',
@@ -222,27 +223,30 @@ class Polizei < Sinatra::Application
   end
 
   get '/permissions' do
-    @users, @groups, @tables = Reports::Permission.new.result
-    @p_types = ["select", "insert", "update", "delete", "references"]
+    @users   = Models::DatabaseUser.order(:name).all
+    @groups  = Models::DatabaseGroup.order(:name).all
+    @tables  = Models::Table.includes(:schema).order("schemas.name, tables.name").all
+    @updated = Jobs::Permissions::Update.last_run
+    @updated = @updated.executed_at unless @updated.nil?
     erb :permissions, :locals => { :name => :permissions }
   end
 
-  get '/permissions/tables' do
-    schemaname, tablename = params[:value].split("-->")
-    permissions_report = Reports::Permission.new
-    @result = permissions_report.get_users_with_access(schemaname, tablename).to_json
-  end
-    
-  get '/permissions/users' do
-    username = params[:value]
-    permissions_report = Reports::Permission.new
-    @result = permissions_report.get_tables_for_user(username).to_json
+  get '/permissions/user2tables' do
+    Models::Permission.for_user(params[:value], Models::Table).to_json
   end
 
-  get '/permissions/groups' do
-    groupname = params[:value]
-    permissions_report = Reports::Permission.new
-    @result = permissions_report.get_tables_for_group(groupname).to_json
+  get '/permissions/group2tables' do
+    Models::Permission.for_group(params[:value], Models::Table).to_json
+  end
+
+  get '/permissions/table2users' do
+    schema_name, table_name = params[:value].split("-->")
+    Models::Permission.for_table(schema_name, table_name, Models::DatabaseUser).to_json
+  end
+
+  get '/permissions/table2groups' do
+    schema_name, table_name = params[:value].split("-->")
+    Models::Permission.for_table(schema_name, table_name, Models::DatabaseGroup).to_json
   end
 
   get '/jobs' do
