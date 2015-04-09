@@ -1,0 +1,2 @@
+server_url: polizei.example.com # url of the server to connect and deploy to
+server_path: /apps/polizei # path on the server to use for deployment

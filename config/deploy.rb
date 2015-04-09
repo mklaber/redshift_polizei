@@ -1,8 +1,10 @@
 # config/deploy.rb
 
+require './lib/global_config'
+GlobalConfig.load_config_file('deploy', 'config/deploy.yml')
 APP_NAME    = 'polizei'
-SERVER_URL  = 'polizei.amg.tv'
-SERVER_PATH = "/amg/app/#{APP_NAME}"
+SERVER_URL  = GlobalConfig.deploy('server_url')
+SERVER_PATH = GlobalConfig.deploy('server_path')
 
 # Bundler tasks
 require 'bundler/capistrano'
