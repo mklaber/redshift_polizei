@@ -11,9 +11,6 @@ class Polizei < Sinatra::Application
   register Sinatra::AssetPack
   register Sinatra::AWSExtension
   register Sinatra::PonyMailExtension
-  use Rack::Session::Cookie, :key => 'rack.session',
-                             :expire_after => 86400 * 7, # In seconds
-                             :secret => '*&(^q24t89y$*q27895#yjknsd%@f4'
 
   # setup the custom logger
   configure do
@@ -36,6 +33,9 @@ class Polizei < Sinatra::Application
     PolizeiLogger.logger.info "#{request.ip} - #{session[:uid]} \"#{request.request_method} #{request.path}\" #{response.status} "
   end
 
+  use Rack::Session::Cookie, :key => 'rack.session',
+                             :expire_after => 86400 * 7, # sec
+                             :secret => GlobalConfig.polizei('cookie_secret')
   # configure OAuth authentication
   use OmniAuth::Builder do
     provider GlobalConfig.auth('provider'),
