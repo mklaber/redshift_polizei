@@ -1,5 +1,9 @@
 # config/deploy.rb
 
+APP_NAME    = 'polizei'
+SERVER_URL  = 'polizei.amg.tv'
+SERVER_PATH = "/amg/app/#{APP_NAME}"
+
 # Bundler tasks
 require 'bundler/capistrano'
 
@@ -18,14 +22,12 @@ require 'whenever/capistrano'
 # load desmond recipe
 require 'desmond/capistrano'
 
-APP_NAME = 'polizei'
-
 set :application,     "#{APP_NAME}"
 set :repository,      "git@github.com:AnalyticsMediaGroup/redshift_polizei.git"
 set :scm,             :git
 set :branch,          "master"
 set :bundle_without,  [:development, :test, :cucumber]
-set :deploy_to,       "/amg/app/#{APP_NAME}" 
+set :deploy_to,       SERVER_PATH
 set :shared_path,     "#{deploy_to}/shared"
 set :user,            "deploy"
 set :runner,          "deploy"
@@ -39,10 +41,10 @@ set :ssh_options, {:forward_agent => true,
 task :production do
   set :rails_env, "production"
   set :branch, "master"
-  role :all,  "staging.amg.tv"
-  role :app,  "staging.amg.tv"
-  role :web,  "staging.amg.tv"
-  role :db,   "staging.amg.tv", :primary => true
+  role :all,  SERVER_URL
+  role :app,  SERVER_URL
+  role :web,  SERVER_URL
+  role :db,   SERVER_URL, :primary => true
   #role :cron, "www-staging.analyticsmediagroup.com"
 end
 
