@@ -185,6 +185,8 @@ class Polizei < Sinatra::Application
   
   get '/tables' do
     @tables = Models::TableReport.order(size_in_mb: :desc)
+    @updated = Jobs::TableReports.last_run(1)
+    @updated = @updated.executed_at unless @updated.nil?
     erb :tables, :locals => { :name => :tables }
   end
 

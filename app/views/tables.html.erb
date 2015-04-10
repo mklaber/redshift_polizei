@@ -1,7 +1,8 @@
 <!-- TODO add analyze and vacuum option -->
 
 <div style="overflow: auto;">
-  <div style="float: left;"><h2 name="tables" id="tables">Tables</h2></div>
+  <div style="float: left;"><h2 name="tables" id="tables">Tables <small class="secondary">(last update: <span id="last_update" class="abs_rel"></span>)</small></h2></div>
+  <span id="last_update_store" style="display: none;"><%= (@updated.nil? ? 0 : @updated.utc.to_i) %></span>
   <div style="float: right;">
     <button type="button" class="btn btn-primary btn-default" style="margin-top: 25px;" id="update_all_tables">
       Check for new tables now

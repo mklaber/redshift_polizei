@@ -1,4 +1,23 @@
 $(document).ready(function() {
+  // show relative or absolute date of last data update
+  var last_update_container = $('#last_update');
+  var last_update = $('#last_update_store').text();
+  var update_moment = moment(last_update, "X");
+  var absolute = $('<span/>').addClass('absolute').text(
+    (last_update == '0' ? 'unknown' : update_moment.format("MM/DD/YYYY, HH:mm:ss a"))
+  ).hide();
+  var relative = $('<span/>').addClass('relative').text(
+    (last_update == '0' ? 'unknown' : update_moment.fromNow())
+  );
+  last_update_container.attr('title', absolute.text());
+  last_update_container.append(absolute);
+  last_update_container.append(relative);
+  $('.abs_rel').tooltip();
+  $('.abs_rel').click(function () {
+    $(this).find('span.absolute').toggle();
+    $(this).find('span.relative').toggle();
+  });
+
   // export schemas button
   $('#schema_export_submit').on('click', function(e) {
     $('#schema_export_submit').hide();
