@@ -34,7 +34,7 @@ set :shared_path,     "#{deploy_to}/shared"
 set :user,            "deploy"
 set :runner,          "deploy"
 set :keep_releases,   5
-set :yaml_files,      ['database', 'aws', 'auth', 'cache', 'mail', 'polizei']
+set :yaml_files,      ['database', 'polizei']
 set :use_sudo,        false 
 default_run_options[:pty] = true
 set :ssh_options, {:forward_agent => true,
