@@ -75,6 +75,8 @@ $(document).ready(function() {
           data = JSON.parse(data);
           results.empty();
           
+          var headerInfo = null;
+
           //We create our nifty table to hold results
           var table = $('<table/>');
           $(table).attr('data-auto', 'true');
@@ -86,9 +88,25 @@ $(document).ready(function() {
           //We create the column headers first
           var p_types = ["Select", "Insert", "Update", "Delete", "References"];
 
+          if (id.startsWith('group2')) {
+            headerInfo = $('<div/>').append($('<h5/>').text('Members: ').css('font-weight', 'bold'));
+            var groupMembers = $('<div/>').addClass('list-group list-inline');
+            var members = data['members'];
+            for (var i = 0; i < members.length; i++) {
+              groupMembers.append($('<a/>').addClass('list-group-item').text(members[i]['name']));
+            }
+            headerInfo.append(groupMembers);
+          } else if (id.startsWith('table2')) {
+            headerInfo = $('<div/>').append($('<h5/>').text('Owner: ').css('font-weight', 'bold'));
+            var owner = $('<div/>').addClass('list-group list-inline');
+            owner.append($('<a/>').addClass('list-group-item').text(data['owner']['name']));
+            headerInfo.append(owner);
+          }
+
           if (showing_tables) {
             $(header).append($('<th/>').text('Schema'));
             $(header).append($('<th/>').text('Table'));
+            $(header).append($('<th/>').text('Owner'));
           } else if (showing_entities) {
             $(header).append($('<th/>').text('Name'));
           }
@@ -104,22 +122,26 @@ $(document).ready(function() {
             return $('<td/>').append($('<span/>').addClass('label label-success').text('Yes'));
           }
           var new_row;
-          for (var i = 0; i < data.length; i++) {
+          var permissions = data['permissions'];
+          for (var i = 0; i < permissions.length; i++) {
             new_row = $('<tr/>');
             if (showing_tables) {
-              new_row.append($('<td/>').text(data[i]['dbobject']['schema_name']));
-              new_row.append($('<td/>').text(data[i]['dbobject']['table_name']));
+              new_row.append($('<td/>').text(permissions[i]['dbobject']['schema_name']));
+              new_row.append($('<td/>').text(permissions[i]['dbobject']['table_name']));
+              new_row.append($('<td/>').text(permissions[i]['dbobject']['owner']['name']));
             } else if (showing_entities) {
-              new_row.append($('<td/>').text(data[i]['entity']['name']));
+              new_row.append($('<td/>').text(permissions[i]['entity']['name']));
             }
-            new_row.append(data[i]['has_select']     ? new_granted() : new_revoked());
-            new_row.append(data[i]['has_insert']     ? new_granted() : new_revoked());
-            new_row.append(data[i]['has_update']     ? new_granted() : new_revoked());
-            new_row.append(data[i]['has_delete']     ? new_granted() : new_revoked());
-            new_row.append(data[i]['has_references'] ? new_granted() : new_revoked());
+            new_row.append(permissions[i]['has_select']     ? new_granted() : new_revoked());
+            new_row.append(permissions[i]['has_insert']     ? new_granted() : new_revoked());
+            new_row.append(permissions[i]['has_update']     ? new_granted() : new_revoked());
+            new_row.append(permissions[i]['has_delete']     ? new_granted() : new_revoked());
+            new_row.append(permissions[i]['has_references'] ? new_granted() : new_revoked());
             $(body).append(new_row);
           }
           
+          if (headerInfo != null)
+            results.append(headerInfo);
           results.append(table);
           datatable_init(table);
         },

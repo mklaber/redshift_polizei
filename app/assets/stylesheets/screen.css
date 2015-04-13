@@ -50,6 +50,14 @@ div.permissions_content div.tabbedMenuContent {
     margin-bottom: 20px;
 }
 
+.list-inline .list-group-item {
+  padding: 0.7em;
+  border-radius: 4px;
+  margin: 0.1em;
+  margin-bottom: 0.5em;
+  display: inline-block;
+}
+
 .orange {
   color: darksalmon;
 }

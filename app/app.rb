@@ -234,21 +234,32 @@ class Polizei < Sinatra::Application
   end
 
   get '/permissions/user2tables' do
-    Models::Permission.for_user(params[:value], Models::Table).to_json
+    {
+      permissions: Models::Permission.for_user(params[:value], Models::Table)
+    }.to_json
   end
 
   get '/permissions/group2tables' do
-    Models::Permission.for_group(params[:value], Models::Table).to_json
+    {
+      members: Models::DatabaseGroup.find_by!(name: params[:value]).users.order(:name),
+      permissions: Models::Permission.for_group(params[:value], Models::Table)
+    }.to_json
   end
 
   get '/permissions/table2users' do
     schema_name, table_name = params[:value].split("-->")
-    Models::Permission.for_table(schema_name, table_name, Models::DatabaseUser).to_json
+    {
+      owner: Models::Table.find_by_full_name(schema_name, table_name).owner,
+      permissions: Models::Permission.for_table(schema_name, table_name, Models::DatabaseUser)
+    }.to_json
   end
 
   get '/permissions/table2groups' do
     schema_name, table_name = params[:value].split("-->")
-    Models::Permission.for_table(schema_name, table_name, Models::DatabaseGroup).to_json
+    {
+      owner: Models::Table.find_by_full_name(schema_name, table_name).owner,
+      permissions: Models::Permission.for_table(schema_name, table_name, Models::DatabaseGroup)
+    }.to_json
   end
 
   get '/jobs' do
