@@ -59,13 +59,15 @@ after "deploy:restart", "deploy:migrate"
 after "deploy:restart", "assets:precompile"
 
 # manage desmond background processes
-after "deploy:stop",    "desmond:stop"
-after "deploy:start",   "desmond:start"
-after "deploy:restart", "desmond:restart"
+after  "deploy:stop",    "desmond:stop"
+before "deploy:start",   "assets:precompile"
+after  "deploy:start",   "desmond:start"
+before "deploy:restart", "assets:precompile"
+after  "deploy:restart", "desmond:restart"
 
 namespace :assets do
   task :precompile, :roles => :app do
-    run 'bundle exec rake assetpack:build'
+    run 'cd #{current_path}; bundle exec rake assetpack:build'
   end
 end
 
