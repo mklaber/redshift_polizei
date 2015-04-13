@@ -58,7 +58,7 @@ You can view it in your browser by using this link: #{view_url}"
     #
     def execute(job_id, user_id, options={})
       time = Time.now.utc.strftime('%Y_%m_%dT%H_%M_%S_%LZ')
-      s3_bucket = GlobalConfig.aws('export_bucket')
+      s3_bucket = GlobalConfig.polizei('aws_export_bucket')
       s3_key = "table_structure_export_#{user_id}_#{time}.sql"
 
       table = {}
@@ -285,12 +285,4 @@ You can view it in your browser by using this link: #{view_url}"
       end
     end
   end
-end
-
-if __FILE__ == $0
-
-  puts Jobs::TableStructureExportJob.run(1, 1, schema_name: ARGV[0], table_name: ARGV[1], s3: {
-    access_key_id: GlobalConfig.aws('access_key_id'),
-    secret_access_key: GlobalConfig.aws('secret_access_key')
-  })
 end

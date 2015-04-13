@@ -1,9 +1,0 @@
-from: username@example.com # sender of the emails
-via: smtp # via method
-via_options:
-  address: smtp.gmail.com # smtp server host
-  port: 587 # smtp server port
-  authentication: plain # smtp server authentication method
-  user_name: username@example.com #smtp server username
-  password: password # smtp server password
-  enable_starttls_auto: true # enable startssl

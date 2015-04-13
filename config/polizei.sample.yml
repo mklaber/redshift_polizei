@@ -1,3 +1,28 @@
+auth_provider: GoogleOauth2 # for Google: GoogleOauth2, otherwise refer to OmniAuth documentation
+auth_client_id: client_id # client id from e.g. Google developer console
+auth_client_secret: client_secret # client secret from e.g. Google developer console
+auth_valid_domains: ['amg.tv', 'analyticsmediagroup.com'] # domains of email addresses which are allowed to log in
+
+aws_access_key_id: access_key # aws access key to use for requests
+aws_secret_access_key: secret_key # aws secret key to use for requests
+aws_cluster_identifier: redshift_cluster_id # id of the redshift cluster, needs to be in sync with database.yml
+aws_redshift_audit_log_bucket: amg-redshift-logging # name of the bucket containing the RedShift audit logs
+aws_export_bucket: export-bucket # aws bucket to be used for exports
+
+mail:
+  from: username@example.com # sender of the emails
+  via: smtp # via method
+  via_options:
+    address: smtp.gmail.com # smtp server host
+    port: 587 # smtp server port
+    authentication: plain # smtp server authentication method
+    user_name: username@example.com # smtp server username
+    password: password # smtp server password
+    enable_starttls_auto: true # enable startssl
+
 job_failure_cc: admin@example.com # when a job fails, the failure email will have this cc recipient
 job_failure_bcc: admin@example.com # when a job fails, the failure email will have this bcc recipient
 cookie_secret: # secret to use for Rack session cookies
+
+deploy_server_url: polizei.example.com # url of the server to connect and deploy to
+deploy_server_path: /apps/polizei # path on the server to use for deployment

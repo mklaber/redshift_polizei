@@ -1,4 +1,0 @@
-development:
-  type: activerecord # valid values: dynamodb, activerecord
-  table: Models::Cache # table to use a cache (dynamodb key or activerecord class name)
-  expires: 86400 # how long should cache data be valid in seconds

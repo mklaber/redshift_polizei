@@ -26,9 +26,9 @@ module Models
           query: self.query
         },
         s3: {
-          access_key_id: GlobalConfig.aws('access_key_id'),
-          secret_access_key: GlobalConfig.aws('secret_access_key'),
-          bucket: GlobalConfig.aws('export_bucket')
+          access_key_id: GlobalConfig.polizei('aws_access_key_id'),
+          secret_access_key: GlobalConfig.polizei('aws_secret_access_key'),
+          bucket: GlobalConfig.polizei('aws_export_bucket')
         },
         csv: {
           col_sep: self.export_options['delimiter'],

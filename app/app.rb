@@ -2,7 +2,6 @@ require './app/main'
 
 class Polizei < Sinatra::Application
   POLIZEI_CONFIG_FILE = 'config/polizei.yml'
-  AUTH_CONFIG_FILE = 'config/auth.yml'
   JOB_WAIT_TIMEOUT = 30
   
   set :root, File.dirname(__FILE__)
@@ -20,8 +19,9 @@ class Polizei < Sinatra::Application
     # disable Sinatra's default
     set :logging, nil
     # config files
-    load_config_file :auth, AUTH_CONFIG_FILE
     load_config_file :polizei, POLIZEI_CONFIG_FILE
+    set :aws_config_file , POLIZEI_CONFIG_FILE
+    set :mail_config_file, POLIZEI_CONFIG_FILE
   end
   # set logger in environment variable for rack to pick it up
   before do
@@ -38,9 +38,9 @@ class Polizei < Sinatra::Application
                              :secret => GlobalConfig.polizei('cookie_secret')
   # configure OAuth authentication
   use OmniAuth::Builder do
-    provider GlobalConfig.auth('provider'),
-      GlobalConfig.auth('client_id'),
-      GlobalConfig.auth('client_secret')
+    provider GlobalConfig.polizei('auth_provider'),
+      GlobalConfig.polizei('auth_client_id'),
+      GlobalConfig.polizei('auth_client_secret')
   end
 
   # configure asset pipeline
@@ -112,7 +112,7 @@ class Polizei < Sinatra::Application
     google_email = auth_hash['info']['email']
     # make sure only valid domains can login
     parsed_google_email = Mail::Address.new(google_email)
-    error 403 if not GlobalConfig.auth('valid_domains').member?(parsed_google_email.domain)
+    error 403 if not GlobalConfig.polizei('auth_valid_domains').member?(parsed_google_email.domain)
     # successfully logged in, make sure we have user in the database
     user = Models::User.find_or_initialize_by(email: parsed_google_email.address)
     user.google_id = auth_hash['uid']

@@ -32,7 +32,7 @@ module Jobs
           unless file.nil?
             block.call(File.open(file, 'r'), file)
           else
-            bucket = AWS::S3.new.buckets[GlobalConfig.aws('redshift_audit_log_bucket')]
+            bucket = AWS::S3.new.buckets[GlobalConfig.polizei('aws_redshift_audit_log_bucket')]
             # start from the newest and work our way back
             bucket.objects.sort_by { |obj| obj.last_modified }.reverse.each do |obj|
               begin

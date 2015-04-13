@@ -10,15 +10,15 @@ module Sinatra
     def self.registered(app)
       app.register Sinatra::ConfigurationsExtension
       #app.helpers AWSHelpers
-      app.set :aws_file, DEFAULT_CONFIG_FILE if File.exists?(DEFAULT_CONFIG_FILE)
+      app.set :aws_config_file, DEFAULT_CONFIG_FILE if File.exists?(DEFAULT_CONFIG_FILE)
     end
 
-    def aws_file=(path)
+    def aws_config_file=(path)
       c = load_config_file(CONFIG_NAME, path)
-      if c.has_key?('access_key_id') && c.has_key?('secret_access_key')
+      if c.has_key?('aws_access_key_id') && c.has_key?('aws_secret_access_key')
         AWS.config({
-          access_key_id: c['access_key_id'],
-          secret_access_key: c['secret_access_key']
+          access_key_id: c['aws_access_key_id'],
+          secret_access_key: c['aws_secret_access_key']
         })
       end
     end

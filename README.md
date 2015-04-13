@@ -9,36 +9,24 @@ Setup
 ```
 bundle install
 cp config/database.sample.yml config/database.yml
-cp config/auth.sample.yml config/auth.yml
-cp config/aws.sample.yml config/aws.yml
-cp config/cache.sample.yml config/cache.yml
-cp config/mail.sample.yml config/mail.yml
 cp config/polizei.sample.yml config/polizei.yml
+cp config/tests.sample.yml config/tests.yml
 ```
 
 Configuration
 ---------------------
 1. Configure PostgreSQL and Redhsift database connections in `config/database.yml`
   - run `rake db:setup`
-2. Configure OAuth authentication in `config/auth.yml`
+2. Configure OAuth authentication in `config/polizei.yml`
   - Google
     - provider: google_oauth2
     - Retrieve Client ID credentials from https://console.developers.google.com
       - Redirect URIs: {host}/auth/google_oauth2/callback
       - Javascript Origins: {host}
-3. Configure AWS credentials in `config/aws.yml`
-4. Configure the cache in `config/cache.yml`
-  - ActiveRecord
-    - Uses the configured primary ActiveRecord database connection as a cache
-    - type: activerecord
-    - table: {full model class name}
-  - DynamoDB
-    - uses AWS DynamoDB as a cache
-    - type: dynamodb
-    - table: {table name}
-5. Set the mail settings in `config/mail.yml`
+3. Configure AWS credentials in `config/polizei.yml`
+4. Set the mail settings in `config/polizei.yml`
   - All settings will be directly injected into Pony.options
-6. Set the general application settings in `config/polizei.yml`
+5. Set the general application settings in `config/polizei.yml`
 
 Reports
 ---------------------
@@ -51,7 +39,7 @@ Displays size, keys, skew and more for all tables. Read from system tables, then
 4. Permissions
 Displays permissions users or groups have on tables. Retrieved from system tables and cached in Permissions table in Postgres.
 5. Disk Space
-Retrieved uncached from CloudWatch using the 'PercentageDiskSpaceUsed' metric.
+Retrieved uncached from CloudWatch using the `PercentageDiskSpaceUsed` metric.
 6. Exports
 Job details are saved and queued in the pg database. Background processes retrieve queued jobs and execute their queries on the cluster, saving the results to S3.
 
@@ -67,7 +55,7 @@ The cron jobs are configured using 'whenever' in 'config/schedule.rb' and update
 
 Export Execution
 ---------------------
-Exports are executed in long-running background processes. To start this background process locally run `./scripts/que run`. On a server capistrano will run `./scripts/que start|restart|stop` to manage these background processes.
+Exports are executed in long-running background processes. To start this background process locally run `desmond run`. On a server capistrano will run `desmond start|restart|stop` to manage these background processes.
 
 Running
 ---------------------
@@ -79,11 +67,11 @@ To get a console
 
 Running tests
 ---------------------
-First make sure you configured 'config/tests.yml', then run `rspec`
+First make sure you configured `config/tests.yml`, then run `rspec`
 
 To deploy
 ---------------------
-`cap production deploy`
+Make sure the deploy configuration options are set in `config/polizei.yml` (`deploy_server_url` and `deploy_server_path`), then run `cap production deploy`
 
 View at
 ---------------------

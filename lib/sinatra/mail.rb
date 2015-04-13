@@ -10,12 +10,12 @@ module Sinatra
     def self.registered(app)
       app.register Sinatra::ConfigurationsExtension
       app.helpers PonyMailHelpers
-      app.set :mail_file, DEFAULT_CONFIG_FILE if File.exists?(DEFAULT_CONFIG_FILE)
+      app.set :mail_config_file, DEFAULT_CONFIG_FILE if File.exists?(DEFAULT_CONFIG_FILE)
     end
 
-    def mail_file=(path)
+    def mail_config_file=(path)
       c = load_config_file(CONFIG_NAME, path)
-      Pony.options = c.dup.deep_symbolize_keys
+      Pony.options = c.dup.deep_symbolize_keys[:mail]
     end
 
     def mail_config(key=nil)
