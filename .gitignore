@@ -48,4 +48,6 @@ config/tests.yml
 
 log/*
 
+public/*
+
 *.pid

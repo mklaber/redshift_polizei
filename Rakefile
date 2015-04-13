@@ -3,6 +3,10 @@ Bundler.require
 # activerecord tasks
 require "sinatra/activerecord/rake"
 
+APP_FILE  = 'app/app.rb'
+APP_CLASS = 'Polizei'
+require 'sinatra/assetpack/rake'
+
 require 'desmond/rake'
 
 # this loads several configuration files (e.g. mail.yml) need in background processes,

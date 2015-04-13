@@ -13,6 +13,7 @@ class Polizei < Sinatra::Application
 
   # setup the custom logger
   configure do
+    set :public_folder, 'public'
     # Disable internal middleware for presenting errors
     # as useful HTML pages
     set :show_exceptions, false

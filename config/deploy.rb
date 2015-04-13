@@ -56,11 +56,18 @@ set :whenever_roles, defer { :app }
 
 after "deploy:update_code", "config:setup"
 after "deploy:restart", "deploy:migrate"
+after "deploy:restart", "assets:precompile"
 
 # manage desmond background processes
 after "deploy:stop",    "desmond:stop"
 after "deploy:start",   "desmond:start"
 after "deploy:restart", "desmond:restart"
+
+namespace :assets do
+  task :precompile, :roles => :app do
+    run 'bundle exec rake assetpack:build'
+  end
+end
 
 namespace :deploy do
   [:start, :stop].each do |t|
