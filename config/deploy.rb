@@ -3,8 +3,8 @@
 require './lib/global_config'
 GlobalConfig.load_config_file('deploy', 'config/polizei.yml')
 APP_NAME    = 'polizei'
-SERVER_URL  = GlobalConfig.polizei('deploy_server_url')
-SERVER_PATH = GlobalConfig.polizei('deploy_server_path')
+SERVER_URL  = GlobalConfig.deploy('deploy_server_url')
+SERVER_PATH = GlobalConfig.deploy('deploy_server_path')
 
 # Bundler tasks
 require 'bundler/capistrano'
