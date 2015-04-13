@@ -65,7 +65,7 @@ after  "deploy:restart", "desmond:restart"
 
 namespace :assets do
   task :precompile, :roles => :app do
-    run "cd #{current_path}; bundle exec rake assetpack:build"
+    run "cd #{current_path}; bundle exec rake assetpack:build RACK_ENV=#{rails_env}"
   end
 end
 

@@ -9,7 +9,7 @@ require 'sinatra/assetpack/rake'
 
 require 'desmond/rake'
 
-# this loads several configuration files (e.g. mail.yml) need in background processes,
+# this loads several configuration files (e.g. mail.yml) needed in background processes,
 # so we can't just load app/main
 require_relative 'app/app'
 
