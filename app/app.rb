@@ -85,7 +85,8 @@ class Polizei < Sinatra::Application
       request.path_info.start_with?('/fonts') ||
       request.path_info.start_with?('/images') ||
       request.path_info.start_with?('/javascripts') ||
-      request.path_info.start_with?('/stylesheets'))
+      request.path_info.start_with?('/stylesheets') ||
+      request.path_info.start_with?('/favicon.ico'))
     if not (is_asset || is_login_site || is_auth_site)
       if not logged_in?
         session[:prev_login_site] = request.path_info
