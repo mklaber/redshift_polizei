@@ -34,9 +34,19 @@ module Jobs
           else
             bucket = AWS::S3.new.buckets[GlobalConfig.polizei('aws_redshift_audit_log_bucket')]
             # start from the newest and work our way back
-            bucket.objects.sort_by { |obj| obj.last_modified }.reverse.each do |obj|
+            tmp = bucket.objects.sort_by { |obj| obj.last_modified }.reverse
+            #tmp = bucket.objects
+            tmp.each do |obj|
               begin
-                is_user_activity_log = (not obj.key.index('useractivitylog').nil?)
+                filename       = obj.key.split('/')[-1].split('.')[0] # gets rid of the path before the actual filename
+                filename_parts = filename.split('_') # the filename contains several pieces of info
+                cluster_name   = filename_parts[3]
+                logtype        = filename_parts[4]
+                logtimestamp   = filename_parts[5]
+
+                Que.log level: :debug, message: "log file from '#{cluster_name}' of type '#{logtype}' timed at #{logtimestamp}"
+                is_our_cluster       = (cluster_name == GlobalConfig.polizei('aws_cluster_identifier'))
+                is_user_activity_log = (logtype == 'useractivitylog')
                 if is_user_activity_log && obj.last_modified > last_update
                   # we are going to parse the file while downloading making this a little more complicated
                   reader, writer = IO.pipe
@@ -64,55 +74,57 @@ module Jobs
           # read user activity log
           lineno = 0
           prev_q = nil
-          reader.each_line do |line|
-            lineno += 1
-            q = nil
-            if line.match("'[0-9]{4}\-[0-9]{2}\-[0-9]{2}T").nil?
-              # part of previous query => append to query
-              raise "Corrupt file on line #{lineno} in file #{logfile_name}" if prev_q.nil?
-              q = prev_q
-              q.query += line
-            else
-              metadata_end = line.index(']\'')
-              raise "Unsupported line format on line #{lineno} in file #{logfile_name}" if metadata_end.nil?
-              metadata = line[0, metadata_end]
-              metadata_parts = metadata.split(' ')
-              raise "Unsupported metadata format on line #{lineno} in file #{logfile_name}" if metadata_parts.length != 8
+          Models::Query.transaction do
+            reader.each_line do |line|
+              lineno += 1
+              q = nil
+              if line.match("'[0-9]{4}\-[0-9]{2}\-[0-9]{2}T").nil?
+                # part of previous query => append to query
+                raise "Corrupt file on line #{lineno} in file #{logfile_name}" if prev_q.nil?
+                q = prev_q
+                q.query += line
+              else
+                metadata_end = line.index(']\'')
+                raise "Unsupported line format on line #{lineno} in file #{logfile_name}" if metadata_end.nil?
+                metadata = line[0, metadata_end]
+                metadata_parts = metadata.split(' ')
+                raise "Unsupported metadata format on line #{lineno} in file #{logfile_name}" if metadata_parts.length != 8
 
-              record_time = Time.iso8601(metadata_parts[0][1..-1])
-              db     = metadata_parts[3].split('=')[-1]
-              user   = metadata_parts[4].split('=')[-1]
-              pid    = metadata_parts[5].split('=')[-1].to_i
-              userid = metadata_parts[6].split('=')[-1].to_i
-              xid    = metadata_parts[7].split('=')[-1].to_i
-              query  = line[(metadata_end + 8)..-1]
+                record_time = Time.iso8601(metadata_parts[0][1..-1])
+                db     = metadata_parts[3].split('=')[-1]
+                user   = metadata_parts[4].split('=')[-1]
+                pid    = metadata_parts[5].split('=')[-1].to_i
+                userid = metadata_parts[6].split('=')[-1].to_i
+                xid    = metadata_parts[7].split('=')[-1].to_i
+                query  = line[(metadata_end + 8)..-1]
 
 
-              # save query
-              unless prev_q.nil?
-                prev_q.query.strip!
-                prev_q.save
+                # save query
+                unless prev_q.nil?
+                  prev_q.query.strip!
+                  prev_q.save
+                end
+                q = Models::Query.new
+                q.assign_attributes(
+                  record_time: record_time,
+                  db: db,
+                  user: user,
+                  pid: pid,
+                  userid: userid,
+                  xid: xid,
+                  query_type: Models::Query.query_type(query),
+                  query: query,
+                  logfile: logfile_name
+                )
               end
-              q = Models::Query.new
-              q.assign_attributes(
-                record_time: record_time,
-                db: db,
-                user: user,
-                pid: pid,
-                userid: userid,
-                xid: xid,
-                query_type: Models::Query.query_type(query),
-                query: query,
-                logfile: logfile_name
-              )
-            end
 
-            prev_q = q
-            begin
-              q.save
-            rescue
-              Que.log level: :error, msg: "Database error on line #{lineno} in file #{logfile_name}"
-              raise
+              prev_q = q
+              begin
+                q.save
+              rescue
+                Que.log level: :error, msg: "Database error on line #{lineno} in file #{logfile_name}"
+                raise
+              end
             end
           end
           unless prev_q.nil?

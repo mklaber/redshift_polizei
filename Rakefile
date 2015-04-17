@@ -39,24 +39,24 @@ namespace :redshift do
   namespace :auditlog do
     desc 'Import audit log files into polizei'
     task :import, :just_one do |t, args|
-      Jobs::Queries::AuditLog::Import.enqueue_and_wait(0, nil, just_one: args[:just_one])
+      Jobs::Queries::AuditLog::Import.run_persisted(0, just_one: args[:just_one])
     end
 
     desc 'Discard old audit log entries'
     task :retention do
-      Jobs::Queries::AuditLog::EnforceRetention.enqueue_and_wait(0)
+      Jobs::Queries::AuditLog::EnforceRetention.run_persisted(0)
     end
 
     desc 'Rerun the query classification'
     task :reclassify do
-      Jobs::Queries::AuditLog::Reclassify.enqueue_and_wait(0)
+      Jobs::Queries::AuditLog::Reclassify.run_persisted(0)
     end
   end
 
   namespace :tablereports do
     desc 'Update tables report'
     task :update, :schema_name, :table_name do |t, args|
-      Jobs::TableReports.enqueue_and_wait(1, 0, nil, args)
+      Jobs::TableReports.run_persisted(1, 0, args)
     end
     desc 'Discard all table reports'
     task :clear do
@@ -67,7 +67,7 @@ namespace :redshift do
   namespace :permissions do
     desc 'Update permissions from RedShift'
     task :update do
-      Jobs::Permissions::Update.enqueue_and_wait(0)
+      Jobs::Permissions::Update.run_persisted(0)
     end
   end
 end
