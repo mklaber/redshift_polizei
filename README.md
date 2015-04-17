@@ -45,7 +45,7 @@ Job details are saved and queued in the pg database. Background processes retrie
 
 Data Acquisition
 ---------------------
-All cached and generated data can be updated using `rake reports:update`. This takes quite a long time if there are a lot of audit logs to be parsed. This command can be used to update cached data before it is regularly updated or to precache on new deployments. Aborting these tasks through Ctrl + C won't abort the update!
+All cached and generated data can be updated using `rake reports:update`. This takes quite a long time if there are a lot of audit logs to be parsed. This command can be used to update cached data before it is regularly updated or to precache on new deployments.
 
 There are three cronjobs running in the background to keep data up to date. They are rake tasks and can be manually run by executing
 - `rake redshift:auditlog:import`: Retrieves newest queries from the Redshift audit logs.
