@@ -15,7 +15,9 @@ module Models
     belongs_to :dbobject, polymorphic: true
 
     validates_inclusion_of :has_select, :has_insert, :has_update, :has_delete, :has_references, :in => [true, false]
-    validate :validate_unqiueness
+    #validate :validate_unqiueness # this is a complex check (does three extra queries each time),
+                                   # disabling because this slows mass-updates down significantly
+                                   # (database checks anyways)
     validate :validate_entity_is_user_or_group, :validate_object_is_schema_or_table
 
     ##
