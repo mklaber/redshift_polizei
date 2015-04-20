@@ -16,6 +16,9 @@ require 'coderay'
 require 'aws'
 require 'desmond'
 require 'connection_pool'
+if Sinatra::Application.environment.to_sym == :staging || Sinatra::Application.environment.to_sym == :production
+  require 'exception_notification'
+end
 
 require 'sql/sql'
 

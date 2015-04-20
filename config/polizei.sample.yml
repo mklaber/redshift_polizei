@@ -20,6 +20,7 @@ mail:
     password: password # smtp server password
     enable_starttls_auto: true # enable startssl
 
+exception_mail_to: admin@example.com # email address which will receive notifications about exceptions
 job_failure_cc: admin@example.com # when a job fails, the failure email will have this cc recipient
 job_failure_bcc: admin@example.com # when a job fails, the failure email will have this bcc recipient
 cookie_secret: # secret to use for Rack session cookies

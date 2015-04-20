@@ -24,6 +24,17 @@ class Polizei < Sinatra::Application
     load_config_file :polizei, POLIZEI_CONFIG_FILE
     set :aws_config_file , POLIZEI_CONFIG_FILE
     set :mail_config_file, POLIZEI_CONFIG_FILE
+    # set up exception notififcations
+    if Object.const_defined?('ExceptionNotification')
+      exp_notifier_options = { :email => {
+        :email_prefix => "[POLIZEI] ",
+        :sender_address => GlobalConfig.polizei('mail')['from'],
+        :exception_recipients => GlobalConfig.polizei('exception_mail_to'),
+        :smtp_settings => Pony.options[:via_options]
+      }}
+      use ExceptionNotification::Rack, exp_notifier_options
+      DesmondConfig.register_with_exception_notifier exp_notifier_options
+    end
   end
   # set logger in environment variable for rack to pick it up
   before do
@@ -376,6 +387,7 @@ class Polizei < Sinatra::Application
   end
 
   error do
+    ExceptionNotifier.notify_exception(env['sinatra.error'], env: env) if Object.const_defined?('ExceptionNotifier')
     @error = 'Sorry, there was a nasty error - ' + env['sinatra.error'].to_s
     erb :error
   end

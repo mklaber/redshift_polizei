@@ -1,6 +1,11 @@
 require 'sinatra/base'
 require 'sinatra/configurations'
 require 'pony'
+begin
+  require 'action_mailer'
+rescue LoadError => e
+  # ignoring
+end
 
 module Sinatra
   module PonyMailExtension
@@ -16,6 +21,10 @@ module Sinatra
     def mail_config_file=(path)
       c = load_config_file(CONFIG_NAME, path)
       Pony.options = c.dup.deep_symbolize_keys[:mail]
+      if Object.const_defined?('ActionMailer')
+        ActionMailer::Base.delivery_method = Pony.options[:via].to_sym
+        ActionMailer::Base.smtp_settings = Pony.options[:via_options]
+      end
     end
 
     def mail_config(key=nil)

@@ -36,6 +36,7 @@ end
 group :staging, :production do
   gem 'uglifier'
   gem 'passenger'
+  gem 'exception_notification' # notification when errors happen
 end
 
 group :development, :test do
