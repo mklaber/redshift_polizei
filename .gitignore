@@ -52,5 +52,6 @@ config/tests.yml
 log/*
 
 public/*
+profile/*
 
 *.pid

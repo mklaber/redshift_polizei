@@ -1,6 +1,7 @@
 require './app/main'
 
 class Polizei < Sinatra::Application
+  #use Rack::RubyProf, :path => 'profile'
   POLIZEI_CONFIG_FILE = 'config/polizei.yml'
   JOB_WAIT_TIMEOUT = 30
   

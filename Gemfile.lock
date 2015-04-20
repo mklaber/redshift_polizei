@@ -145,6 +145,7 @@ GEM
       diff-lcs (>= 1.2.0, < 2.0)
       rspec-support (~> 3.2.0)
     rspec-support (3.2.1)
+    ruby-prof (0.15.6)
     rvm-capistrano (1.5.5)
       capistrano (~> 2.15.4)
     shotgun (0.9)
@@ -204,6 +205,7 @@ DEPENDENCIES
   rack_csrf
   rake
   rspec
+  ruby-prof
   rvm-capistrano
   shotgun
   simplecov
