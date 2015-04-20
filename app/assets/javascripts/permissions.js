@@ -106,7 +106,7 @@ $(document).ready(function() {
           if (showing_tables) {
             $(header).append($('<th/>').text('Schema'));
             $(header).append($('<th/>').text('Table'));
-            $(header).append($('<th/>').text('Owner'));
+            $(header).append($('<th/>').text('Table Owner'));
           } else if (showing_entities) {
             $(header).append($('<th/>').text('Name'));
           }
