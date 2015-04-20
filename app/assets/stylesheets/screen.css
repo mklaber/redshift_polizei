@@ -58,6 +58,10 @@ div.permissions_content div.tabbedMenuContent {
   display: inline-block;
 }
 
+a.list-group-item:hover, a.list-group-item:focus {
+  background-color: #fff;
+}
+
 .orange {
   color: darksalmon;
 }
