@@ -74,7 +74,7 @@ module Jobs
         begin
           r = stats[0] # TODO this can fail???, stats is sometimes nil, why?
           col_encoding = col_encodings[full_table_name] || false
-          dist_style = dist_styles[full_table_name]
+          dist_style = dist_styles[full_table_name] || {}
           sort_dist_key = sort_dist_keys[full_table_name] || {}
           sort_key = sort_dist_key['sort_keys'] || []
           dist_key = sort_dist_key['dist_key']
