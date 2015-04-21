@@ -8,7 +8,7 @@ GIT
 
 GIT
   remote: git@github.com:AnalyticsMediaGroup/desmond.git
-  revision: fd42ec8643cef99a8669a583257fb626802033af
+  revision: b6830525b8180019ac212de388e55b8f255e348a
   specs:
     desmond (0.1.0)
       activerecord (~> 4.2)
@@ -51,6 +51,8 @@ GEM
       activemodel (= 4.2.1)
       activesupport (= 4.2.1)
       arel (~> 6.0)
+    activerecord-import (0.7.0)
+      activerecord (>= 3.0)
     activesupport (4.2.1)
       i18n (~> 0.7)
       json (~> 1.7, >= 1.7.7)
@@ -224,6 +226,7 @@ PLATFORMS
 
 DEPENDENCIES
   activerecord
+  activerecord-import
   activerecord4-redshift-adapter!
   aws-sdk
   capistrano (~> 2.15.5)

@@ -24,6 +24,8 @@ gem 'pony' # sending emails
 
 gem 'connection_pool' # for background jobs connections
 
+gem 'activerecord-import'
+
 group :development do
   gem 'shotgun'
   gem 'puma'

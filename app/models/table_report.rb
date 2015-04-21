@@ -13,5 +13,6 @@ module Models
     # dist_key               :string(255)      not null
     # sort_keys              :json             not null
     # has_col_encodings      :boolean          not null
+    # dist_style             :string(255)      null
   end
 end
