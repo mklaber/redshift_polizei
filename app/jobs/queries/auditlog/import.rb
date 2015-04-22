@@ -49,7 +49,7 @@ module Jobs
 
                 is_our_cluster       = (cluster_name == GlobalConfig.polizei('aws_cluster_identifier'))
                 is_user_activity_log = (logtype == 'useractivitylog')
-                Que.log level: :debug, message: "log file from '#{cluster_name}' of type '#{logtype}' timed at #{logtimestamp}: #{is_our_cluster}, #{is_user_activity_log}, #{obj.last_modified > last_update}"
+                #Que.log level: :debug, message: "log file from '#{cluster_name}' of type '#{logtype}' timed at #{logtimestamp}: #{is_our_cluster}, #{is_user_activity_log}, #{obj.last_modified > last_update}"
                 if is_our_cluster && is_user_activity_log && obj.last_modified > last_update
                   # we are going to parse the file while downloading making this a little more complicated
                   reader, writer = IO.pipe
