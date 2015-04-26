@@ -1,5 +1,6 @@
 require 'activerecord-import/base'
 ActiveRecord::Import.require_adapter('postgresql')
+MAX_IMPORT_SIZE = 300 # due to memory constraints we shouldn't import too many queries at once
 
 module Jobs
   module Queries
@@ -16,7 +17,7 @@ module Jobs
           last_update = DateTime.strptime(auditlogconfig.last_update.to_s, '%s').utc
 
           iterate_log_streams(last_update, options[:file], options[:just_one]) do |reader, logfile_name|
-            import(reader, logfile_name)
+            import(reader, logfile_name, options)
           end
         rescue
           raise
@@ -35,9 +36,13 @@ module Jobs
           unless file.nil?
             block.call(File.open(file, 'r'), file)
           else
-            bucket = AWS::S3.new.buckets[GlobalConfig.polizei('aws_redshift_audit_log_bucket')]
+            bucket  = AWS::S3.new.buckets[GlobalConfig.polizei('aws_redshift_audit_log_bucket')]
+            objects = bucket.objects
+            if just_one && !just_one.to_b # just_one is set, but not a boolean, so we'll try to filter by filename
+              objects = objects.select { |o| File.basename(o.key) == just_one }
+            end
             # start from the newest and work our way back
-            tmp = bucket.objects.sort_by { |obj| obj.last_modified }.reverse
+            tmp = objects.sort_by { |obj| obj.last_modified }.reverse
             #tmp = bucket.objects
             tmp.each do |obj|
               begin
@@ -72,15 +77,16 @@ module Jobs
           end
         end
 
-        def import(reader, logfile_name)
+        def import(reader, logfile_name, options={})
           Que.log level: :info, message: "Importing #{logfile_name}"
+          max_import_size = options[:max_import_size] || MAX_IMPORT_SIZE
           # read user activity log
           lineno = 0
           columns = [ :record_time, :db, :user, :pid, :userid, :xid, :query_type, :query, :logfile ]
+          import_options = { validate: false }
           queries = []
           reader.each_line do |line|
             lineno += 1
-            q = nil
             if line.match("'[0-9]{4}\-[0-9]{2}\-[0-9]{2}T").nil?
               # part of previous query => append to query
               raise "Corrupt file on line #{lineno} in file #{logfile_name}" if queries.empty?
@@ -103,7 +109,10 @@ module Jobs
 
               # remember queries to import them all at once later
               queries.last[7].strip! unless queries.empty?
-              q = Models::Query.new
+              if queries.size >= max_import_size
+                Models::Query.import columns, queries, import_options
+                queries.clear # we do not want to import the same ones again
+              end
               queries << [
                 record_time,
                 db,
@@ -120,7 +129,7 @@ module Jobs
 
           queries.last[7].strip! unless queries.empty?
           # import all queries at once
-          Models::Query.import columns, queries, validate: false
+          Models::Query.import columns, queries, import_options
         end
       end
     end

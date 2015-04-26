@@ -71,7 +71,7 @@ To get a console
 Running tests
 ---------------------
 1. Configure `config/tests.yml`
-2. Setup a `test` and `redshift_test` environment in `database.yml`
+2. Configure the `test` and `redshift_test` environments in `database.yml`
 3. Run `rspec`
 
 To deploy
