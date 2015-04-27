@@ -9,7 +9,7 @@ require 'sinatra/assetpack/rake'
 
 require 'desmond/rake'
 
-# this loads several configuration files (e.g. mail.yml) needed in background processes,
+# this loads several configuration files (e.g. polizei.yml) needed in background processes,
 # so we can't just load app/main
 require_relative 'app/app'
 
@@ -25,7 +25,6 @@ task :environment do
 end
 
 
-# TODO desmond should allow `run` with persisted job_run optionally
 namespace :reports do
   desc 'Updates the caches of all reports'
   task :update do

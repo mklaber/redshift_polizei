@@ -12,6 +12,12 @@ class Object
   end
 end
 
+class String
+  def to_b
+    (self == '1' || self.downcase == 'true' || self.downcase == 't')
+  end
+end
+
 class Hash
   def hmap
     result = {}
