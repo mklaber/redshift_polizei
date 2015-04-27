@@ -32,7 +32,7 @@ module Jobs
           # filter by search query
           unless search.blank?
             q_query = q_query.where(
-              'to_tsvector(\'english\', queries.user::text) @@ to_tsquery(\'english\', ?) OR to_tsvector(\'english\', queries.query) @@ to_tsquery(\'english\', ?)',
+              'to_tsvector(\'english\', queries.user::text) @@ plainto_tsquery(\'english\', ?) OR to_tsvector(\'english\', queries.query) @@ plainto_tsquery(\'english\', ?)',
               search, search
             )
           end
