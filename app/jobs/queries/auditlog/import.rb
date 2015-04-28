@@ -1,6 +1,6 @@
 require 'activerecord-import/base'
 ActiveRecord::Import.require_adapter('postgresql')
-MAX_IMPORT_SIZE = 1000 # due to memory constraints we shouldn't import too many queries at once
+MAX_IMPORT_SIZE = 300 # due to memory constraints we shouldn't import too many queries at once
 
 module Jobs
   module Queries
