@@ -18,6 +18,18 @@ class String
   end
 end
 
+class TrueClass
+  def to_b
+    self
+  end
+end
+
+class FalseClass
+  def to_b
+    self
+  end
+end
+
 class Hash
   def hmap
     result = {}

@@ -40,6 +40,11 @@ describe Jobs::Queries::AuditLog::Import do
     expect(q.query_type).to eq(0)
   end
 
+  it 'should import the same query from the same file only once' do
+    Jobs::Queries::AuditLog::Import.run(0, file: 'spec/redshift_auditlog_test.txt', max_import_size: 1)
+    expect(Models::Query.count).to eq(2)
+  end
+
   it 'should import from s3' do
     expect do
       Jobs::Queries::AuditLog::Import.run(0, just_one: true)

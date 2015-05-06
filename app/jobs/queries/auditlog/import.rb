@@ -17,7 +17,7 @@ module Jobs
           last_update = DateTime.strptime(auditlogconfig.last_update.to_s, '%s').utc
 
           iterate_log_streams(last_update, options[:file], options[:just_one]) do |reader, logfile_name|
-            import(reader, logfile_name)
+            import(reader, logfile_name, options)
           end
         rescue
           raise
@@ -77,8 +77,9 @@ module Jobs
           end
         end
 
-        def import(reader, logfile_name)
+        def import(reader, logfile_name, options={})
           Que.log level: :info, message: "Importing #{logfile_name}"
+          max_import_size = options[:max_import_size] || MAX_IMPORT_SIZE
           # read user activity log
           lineno = 0
           columns = [ :record_time, :db, :user, :pid, :userid, :xid, :query_type, :query, :logfile ]
@@ -108,8 +109,9 @@ module Jobs
 
               # remember queries to import them all at once later
               queries.last[7].strip! unless queries.empty?
-              if queries.size > MAX_IMPORT_SIZE
+              if queries.size >= max_import_size
                 Models::Query.import columns, queries, import_options
+                queries.clear # we do not want to import the same ones again
               end
               queries << [
                 record_time,
