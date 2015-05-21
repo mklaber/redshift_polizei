@@ -1,6 +1,7 @@
 require_relative '../main'
 
 module Jobs
+  # TODO newest desmond already does this
   class WaitTimeoutReached < StandardError
   end
 

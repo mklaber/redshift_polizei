@@ -2,6 +2,8 @@ module Jobs
   module Queries
     module AuditLog
       #
+      # TODO can we not make that a background job and still hide all of the complexity in a good place?
+      #
       # Job retrieving queries from the local audit log
       # options:
       # - selects: boolean whether to include select queries
