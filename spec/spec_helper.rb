@@ -2,8 +2,6 @@ require 'simplecov'
 SimpleCov.start
 
 require 'rake'
-require 'sinatra/activerecord/rake'
-require 'rack/test'
 require 'rspec'
 
 root_path = File.join File.expand_path(File.dirname(__FILE__)), '..'
@@ -12,6 +10,9 @@ ENV['RACK_ENV'] = ENV['RAILS_ENV'] = 'test'
 
 require File.join root_path, 'app/app.rb'
 require 'email_spec'
+
+require 'sinatra/activerecord/rake'
+require 'rack/test'
 
 # recreate test database from migrations
 #DesmondConfig.logger = Logger.new STDOUT
