@@ -1,16 +1,15 @@
 require_relative '../../spec_helper'
 
 describe Jobs::ArchiveJob do
-  RS_CONN_ID = 'redshift_test'
-
+  
   #
   # Runs an ArchiveJob with the specified options and returns the job run.
   #
   def run_archive(options={})
-    return Jobs::ArchiveJob.enqueue('JobId', 'UserId',
+    return Jobs::ArchiveJob.enqueue('UserId',
                                     {
                                         db: {
-                                            connection_id: RS_CONN_ID,
+                                            connection_id: @connection_id,
                                             username: @config[:archive_username],
                                             password: @config[:archive_password],
                                             schema: @config[:archive_schema],
@@ -22,7 +21,7 @@ describe Jobs::ArchiveJob do
                                             archive_bucket: @config[:archive_bucket],
                                             archive_prefix: nil
                                         },
-                                        unload_options: {
+                                        unload: {
                                             allowoverwrite: true,
                                             gzip: false,
                                             addquotes: true,
@@ -80,10 +79,11 @@ describe Jobs::ArchiveJob do
   end
 
   before(:all) do
+    @connection_id = 'redshift_test'
     @schema = @config[:archive_schema]
     @table = "archive_test_#{Time.now.to_i}_#{rand(1024)}"
     @full_table_name = "#{@schema}.#{@table}"
-    @conn = RSUtil.dedicated_connection(connection_id: RS_CONN_ID,
+    @conn = RSUtil.dedicated_connection(connection_id: @connection_id,
                                         username: @config[:archive_username],
                                         password: @config[:archive_password])
     create_sql = <<-SQL

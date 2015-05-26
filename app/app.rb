@@ -4,6 +4,7 @@ class Polizei < Sinatra::Application
   #use Rack::RubyProf, :path => 'profile'
   POLIZEI_CONFIG_FILE = 'config/polizei.yml'
   JOB_WAIT_TIMEOUT = 30
+  ARCHIVE_NULL_VALUE = '<<<NULL>>>'
   
   set :root, File.dirname(__FILE__)
   set :views, "#{settings.root}/views"
@@ -208,7 +209,7 @@ class Polizei < Sinatra::Application
   post '/tables/archive' do
     email_list = validate_email_list("#{current_user.email}, #{params[:email]}")
     time = Time.now.utc.strftime('%Y_%m_%dT%H_%M_%S_%LZ')
-    Jobs::ArchiveJob.enqueue(1, current_user.id,
+    Jobs::ArchiveJob.enqueue(current_user.id,
                                     db: {
                                         connection_id: "redshift_#{Sinatra::Application.environment}",
                                         username: params['redshift_username'],
@@ -222,12 +223,12 @@ class Polizei < Sinatra::Application
                                         archive_bucket: GlobalConfig.polizei('aws_archive_bucket'),
                                         archive_prefix: "#{params['schema']}/#{params['table']}/#{time}-"
                                     },
-                                    unload_options: {
+                                    unload: {
                                         allowoverwrite: true,
                                         gzip: true,
                                         addquotes: true,
                                         escape: true,
-                                        null_as: 'NULL'
+                                        null_as: ARCHIVE_NULL_VALUE
                                     },
                                     email: email_list.join(', '))
     redirect to('/tables')
@@ -237,7 +238,7 @@ class Polizei < Sinatra::Application
     email_list = validate_email_list("#{current_user.email}, #{params[:email]}")
     archive_info = Models::TableArchive.find_by(schema_name: params['schema'], table_name: params['table'])
     halt 404 if archive_info.nil?
-    Jobs::RestoreJob.enqueue(1, current_user.id,
+    Jobs::RestoreJob.enqueue(current_user.id,
                              db: {
                                  connection_id: "redshift_#{Sinatra::Application.environment}",
                                  username: params['redshift_username'],
@@ -251,11 +252,11 @@ class Polizei < Sinatra::Application
                                  archive_bucket: archive_info.archive_bucket,
                                  archive_prefix: archive_info.archive_prefix
                              },
-                             copy_options: {
+                             copy: {
                                  gzip: true,
                                  removequotes: true,
                                  escape: true,
-                                 null_as: 'NULL'
+                                 null_as: ARCHIVE_NULL_VALUE
                              },
                              email: email_list.join(', '))
     redirect to('/tables')

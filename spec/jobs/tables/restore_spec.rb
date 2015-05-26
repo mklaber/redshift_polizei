@@ -1,16 +1,15 @@
 require_relative '../../spec_helper'
 
 describe Jobs::RestoreJob do
-  RS_CONN_ID = 'redshift_test'
 
   #
   # Runs a RestoreJob with the specified options and returns the job run.
   #
   def run_restore(options={})
-    return Jobs::RestoreJob.enqueue('JobId', 'UserId',
+    return Jobs::RestoreJob.enqueue('UserId',
                                     {
                                         db: {
-                                            connection_id: RS_CONN_ID,
+                                            connection_id: @connection_id,
                                             username: @config[:archive_username],
                                             password: @config[:archive_password],
                                             schema: @config[:archive_schema],
@@ -22,7 +21,7 @@ describe Jobs::RestoreJob do
                                             archive_bucket: @config[:archive_bucket],
                                             archive_prefix: nil
                                         },
-                                        copy_options: {
+                                        copy: {
                                             gzip: false,
                                             removequotes: true,
                                             escape: true,
@@ -84,6 +83,7 @@ describe Jobs::RestoreJob do
   end
 
   before(:each) do
+    @connection_id = 'redshift_test'
     @schema = @config[:archive_schema]
     @table = "restore_test_#{Time.now.to_i}_#{rand(1024)}"
     @full_table_name = "#{@schema}.#{@table}"
@@ -117,7 +117,7 @@ describe Jobs::RestoreJob do
                                                 archive_prefix: @archive_prefix)
     table_archive.save
 
-    @conn = RSUtil.dedicated_connection(connection_id: RS_CONN_ID,
+    @conn = RSUtil.dedicated_connection(connection_id: @connection_id,
                                         username: @config[:archive_username],
                                         password: @config[:archive_password])
   end

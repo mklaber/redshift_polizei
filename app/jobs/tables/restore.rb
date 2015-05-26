@@ -7,7 +7,7 @@ module Jobs
   # Please see `BaseJob` class documentation on how to run
   # any job using its general interface.
   #
-  class RestoreJob < Desmond::BaseJob
+  class RestoreJob < Desmond::BaseJobNoJobId
     ##
     # runs a restore
     # see `BaseJob` for information on arguments except +options+.
@@ -28,7 +28,7 @@ module Jobs
     # the following +options+ are additionally supported:
     # - db
     #   - timeout: connection timeout to database
-    # - copy_options: options for the Redshift COPY command
+    # - copy: options for the Redshift COPY command
     #   - gzip: if true, will use the GZIP copy option
     #   - removequotes: if true, will use the REMOVEQUOTES copy option
     #   - escape: if true, will use the ESCAPE copy option
@@ -76,11 +76,13 @@ module Jobs
       secret_key = Desmond::PGUtil.escape_string(secret_key)
       full_table_name = Desmond::PGUtil.get_escaped_table_name(options[:db], schema_name, table_name)
       copy_options = ''
-      unless options[:copy_options].nil? || options[:copy_options].empty?
-        copy_options += 'GZIP' if options[:copy_options][:gzip]
-        copy_options += ' REMOVEQUOTES' if options[:copy_options][:removequotes]
-        copy_options += ' ESCAPE' if options[:copy_options][:escape]
-        copy_options += " NULL AS '#{options[:copy_options][:null_as]}'" unless options[:copy_options][:null_as].nil?
+      unless options[:copy].nil? || options[:copy].empty?
+        copy_options += 'GZIP' if options[:copy][:gzip]
+        copy_options += ' REMOVEQUOTES' if options[:copy][:removequotes]
+        copy_options += ' ESCAPE' if options[:copy][:escape]
+        unless options[:copy][:null_as].nil?
+          copy_options += " NULL AS '#{Desmond::PGUtil.escape_string(options[:copy][:null_as])}'"
+        end
       end
       copy_sql = <<-SQL
           -- Create table and copy data from s3
@@ -103,7 +105,7 @@ module Jobs
       s3_bucket.objects.with_prefix(archive_prefix).delete_all
 
       # run TableReport to add the reference to this new table
-      Jobs::TableReports.run(1, user_id, schema_name: schema_name, table_name: table_name)
+      Jobs::TableReports.run(job_id, user_id, schema_name: schema_name, table_name: table_name)
 
       # done return schema+name of newly created table
       {schema: schema_name, table: table_name}

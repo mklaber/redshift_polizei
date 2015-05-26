@@ -7,7 +7,7 @@ module Jobs
   # Please see `BaseJob` class documentation on how to run
   # any job using its general interface.
   #
-  class ArchiveJob < Desmond::BaseJob
+  class ArchiveJob < Desmond::BaseJobNoJobId
     ##
     # runs an archive
     # see `BaseJob` for information on arguments except +options+.
@@ -28,7 +28,7 @@ module Jobs
     # the following +options+ are additionally supported:
     # - db
     #   - timeout: connection timeout to database
-    # - unload_options: options for the Redshift UNLOAD command
+    # - archive: options for the Redshift UNLOAD command
     #   - allowoverwrite: if true, will use the ALLOWOVERWRITE unload option
     #   - gzip: if true, will use the GZIP unload option
     #   - addquotes: if true, will use the REMOVEQUOTES unload option
@@ -58,7 +58,7 @@ module Jobs
       fail 'Empty table name!' if table_name.nil? || table_name.empty?
 
       # get the latest info on the table for the later TableArchive creation
-      Jobs::TableReports.run(1, user_id, schema_name: schema_name, table_name: table_name)
+      Jobs::TableReports.run(job_id, user_id, schema_name: schema_name, table_name: table_name)
       tbl = Models::TableReport.find_by(schema_name: schema_name, table_name: table_name)
       table_info = {}
       unless tbl.nil?
@@ -75,7 +75,7 @@ module Jobs
 
       # run a TableStructureExportJob
       ddl_s3_key = "#{archive_prefix}ddl"
-      Jobs::TableStructureExportJob.run(1, user_id, {
+      Jobs::TableStructureExportJob.run(job_id, user_id, {
                                              schema_name: schema_name,
                                              table_name: table_name,
                                              s3_bucket: archive_bucket,
@@ -95,12 +95,14 @@ module Jobs
       secret_key = Desmond::PGUtil.escape_string(secret_key)
       full_table_name = Desmond::PGUtil.get_escaped_table_name(options[:db], schema_name, table_name)
       unload_options = ''
-      unless options[:unload_options].nil? || options[:unload_options].empty?
-        unload_options += 'ALLOWOVERWRITE' if options[:unload_options][:allowoverwrite]
-        unload_options += ' GZIP' if options[:unload_options][:gzip]
-        unload_options += ' ADDQUOTES' if options[:unload_options][:addquotes]
-        unload_options += ' ESCAPE' if options[:unload_options][:escape]
-        unload_options += " NULL AS '#{options[:unload_options][:null_as]}'" unless options[:unload_options][:null_as].nil?
+      unless options[:unload].nil? || options[:unload].empty?
+        unload_options += 'ALLOWOVERWRITE' if options[:unload][:allowoverwrite]
+        unload_options += ' GZIP' if options[:unload][:gzip]
+        unload_options += ' ADDQUOTES' if options[:unload][:addquotes]
+        unload_options += ' ESCAPE' if options[:unload][:escape]
+        unless options[:unload][:null_as].nil?
+          unload_options += " NULL AS '#{Desmond::PGUtil.escape_string(options[:unload][:null_as])}'"
+        end
       end
       unload_sql = <<-SQL
           -- Unloads to S3 and truncates #{full_table_name}
@@ -123,7 +125,7 @@ module Jobs
       table_archive.save
 
       # run TableReport to remove the reference to this dropped table
-      Jobs::TableReports.run(1, user_id, schema_name: schema_name, table_name: table_name)
+      Jobs::TableReports.run(job_id, user_id, schema_name: schema_name, table_name: table_name)
 
       # done return the full path to the s3 manifest and DDL files
       {ddl_file: "s3://#{archive_bucket}/#{ddl_s3_key}", manifest_file: "s3://#{archive_bucket}/#{archive_prefix}manifest"}
