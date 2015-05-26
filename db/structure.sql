@@ -428,6 +428,45 @@ ALTER SEQUENCE schemas_id_seq OWNED BY schemas.id;
 
 
 --
+-- Name: table_archives; Type: TABLE; Schema: public; Owner: -; Tablespace: 
+--
+
+CREATE TABLE table_archives (
+    id integer NOT NULL,
+    schema_name character varying NOT NULL,
+    table_name character varying NOT NULL,
+    archive_bucket character varying NOT NULL,
+    archive_prefix character varying NOT NULL,
+    size_in_mb integer,
+    dist_key character varying,
+    dist_style character varying,
+    sort_keys json,
+    has_col_encodings boolean,
+    created_at timestamp without time zone,
+    updated_at timestamp without time zone
+);
+
+
+--
+-- Name: table_archives_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE table_archives_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: table_archives_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE table_archives_id_seq OWNED BY table_archives.id;
+
+
+--
 -- Name: table_reports; Type: TABLE; Schema: public; Owner: -; Tablespace: 
 --
 
@@ -614,6 +653,13 @@ ALTER TABLE ONLY schemas ALTER COLUMN id SET DEFAULT nextval('schemas_id_seq'::r
 -- Name: id; Type: DEFAULT; Schema: public; Owner: -
 --
 
+ALTER TABLE ONLY table_archives ALTER COLUMN id SET DEFAULT nextval('table_archives_id_seq'::regclass);
+
+
+--
+-- Name: id; Type: DEFAULT; Schema: public; Owner: -
+--
+
 ALTER TABLE ONLY table_reports ALTER COLUMN id SET DEFAULT nextval('table_reports_id_seq'::regclass);
 
 
@@ -717,6 +763,14 @@ ALTER TABLE ONLY queries
 
 ALTER TABLE ONLY schemas
     ADD CONSTRAINT schemas_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: table_archives_pkey; Type: CONSTRAINT; Schema: public; Owner: -; Tablespace: 
+--
+
+ALTER TABLE ONLY table_archives
+    ADD CONSTRAINT table_archives_pkey PRIMARY KEY (id);
 
 
 --
@@ -898,6 +952,13 @@ CREATE INDEX index_schemas_on_updated_at ON schemas USING btree (updated_at);
 
 
 --
+-- Name: index_table_archives_on_schema_name_and_table_name; Type: INDEX; Schema: public; Owner: -; Tablespace: 
+--
+
+CREATE UNIQUE INDEX index_table_archives_on_schema_name_and_table_name ON table_archives USING btree (schema_name, table_name);
+
+
+--
 -- Name: index_table_reports_on_schema_name_and_table_name; Type: INDEX; Schema: public; Owner: -; Tablespace: 
 --
 
@@ -1004,6 +1065,8 @@ INSERT INTO schema_migrations (version) VALUES ('15');
 INSERT INTO schema_migrations (version) VALUES ('16');
 
 INSERT INTO schema_migrations (version) VALUES ('17');
+
+INSERT INTO schema_migrations (version) VALUES ('18');
 
 INSERT INTO schema_migrations (version) VALUES ('2');
 

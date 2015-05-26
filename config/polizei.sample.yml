@@ -8,6 +8,7 @@ aws_secret_access_key: secret_key # aws secret key to use for requests
 aws_cluster_identifier: redshift_cluster_id # id of the redshift cluster, needs to be in sync with database.yml
 aws_redshift_audit_log_bucket: amg-redshift-logging # name of the bucket containing the RedShift audit logs
 aws_export_bucket: export-bucket # aws bucket to be used for exports
+aws_archive_bucket: archive-bucket # aws bucket to be used for storing table archives
 
 mail:
   from: username@example.com # sender of the emails

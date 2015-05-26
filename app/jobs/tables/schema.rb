@@ -58,8 +58,8 @@ You can view it in your browser by using this link: #{view_url}"
     #
     def execute(job_id, user_id, options={})
       time = Time.now.utc.strftime('%Y_%m_%dT%H_%M_%S_%LZ')
-      s3_bucket = GlobalConfig.polizei('aws_export_bucket')
-      s3_key = "table_structure_export_#{user_id}_#{time}.sql"
+      s3_bucket = options[:s3_bucket] || GlobalConfig.polizei('aws_export_bucket')
+      s3_key = options[:s3_key] || "table_structure_export_#{user_id}_#{time}.sql"
 
       table = {}
       schema_name = options[:schema_name]
