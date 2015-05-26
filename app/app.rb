@@ -447,6 +447,7 @@ class Polizei < Sinatra::Application
   error do
     ExceptionNotifier.notify_exception(env['sinatra.error'], env: env) if Object.const_defined?('ExceptionNotifier')
     @error = 'Sorry, there was a nasty error - ' + env['sinatra.error'].to_s
+    status 500
     erb :error
   end
 

@@ -29,6 +29,9 @@ require './app/helpers'
 require './app/caches'
 require './app/logger'
 
+# otherwise sinatra-assetpack craps out when building assets
+Encoding.default_external = 'utf-8'  if defined?(::Encoding)
+
 # setup before app code, so the logger can be overriden by some components
 SQL.directory = File.join(File.dirname(__FILE__), 'sql')
 Tilt.register Tilt::ErubisTemplate, "html.erb"
