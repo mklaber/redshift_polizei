@@ -30,7 +30,7 @@ $(document).ready(function() {
       "cache":    false,
       "timeout":  45000,
       "success":  function (json) {
-        $('div.modal').modal('toggle');
+        $('#export_structure_modal').modal('toggle');
       },
       "error":  function (req, textStatus, errorThrown) {
         $('#error_alert').text("Invalid emails");
@@ -158,5 +158,38 @@ $(document).ready(function() {
       }
     });
     return false;
-  })
+  });
+
+  // modal load up schema and table name
+  $('#archive_modal').on('show.bs.modal', function (event) {
+    var button = $(event.relatedTarget);
+    var schema = button.attr('data-schema-name');
+    var table = button.attr('data-table-name');
+    $(this).find('#archiveInputSchema').val(schema);
+    $(this).find('#archiveInputTable').val(table);
+  });
+  $('#restore_modal').on('show.bs.modal', function (event) {
+    var button = $(event.relatedTarget);
+    var schema = button.attr('data-schema-name');
+    var table = button.attr('data-table-name');
+    $(this).find('#restoreInputSchema').val(schema);
+    $(this).find('#restoreInputTable').val(table);
+  });
+
+  // focus input when modal is shown
+  $('#archive_modal').on('shown.bs.modal', function () {
+    $('#archiveInputRedshiftUsername').focus();
+  });
+  $('#restore_modal').on('shown.bs.modal', function () {
+    $('#restoreInputRedshiftUsername').focus();
+  });
+
+  // hide modals after submitting form
+  $('#archiveForm').submit(function () {
+    $('#archive_modal').modal('hide')
+  });
+  $('#restoreForm').submit(function () {
+    $('#restore_modal').modal('hide')
+  });
+
 });
