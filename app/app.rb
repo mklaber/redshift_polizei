@@ -295,11 +295,6 @@ class Polizei < Sinatra::Application
     ''
   end
 
-  get '/archives' do
-    @archives = Models::TableArchive.order(created_at: :desc)
-    erb :archives, :locals => { :name => :archives }
-  end
-
   get '/permissions' do
     @users   = Models::DatabaseUser.order(:name).all
     @groups  = Models::DatabaseGroup.order(:name).all
