@@ -209,6 +209,8 @@ class Polizei < Sinatra::Application
   post '/tables/archive' do
     email_list = validate_email_list("#{current_user.email}, #{params[:email]}")
     time = Time.now.utc.strftime('%Y_%m_%dT%H_%M_%S_%LZ')
+    archive_bucket = params['archive_bucket'].empty? ? GlobalConfig.polizei('aws_archive_bucket') : params['archive_bucket']
+    archive_prefix = params['archive_prefix'].empty? ? "#{params['schema']}/#{params['table']}/#{time}-" : params['archive_prefix']
     Jobs::ArchiveJob.enqueue(current_user.id,
                                     db: {
                                         connection_id: "redshift_#{Sinatra::Application.environment}",
@@ -220,8 +222,8 @@ class Polizei < Sinatra::Application
                                     s3: {
                                         access_key_id: GlobalConfig.polizei('aws_access_key_id'),
                                         secret_access_key: GlobalConfig.polizei('aws_secret_access_key'),
-                                        archive_bucket: GlobalConfig.polizei('aws_archive_bucket'),
-                                        archive_prefix: "#{params['schema']}/#{params['table']}/#{time}-"
+                                        archive_bucket: archive_bucket,
+                                        archive_prefix: archive_prefix
                                     },
                                     unload: {
                                         allowoverwrite: true,

@@ -28,7 +28,7 @@ module Jobs
     # the following +options+ are additionally supported:
     # - db
     #   - timeout: connection timeout to database
-    # - archive: options for the Redshift UNLOAD command
+    # - unload: options for the Redshift UNLOAD command
     #   - allowoverwrite: if true, will use the ALLOWOVERWRITE unload option
     #   - gzip: if true, will use the GZIP unload option
     #   - addquotes: if true, will use the REMOVEQUOTES unload option
