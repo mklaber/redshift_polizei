@@ -106,7 +106,6 @@ module Jobs
         end
       end
       unload_sql = <<-SQL
-          -- Unloads to S3 and truncates #{full_table_name}
           UNLOAD ('SELECT * FROM #{full_table_name}')
           TO 's3://#{archive_bucket}/#{archive_prefix}'
           CREDENTIALS 'aws_access_key_id=#{access_key};aws_secret_access_key=#{secret_key}'

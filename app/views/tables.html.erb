@@ -83,18 +83,26 @@
               <input type="text" class="form-control" id="archiveInputEmail" name="email" placeholder="me@example.com, you@example.com" value="">
             </div>
           </div>
-          <div class="form-group panel panel-default">
+          <div class="panel panel-default">
             <div class="panel-heading">
-              <a class="panel-title" data-toggle="collapse" href="#archiveBucketPrefixInputs">Customize location of S3 archive:</a>
+              <a class="panel-title" data-toggle="collapse" href="#archiveAdvancedOptions">Advanced Options:</a>
             </div>
-            <div id="archiveBucketPrefixInputs" class="panel-collapse collapse panel-body">
-              <label for="inputArchiveBucket" class="col-sm-4 control-label">Archive Bucket:</label>
-              <div class="col-sm-8">
-                <input type="text" class="form-control" id="archiveInputArchiveBucket" name="archive_bucket" placeholder="*Using default bucket*">
+            <div class="panel-collapse collapse panel-body" id="archiveAdvancedOptions">
+              <div class="form-group">
+                <label for="inputArchiveBucket" class="col-sm-4 control-label">Archive Bucket:</label>
+                <div class="col-sm-8">
+                  <input type="text" class="form-control" id="archiveInputArchiveBucket" name="archive_bucket" placeholder="*Using default bucket*">
+                </div>
+                <label for="inputArchivePrefix" class="col-sm-4 control-label">Archive Prefix:</label>
+                <div class="col-sm-8">
+                  <input type="text" class="form-control" id="archiveInputArchivePrefix" name="archive_prefix" placeholder="*Using default prefix*">
+                </div>
               </div>
-              <label for="inputArchivePrefix" class="col-sm-4 control-label">Archive Prefix:</label>
-              <div class="col-sm-8">
-                <input type="text" class="form-control" id="archiveInputArchivePrefix" name="archive_prefix" placeholder="*Using default prefix*">
+              <div class="form-group">
+                <label for="inputSkipDrop" class="col-sm-4 control-label">Preserve Redshift Table:</label>
+                <div class="col-sm-3 checkbox">
+                  <input type="checkbox" id="inputSkipDrop" style="margin-left: 0;" name="skip_drop" value="true">
+                </div>
               </div>
             </div>
           </div>
