@@ -211,13 +211,15 @@ class Polizei < Sinatra::Application
     time = Time.now.utc.strftime('%Y_%m_%dT%H_%M_%S_%LZ')
     archive_bucket = params['archive_bucket'].empty? ? GlobalConfig.polizei('aws_archive_bucket') : params['archive_bucket']
     archive_prefix = params['archive_prefix'].empty? ? "#{params['schema']}/#{params['table']}/#{time}-" : params['archive_prefix']
+    skip_drop = !!params['skip_drop']
     Jobs::ArchiveJob.enqueue(current_user.id,
                                     db: {
                                         connection_id: "redshift_#{Sinatra::Application.environment}",
                                         username: params['redshift_username'],
                                         password: params['redshift_password'],
                                         schema: params['schema'],
-                                        table: params['table']
+                                        table: params['table'],
+                                        skip_drop: skip_drop
                                     },
                                     s3: {
                                         access_key_id: GlobalConfig.polizei('aws_access_key_id'),

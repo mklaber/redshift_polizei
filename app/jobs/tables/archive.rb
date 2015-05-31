@@ -28,6 +28,7 @@ module Jobs
     # the following +options+ are additionally supported:
     # - db
     #   - timeout: connection timeout to database
+    #   - skip_drop: if true, will not drop the table after unloading. Defaults to false
     # - unload: options for the Redshift UNLOAD command
     #   - allowoverwrite: if true, will use the ALLOWOVERWRITE unload option
     #   - gzip: if true, will use the GZIP unload option
@@ -110,8 +111,8 @@ module Jobs
           TO 's3://#{archive_bucket}/#{archive_prefix}'
           CREDENTIALS 'aws_access_key_id=#{access_key};aws_secret_access_key=#{secret_key}'
           MANIFEST #{unload_options};
-          DROP TABLE #{full_table_name};
       SQL
+      unload_sql += "\nDROP TABLE #{full_table_name};" unless options[:db][:skip_drop]
       conn = Desmond::PGUtil.dedicated_connection(options[:db])
       conn.transaction do
         conn.exec(unload_sql)
@@ -125,7 +126,7 @@ module Jobs
       table_archive.save
 
       # run TableReport to remove the reference to this dropped table
-      Jobs::TableReports.run(job_id, user_id, schema_name: schema_name, table_name: table_name)
+      Jobs::TableReports.run(job_id, user_id, schema_name: schema_name, table_name: table_name) unless options[:db][:skip_drop]
 
       # done return the full path to the s3 manifest and DDL files
       {ddl_file: "s3://#{archive_bucket}/#{ddl_s3_key}", manifest_file: "s3://#{archive_bucket}/#{archive_prefix}manifest"}

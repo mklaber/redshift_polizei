@@ -32,25 +32,12 @@ describe Jobs::ArchiveJob do
                                     }.deep_merge(options))
   end
 
-  it 'should fail if TableArchive entry already exists' do
-    table_archive = Models::TableArchive.create(schema_name: @schema, table_name: @table,
-                                                archive_bucket: '',
-                                                archive_prefix: '')
-    table_archive.save
-    r = run_archive({db: {table: @table}, s3: {archive_prefix: @full_table_name}})
-    expect(r.failed?).to eq(true)
-    expect(r.error).to eq('Archive entry already exists for this table!')
-  end
-
-  it 'should properly archive a table' do
-    # In case any previous tests wrote a record already.
-    tbl = Models::TableArchive.find_by(schema_name: @schema, table_name: @table)
-    tbl.destroy unless tbl.nil?
-
-    # ArchiveJob should succeed.
+  #
+  # Checks if the result of an ArchiveJob fully succeeded.
+  #
+  def check_success(r, table_should_be_dropped=true)
     ddl_s3_key = "#{@full_table_name}ddl"
     manifest_s3_key = "#{@full_table_name}manifest"
-    r = run_archive({db: {table: @table}, s3: {archive_prefix: @full_table_name}})
     expect(r.failed?).to eq(false)
     expect(r.result['ddl_file']).to eq("s3://#{@config[:archive_bucket]}/#{ddl_s3_key}")
     expect(r.result['manifest_file']).to eq("s3://#{@config[:archive_bucket]}/#{manifest_s3_key}")
@@ -75,10 +62,30 @@ describe Jobs::ArchiveJob do
 
     # Ensure redshift table was dropped.
     res = @conn.exec("SELECT * FROM information_schema.tables WHERE table_schema = '#{@schema}' AND table_name = '#{@table}'")
-    expect(res.ntuples).to eq(0)
+    expect(res.ntuples).to eq(table_should_be_dropped ? 0 : 1)
   end
 
-  before(:all) do
+  it 'should fail if TableArchive entry already exists' do
+    table_archive = Models::TableArchive.create(schema_name: @schema, table_name: @table,
+                                                archive_bucket: '',
+                                                archive_prefix: '')
+    table_archive.save
+    r = run_archive({db: {table: @table}, s3: {archive_prefix: @full_table_name}})
+    expect(r.failed?).to eq(true)
+    expect(r.error).to eq('Archive entry already exists for this table!')
+  end
+
+  it 'should succeed with default settings' do
+    check_success(run_archive({db: {table: @table},
+                               s3: {archive_prefix: @full_table_name}}))
+  end
+
+  it 'should succeed with skip_drop enabled' do
+    check_success(run_archive({db: {table: @table, skip_drop: true},
+                               s3: {archive_prefix: @full_table_name}}), false)
+  end
+
+  before(:each) do
     @connection_id = 'redshift_test'
     @schema = @config[:archive_schema]
     @table = "archive_test_#{Time.now.to_i}_#{rand(1024)}"
@@ -94,7 +101,7 @@ describe Jobs::ArchiveJob do
     @bucket = AWS::S3.new.buckets[@config[:archive_bucket]]
   end
 
-  after(:all) do
+  after(:each) do
     # Remove any TableArchive references.
     tbl = Models::TableArchive.find_by(schema_name: @schema, table_name: @table)
     tbl.destroy unless tbl.nil?

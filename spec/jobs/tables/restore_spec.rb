@@ -126,6 +126,9 @@ describe Jobs::RestoreJob do
     # Remove any TableArchive references.
     tbl = Models::TableArchive.find_by(schema_name: @schema, table_name: @table)
     tbl.destroy unless tbl.nil?
+    # Remove extra TableReports references.
+    tbl = Models::TableReport.find_by(schema_name: @schema, table_name: @table)
+    tbl.destroy unless tbl.nil?
     # Drop test redshift table.
     @conn.exec("DROP TABLE IF EXISTS #{@full_table_name}")
     # Clean up S3 files.
