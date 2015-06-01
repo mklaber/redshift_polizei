@@ -208,19 +208,23 @@ class Polizei < Sinatra::Application
   post '/tables/archive' do
     email_list = validate_email_list("#{current_user.email}, #{params[:email]}")
     time = Time.now.utc.strftime('%Y_%m_%dT%H_%M_%S_%LZ')
+    bucket = params[:bucket].empty? ? GlobalConfig.polizei('aws_archive_bucket') : params[:bucket]
+    prefix = params[:prefix].empty? ? "#{params[:schema]}/#{params[:table]}/#{time}-" : params[:prefix]
+    skip_drop = !!params[:skip_drop]
     Jobs::ArchiveJob.enqueue(current_user.id,
                                     db: {
                                         connection_id: "redshift_#{Sinatra::Application.environment}",
-                                        username: params['redshift_username'],
-                                        password: params['redshift_password'],
-                                        schema: params['schema'],
-                                        table: params['table']
+                                        username: params[:redshift_username],
+                                        password: params[:redshift_password],
+                                        schema: params[:schema],
+                                        table: params[:table],
+                                        skip_drop: skip_drop
                                     },
                                     s3: {
                                         access_key_id: GlobalConfig.polizei('aws_access_key_id'),
                                         secret_access_key: GlobalConfig.polizei('aws_secret_access_key'),
-                                        archive_bucket: GlobalConfig.polizei('aws_archive_bucket'),
-                                        archive_prefix: "#{params['schema']}/#{params['table']}/#{time}-"
+                                        bucket: bucket,
+                                        prefix: prefix
                                     },
                                     unload: {
                                         allowoverwrite: true,
@@ -235,15 +239,15 @@ class Polizei < Sinatra::Application
 
   post '/tables/restore' do
     email_list = validate_email_list("#{current_user.email}, #{params[:email]}")
-    archive_info = Models::TableArchive.find_by(schema_name: params['schema'], table_name: params['table'])
+    archive_info = Models::TableArchive.find_by(schema_name: params[:schema], table_name: params[:table])
     halt 404 if archive_info.nil?
     Jobs::RestoreJob.enqueue(current_user.id,
                              db: {
                                  connection_id: "redshift_#{Sinatra::Application.environment}",
-                                 username: params['redshift_username'],
-                                 password: params['redshift_password'],
-                                 schema: params['schema'],
-                                 table: params['table']
+                                 username: params[:redshift_username],
+                                 password: params[:redshift_password],
+                                 schema: params[:schema],
+                                 table: params[:table]
                              },
                              s3: {
                                  access_key_id: GlobalConfig.polizei('aws_access_key_id'),
