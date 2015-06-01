@@ -212,6 +212,8 @@ class Polizei < Sinatra::Application
     bucket = params[:bucket].empty? ? GlobalConfig.polizei('aws_archive_bucket') : params[:bucket]
     prefix = params[:prefix].empty? ? "#{params[:schema]}/#{params[:table]}/#{time}-" : params[:prefix]
     skip_drop = !!params[:skip_drop]
+    access_key = params[:access_key].empty? ? GlobalConfig.polizei('aws_access_key_id') : params[:access_key]
+    secret_key = params[:secret_key].empty? ? GlobalConfig.polizei('aws_secret_access_key') : params[:secret_key]
     Jobs::ArchiveJob.enqueue(current_user.id,
                                     db: {
                                         connection_id: "redshift_#{Sinatra::Application.environment}",
@@ -222,8 +224,8 @@ class Polizei < Sinatra::Application
                                         skip_drop: skip_drop
                                     },
                                     s3: {
-                                        access_key_id: GlobalConfig.polizei('aws_access_key_id'),
-                                        secret_access_key: GlobalConfig.polizei('aws_secret_access_key'),
+                                        access_key_id: access_key,
+                                        secret_access_key: secret_key,
                                         bucket: bucket,
                                         prefix: prefix
                                     },
@@ -242,6 +244,8 @@ class Polizei < Sinatra::Application
     email_list = validate_email_list("#{current_user.email}, #{params[:email]}")
     archive_info = Models::TableArchive.find_by(schema_name: params[:schema], table_name: params[:table])
     halt 404 if archive_info.nil?
+    access_key = params[:access_key].empty? ? GlobalConfig.polizei('aws_access_key_id') : params[:access_key]
+    secret_key = params[:secret_key].empty? ? GlobalConfig.polizei('aws_secret_access_key') : params[:secret_key]
     Jobs::RestoreJob.enqueue(current_user.id,
                              db: {
                                  connection_id: "redshift_#{Sinatra::Application.environment}",
@@ -251,8 +255,8 @@ class Polizei < Sinatra::Application
                                  table: params[:table]
                              },
                              s3: {
-                                 access_key_id: GlobalConfig.polizei('aws_access_key_id'),
-                                 secret_access_key: GlobalConfig.polizei('aws_secret_access_key'),
+                                 access_key_id: access_key,
+                                 secret_access_key: secret_key,
                                  archive_bucket: archive_info.archive_bucket,
                                  archive_prefix: archive_info.archive_prefix
                              },
