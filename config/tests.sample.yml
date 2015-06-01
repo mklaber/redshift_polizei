@@ -1,5 +1,6 @@
 access_key_id: access_key # aws access key to use for requests
 secret_access_key: secret_key # aws secret key to use for requests
+test_schema: schema # schema for running some of the generic tests
 export_schema: schema # schema to load test data into
 export_bucket: export-bucket # bucket to be used for exports
 export_username: username # RedShift username to use for exports
