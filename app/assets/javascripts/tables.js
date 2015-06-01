@@ -172,8 +172,12 @@ $(document).ready(function() {
     var button = $(event.relatedTarget);
     var schema = button.attr('data-schema-name');
     var table = button.attr('data-table-name');
+    var bucket = button.attr('data-bucket');
+    var prefix = button.attr('data-prefix');
     $(this).find('#restoreInputSchema').val(schema);
     $(this).find('#restoreInputTable').val(table);
+    $(this).find('#restoreInputArchiveBucket').val(bucket);
+    $(this).find('#restoreInputArchivePrefix').val(prefix);
   });
 
   // focus input when modal is shown
