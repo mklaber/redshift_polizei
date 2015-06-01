@@ -6,63 +6,61 @@ describe Jobs::ArchiveJob do
   # Runs an ArchiveJob with the specified options and returns the job run.
   #
   def run_archive(options={})
-    return Jobs::ArchiveJob.enqueue('UserId',
-                                    {
-                                        db: {
-                                            connection_id: @connection_id,
-                                            username: @config[:archive_username],
-                                            password: @config[:archive_password],
-                                            schema: @config[:archive_schema],
-                                            table: nil
-                                        },
-                                        s3: {
-                                            access_key_id: @config[:access_key_id],
-                                            secret_access_key: @config[:secret_access_key],
-                                            archive_bucket: @config[:archive_bucket],
-                                            archive_prefix: nil
-                                        },
-                                        unload: {
-                                            allowoverwrite: true,
-                                            gzip: false,
-                                            addquotes: true,
-                                            escape: true,
-                                            null_as: 'NULL'
-                                        },
-                                        mail: {nomailer: true}
-                                    }.deep_merge(options))
+    return Jobs::ArchiveJob.enqueue('UserId', options)
   end
 
   #
   # Checks if the result of an ArchiveJob fully succeeded.
   #
-  def check_success(r, table_should_be_dropped=true)
-    ddl_s3_key = "#{@full_table_name}ddl"
-    manifest_s3_key = "#{@full_table_name}manifest"
-    expect(r.failed?).to eq(false)
-    expect(r.result['ddl_file']).to eq("s3://#{@config[:archive_bucket]}/#{ddl_s3_key}")
-    expect(r.result['manifest_file']).to eq("s3://#{@config[:archive_bucket]}/#{manifest_s3_key}")
+  def check_success(result, options)
+    ddl_s3_key = "#{options[:s3][:prefix]}ddl"
+    manifest_s3_key = "#{options[:s3][:prefix]}manifest"
+    expect(result.failed?).to(eq(false), "Error: #{result.error}")
+    expect(result.result['manifest_file']).to eq("s3://#{options[:s3][:bucket]}/#{manifest_s3_key}")
+    expect(result.result['ddl_file']).to eq("s3://#{options[:s3][:bucket]}/#{ddl_s3_key}")
 
     # Ensure S3 ddl and manifest files exist.
-    expect(@bucket.objects[ddl_s3_key].exists?).to eq(true)
-    expect(@bucket.objects[manifest_s3_key].exists?).to eq(true)
-    # Ensure S3 files hold the table data.
-    data = []
-    AWS::S3.new.buckets[@config[:archive_bucket]].objects.each do |obj|
-      if obj.key =~ /#{Regexp.quote(@full_table_name)}[0-9]*_part_[0-9]*/
-        obj.read.split("\n").each do |line|
-          d = line.split('|')
-          data << line.split('|') unless d.empty?
-        end
-      end
-    end
-    expect(data.sort_by! { |obj| obj[0] }).to eq([%w{"0" "hello"}, %w{"1" "privyet"}, %w{"2" "NULL"}])
+    bucket = AWS::S3.new.buckets[options[:s3][:bucket]]
+    expect(bucket.objects[ddl_s3_key].exists?).to eq(true)
+    expect(bucket.objects[manifest_s3_key].exists?).to eq(true)
 
     # Ensure TableArchive entry was created.
-    expect(Models::TableArchive.find_by(schema_name: @schema, table_name: @table)).not_to be_nil
+    schema = options[:db][:schema]
+    table = options[:db][:table]
+    expect(Models::TableArchive.find_by(schema_name: schema, table_name: table)).not_to be_nil
 
-    # Ensure redshift table was dropped.
-    res = @conn.exec("SELECT * FROM information_schema.tables WHERE table_schema = '#{@schema}' AND table_name = '#{@table}'")
-    expect(res.ntuples).to eq(table_should_be_dropped ? 0 : 1)
+    # Ensure redshift table was preserved or dropped depending on skip_drop option
+    res = @conn.exec("SELECT * FROM information_schema.tables WHERE table_schema = '#{schema}' AND table_name = '#{table}'")
+    expect(res.ntuples).to eq(options[:db][:skip_drop] ? 1 : 0)
+  end
+
+  #
+  # helper function to keep track of what options where used
+  #
+  def merge_options(options={})
+    return {
+        db: {
+            connection_id: @connection_id,
+            username: @config[:archive_username],
+            password: @config[:archive_password],
+            schema: @config[:archive_schema],
+            table: nil
+        },
+        s3: {
+            access_key_id: @config[:access_key_id],
+            secret_access_key: @config[:secret_access_key],
+            bucket: @config[:archive_bucket],
+            prefix: nil
+        },
+        unload: {
+            allowoverwrite: true,
+            gzip: false,
+            addquotes: true,
+            escape: true,
+            null_as: 'NULL'
+        },
+        mail: {nomailer: true}
+    }.deep_merge(options)
   end
 
   it 'should fail if TableArchive entry already exists' do
@@ -70,19 +68,22 @@ describe Jobs::ArchiveJob do
                                                 archive_bucket: '',
                                                 archive_prefix: '')
     table_archive.save
-    r = run_archive({db: {table: @table}, s3: {archive_prefix: @full_table_name}})
+    options = merge_options({db: {table: @table}, s3: {prefix: @full_table_name}})
+    r = run_archive(options)
     expect(r.failed?).to eq(true)
     expect(r.error).to eq('Archive entry already exists for this table!')
   end
 
   it 'should succeed with default settings' do
-    check_success(run_archive({db: {table: @table},
-                               s3: {archive_prefix: @full_table_name}}))
+    options = merge_options({db: {table: @table},
+                             s3: {prefix: @full_table_name}})
+    check_success(run_archive(options), options)
   end
 
   it 'should succeed with skip_drop enabled' do
-    check_success(run_archive({db: {table: @table, skip_drop: true},
-                               s3: {archive_prefix: @full_table_name}}), false)
+    options = merge_options({db: {table: @table, skip_drop: true},
+                             s3: {prefix: @full_table_name}})
+    check_success(run_archive(options), options)
   end
 
   before(:each) do
