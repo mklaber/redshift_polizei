@@ -129,9 +129,8 @@ class Polizei < Sinatra::Application
     parsed_google_email = Mail::Address.new(google_email)
     error 403 if not GlobalConfig.polizei('auth_valid_domains').member?(parsed_google_email.domain)
     # successfully logged in, make sure we have user in the database
-    user = Models::User.find_or_initialize_by(email: parsed_google_email.address)
-    user.google_id = auth_hash['uid']
-    user.save
+    user = Models::User.find_or_initialize_by(google_id: auth_hash['uid'])
+    user.update!(email: parsed_google_email.address)
     # save user id in session
     session[:uid] = user.id
     # redirect to root site
