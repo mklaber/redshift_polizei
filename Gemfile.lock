@@ -8,7 +8,7 @@ GIT
 
 GIT
   remote: git@github.com:AnalyticsMediaGroup/desmond.git
-  revision: 77e0d271f79a6a9940f6e640f1f064df97772851
+  revision: e5f673710aab65d514927310cb673defaa1305dc
   specs:
     desmond (0.1.0)
       activerecord (~> 4.2)
@@ -260,3 +260,6 @@ DEPENDENCIES
   tux
   uglifier
   whenever
+
+BUNDLED WITH
+   1.10.2

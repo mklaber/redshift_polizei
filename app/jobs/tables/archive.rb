@@ -89,12 +89,13 @@ module Jobs
       ddl_match = ddl_obj.read.scan(/CREATE TABLE/mi)
       fail 'Table has foreign constraints!' if ddl_match.length != 1
 
-      # UNLOAD the table
-      Desmond::UnloadJob.run(user_id, options)
+      # UNLOAD the entire table
+      full_table_name = Desmond::PGUtil.get_escaped_table_name(options[:db], schema_name, table_name)
+      query = "SELECT * FROM #{full_table_name}"
+      Desmond::UnloadJob.run(user_id, options.deep_merge({db: {query: query}}))
 
       # DROP the table
       unless options[:db][:skip_drop]
-        full_table_name = Desmond::PGUtil.get_escaped_table_name(options[:db], schema_name, table_name)
         drop_sql = "DROP TABLE #{full_table_name};"
         conn = Desmond::PGUtil.dedicated_connection(options[:db])
         conn.exec(drop_sql)
