@@ -219,7 +219,7 @@ You can view it in your browser by using this link: #{view_url}"
         column_type_sql += "(#{column['varchar_len']})" unless column['varchar_len'].nil?
         column_type_sql += "(#{column['numeric_precision']}, #{column['numeric_scale']})" if column['type'].downcase == 'decimal' || column['type'].downcase == 'numeric'
         column_encoding_sql = (column['encoding'].downcase == 'none') ? 'raw' : column['encoding']
-        "\t#{column_name_sql} #{column_type_sql} #{(column['is_nullable'] == 'YES') ? 'NULL' : 'NOT NULL'}#{(column['identity'].nil?) ? '' : ' IDENTITY(' + column['identity'] + ')'}#{(column['default'].nil?) ? '' : ' DEFAULT ' + column['default']} ENCODE #{column_encoding_sql}"
+        "\t#{column_name_sql} #{column_type_sql} #{(column['is_nullable'] == 'YES') ? 'NULL' : 'NOT NULL'}#{(column['identity'].nil?) ? '' : ' IDENTITY(' + column['identity'] + ')'}#{(column['default'].nil?) ? '' : ' DEFAULT ' + column['default']}#{(options[:no_column_encoding]) ? '' : " ENCODE #{column_encoding_sql}"}"
       end.join(",\n")
       structure_sql  += ",\n" unless constraints.empty?
       structure_sql  += constraints.map do |constraint|

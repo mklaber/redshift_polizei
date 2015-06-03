@@ -29,6 +29,8 @@ module Jobs
     # - db
     #   - timeout: connection timeout to database
     #   - skip_drop: if true, will not drop the table after unloading. Defaults to false
+    #   - auto_encode: if true, will not store the current column encodings,
+    #     letting them be analyzed automatically when table is restored. Defaults to false
     # - unload: options for the Redshift UNLOAD command
     #   - allowoverwrite: if true, will use the ALLOWOVERWRITE unload option
     #   - gzip: if true, will use the GZIP unload option
@@ -81,6 +83,7 @@ module Jobs
                                              table_name: table_name,
                                              s3_bucket: archive_bucket,
                                              s3_key: ddl_s3_key,
+                                             no_column_encoding: options[:db][:auto_encode],
                                              mail: {nomailer: true}
                                          })
       ddl_obj = AWS::S3.new.buckets[archive_bucket].objects[ddl_s3_key]

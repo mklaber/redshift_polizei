@@ -153,4 +153,14 @@ describe Jobs::TableStructureExportJob do
     schema_sql = retrieve_schema(table_name)
     expect(schema_sql).to eq(table_sql + "\n;")
   end
+
+  it 'should create schema with no_column_encoding enabled' do
+    table_name = new_table_name
+    sql_prefix = "CREATE TABLE #{schema_name}.\"#{table_name}\"(\n\t\"id\" integer NULL"
+    sql_suffix = "\n)\nDISTSTYLE all"
+    table_sql = sql_prefix + " ENCODE lzo" + sql_suffix
+    create_table(table_sql)
+    schema_sql = retrieve_schema(table_name, {no_column_encoding: true})
+    expect(schema_sql).to eq(sql_prefix + sql_suffix + "\n;")
+  end
 end

@@ -86,6 +86,12 @@ describe Jobs::ArchiveJob do
     check_success(run_archive(options), options)
   end
 
+  it 'should succeed with auto_encode enabled' do
+    options = merge_options({db: {table: @table, auto_encode: true},
+                             s3: {prefix: @full_table_name}})
+    check_success(run_archive(options), options)
+  end
+
   before(:each) do
     @connection_id = 'redshift_test'
     @schema = @config[:archive_schema]
