@@ -211,7 +211,6 @@ class Polizei < Sinatra::Application
     bucket = params[:bucket].empty? ? GlobalConfig.polizei('aws_archive_bucket') : params[:bucket]
     prefix = params[:prefix].empty? ? "#{params[:schema]}/#{params[:table]}/#{time}-" : params[:prefix]
     skip_drop = !!params[:skip_drop]
-    auto_encode = !!params[:auto_encode]
     access_key = params[:access_key].empty? ? GlobalConfig.polizei('aws_access_key_id') : params[:access_key]
     secret_key = params[:secret_key].empty? ? GlobalConfig.polizei('aws_secret_access_key') : params[:secret_key]
     Jobs::ArchiveJob.enqueue(current_user.id,
@@ -221,8 +220,7 @@ class Polizei < Sinatra::Application
                                         password: params[:redshift_password],
                                         schema: params[:schema],
                                         table: params[:table],
-                                        skip_drop: skip_drop,
-                                        auto_encode: auto_encode
+                                        skip_drop: skip_drop
                                     },
                                     s3: {
                                         access_key_id: access_key,
