@@ -68,7 +68,7 @@ describe Jobs::ArchiveJob do
                                                 archive_bucket: '',
                                                 archive_prefix: '')
     table_archive.save
-    options = merge_options({db: {table: @table}, s3: {prefix: @full_table_name}})
+    options = merge_options({db: {table: @table}, s3: {prefix: @archive_prefix}})
     r = run_archive(options)
     expect(r.failed?).to eq(true)
     expect(r.error).to eq('Archive entry already exists for this table!')
@@ -76,19 +76,19 @@ describe Jobs::ArchiveJob do
 
   it 'should succeed with default settings' do
     options = merge_options({db: {table: @table},
-                             s3: {prefix: @full_table_name}})
+                             s3: {prefix: @archive_prefix}})
     check_success(run_archive(options), options)
   end
 
   it 'should succeed with skip_drop enabled' do
     options = merge_options({db: {table: @table, skip_drop: true},
-                             s3: {prefix: @full_table_name}})
+                             s3: {prefix: @archive_prefix}})
     check_success(run_archive(options), options)
   end
 
   it 'should succeed with auto_encode enabled' do
     options = merge_options({db: {table: @table, auto_encode: true},
-                             s3: {prefix: @full_table_name}})
+                             s3: {prefix: @archive_prefix}})
     check_success(run_archive(options), options)
   end
 
@@ -97,6 +97,7 @@ describe Jobs::ArchiveJob do
     @schema = @config[:archive_schema]
     @table = "archive_test_#{Time.now.to_i}_#{rand(1024)}"
     @full_table_name = "#{@schema}.#{@table}"
+    @archive_prefix = "test/#{@full_table_name}"
     @conn = RSUtil.dedicated_connection(connection_id: @connection_id,
                                         username: @config[:archive_username],
                                         password: @config[:archive_password])
@@ -115,7 +116,7 @@ describe Jobs::ArchiveJob do
     # Drop test redshift table.
     @conn.exec("DROP TABLE IF EXISTS #{@full_table_name}")
     # Clean up S3 archive files.
-    @bucket.objects.with_prefix(@full_table_name).delete_all
+    @bucket.objects.with_prefix(@archive_prefix).delete_all
   end
 
 end

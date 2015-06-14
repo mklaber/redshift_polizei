@@ -206,6 +206,57 @@
   </div>
 </div>
 
+<!-- Column Encodings Modal -->
+<div class="modal fade" id="encoding_modal" tabindex="-1" role="dialog" aria-labelledby="encodingLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <form id="encodingForm" class="form-horizontal" role="form" method="POST" action="<%= url '/tables/encoding' %>" style="margin-top: 10px;">
+        <div class="modal-header">
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+          <h4 class="modal-title" id="encodingLabel">Recompute Column Encodings</h4>
+        </div>
+        <div class="modal-body">
+          <div class="alert alert-warning" role="alert">
+            <p><strong>WARNING: </strong>This will archive the database table, and restore it with column encodings that Redshift recommends.
+              The table will be unavailable for some time while this happens.
+              Currently does NOT support tables with constraints or foreign keys!</p>
+          </div>
+          <div class="form-group">
+            <label for="encodingInputSchema" class="col-sm-4 control-label">Schema Name:</label>
+            <div class="col-sm-8">
+              <input readonly type="text" id="encodingInputSchema" name="schema" value="ERROR: SCHEMA NAME NOT FOUND" class="form-control">
+            </div>
+            <label for="encodingInputTable" class="col-sm-4 control-label">Table Name:</label>
+            <div class="col-sm-8">
+              <input readonly type="text" id="encodingInputTable" name="table" value="ERROR: TABLE NAME NOT FOUND" class="form-control">
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="encodingInputRedshiftUsername" class="col-sm-4 control-label">Redshift Username:</label>
+            <div class="col-sm-8">
+              <input type="text" class="form-control" id="encodingInputRedshiftUsername" name="redshift_username" placeholder="Username">
+            </div>
+            <label for="encodingInputRedshiftPassword" class="col-sm-4 control-label">Redshift Password:</label>
+            <div class="col-sm-8">
+              <input type="password" class="form-control" id="encodingInputRedshiftPassword" name="redshift_password" placeholder="*Password is not saved*">
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="encodingInputEmail" class="col-sm-4 control-label">Additional Emails:</label>
+            <div class="col-sm-8">
+              <input type="text" class="form-control" id="encodingInputEmail" name="email" placeholder="me@example.com, you@example.com" value="">
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+          <button type="submit" class="btn btn-warning" id="encoding_submit">Recompute Encodings</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
 <!-- Redshift and Archived tables -->
 <ul class="nav nav-tabs">
   <li class="active"><a data-toggle="tab" href="#redshift_tables">Redshift Tables</a></li>
@@ -260,11 +311,11 @@
               <br />
             </td>
             <td>
-              <% if row['has_col_encodings'] %>
-                  <span class='label label-success'>Yes</span>
-              <% else %>
-                  <span class="label label-danger">No</span>
-              <% end %>
+              <button type="button" id="column_encode_<%= i %>"
+                      class="btn btn-xs <%= row['has_col_encodings'] ? 'btn-success' : 'btn-danger' %>"
+                      data-toggle="modal" data-target="#encoding_modal" data-schema-name="<%= row['schema_name'] %>"
+                      data-table-name="<%= row['table_name'] %>"> <%= row['has_col_encodings'] ? 'Yes' : 'No' %>
+              </button>
             </td>
             <td>
       <span class='label label-<%= row['pct_skew_across_slices'].to_f > 100.0 ? 'danger' : 'success' %>'><%=
@@ -276,7 +327,10 @@
             <td class="text-center">
               <button id="update_button_<%= i %>" type="button" data-id="<%= i %>" data-schema-name="<%= row['schema_name'] %>" data-table-name="<%= row['table_name'] %>" class="tbl-update btn btn-info btn-xs">Refresh</button>
               <%= img '/images/ajax-loader.gif', id: "loading_img_#{i}", height: '25px', style: 'display: none;' %>
-              <button type="button" id="archive_button_<%= i %>" class="btn btn-primary btn-danger btn-xs" data-toggle="modal" data-target="#archive_modal" data-schema-name="<%= row['schema_name'] %>" data-table-name="<%= row['table_name'] %>">Archive</button>
+              <button type="button" id="archive_button_<%= i %>" class="btn btn-primary btn-danger btn-xs"
+                      data-toggle="modal" data-target="#archive_modal" data-schema-name="<%= row['schema_name'] %>"
+                      data-table-name="<%= row['table_name'] %>">Archive
+              </button>
             </td>
           </tr >
       <% end %>

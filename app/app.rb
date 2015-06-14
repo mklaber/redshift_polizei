@@ -271,6 +271,38 @@ class Polizei < Sinatra::Application
     redirect to('/tables')
   end
 
+  post '/tables/encoding' do
+    email_list = validate_email_list("#{current_user.email}, #{params[:email]}")
+    time = Time.now.utc.strftime('%Y_%m_%dT%H_%M_%S_%LZ')
+    bucket = GlobalConfig.polizei('aws_archive_bucket')
+    prefix = "#{params[:schema]}/#{params[:table]}/#{time}-"
+    access_key = GlobalConfig.polizei('aws_access_key_id')
+    secret_key = GlobalConfig.polizei('aws_secret_access_key')
+    Jobs::RecomputeEncodingJob.enqueue(current_user.id,
+                             db: {
+                                 connection_id: "redshift_#{Sinatra::Application.environment}",
+                                 username: params[:redshift_username],
+                                 password: params[:redshift_password],
+                                 schema: params[:schema],
+                                 table: params[:table]
+                             },
+                             s3: {
+                                 access_key_id: access_key,
+                                 secret_access_key: secret_key,
+                                 bucket: bucket,
+                                 prefix: prefix
+                             },
+                             redshift: {
+                                 allowoverwrite: true,
+                                 gzip: true,
+                                 quotes: true,
+                                 escape: true,
+                                 null_as: ARCHIVE_NULL_VALUE
+                             },
+                             email: email_list.join(', '))
+    redirect to('/tables')
+  end
+
   post '/tables/report' do
     content_type :json
     begin

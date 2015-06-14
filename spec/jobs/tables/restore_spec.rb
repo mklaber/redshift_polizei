@@ -132,7 +132,7 @@ describe Jobs::RestoreJob do
     # Drop test redshift table.
     @conn.exec("DROP TABLE IF EXISTS #{@full_table_name}")
     # Clean up S3 files.
-    @bucket.objects.with_prefix("test/#{@full_table_name}").delete_all
+    @bucket.objects.with_prefix(@archive_prefix).delete_all
   end
 
 end

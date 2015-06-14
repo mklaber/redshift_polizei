@@ -179,6 +179,13 @@ $(document).ready(function() {
     $(this).find('#restoreInputArchiveBucket').val(bucket);
     $(this).find('#restoreInputArchivePrefix').val(prefix);
   });
+  $('#encoding_modal').on('show.bs.modal', function (event) {
+    var button = $(event.relatedTarget);
+    var schema = button.attr('data-schema-name');
+    var table = button.attr('data-table-name');
+    $(this).find('#encodingInputSchema').val(schema);
+    $(this).find('#encodingInputTable').val(table);
+  });
 
   // focus input when modal is shown
   $('#archive_modal').on('shown.bs.modal', function () {
@@ -186,6 +193,9 @@ $(document).ready(function() {
   });
   $('#restore_modal').on('shown.bs.modal', function () {
     $('#restoreInputRedshiftUsername').focus();
+  });
+  $('#encoding_modal').on('shown.bs.modal', function () {
+    $('#encodingInputRedshiftUsername').focus();
   });
 
   // hide modals after submitting form
