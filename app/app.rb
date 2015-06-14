@@ -258,8 +258,8 @@ class Polizei < Sinatra::Application
                              s3: {
                                  access_key_id: access_key,
                                  secret_access_key: secret_key,
-                                 archive_bucket: archive_info.archive_bucket,
-                                 archive_prefix: archive_info.archive_prefix
+                                 bucket: archive_info.archive_bucket,
+                                 prefix: archive_info.archive_prefix
                              },
                              copy: {
                                  gzip: true,

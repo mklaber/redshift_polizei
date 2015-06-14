@@ -18,8 +18,8 @@ describe Jobs::RestoreJob do
                                         s3: {
                                             access_key_id: @config[:access_key_id],
                                             secret_access_key: @config[:secret_access_key],
-                                            archive_bucket: @config[:archive_bucket],
-                                            archive_prefix: nil
+                                            bucket: @config[:archive_bucket],
+                                            prefix: nil
                                         },
                                         copy: {
                                             gzip: false,
@@ -33,14 +33,14 @@ describe Jobs::RestoreJob do
 
   it 'should fail if ddl file does not exist' do
     @bucket.objects[@ddl_file].delete
-    r = run_restore({db: {table: @table}, s3: {archive_prefix: @archive_prefix}})
+    r = run_restore({db: {table: @table}, s3: {prefix: @archive_prefix}})
     expect(r.failed?).to eq(true)
     expect(r.error).to eq("S3 ddl_file #{@config[:archive_bucket]}/#{@archive_prefix}ddl does not exist!")
   end
 
   it 'should fail if manifest file does not exist' do
     @bucket.objects[@manifest_file].delete
-    r = run_restore({db: {table: @table}, s3: {archive_prefix: @archive_prefix}})
+    r = run_restore({db: {table: @table}, s3: {prefix: @archive_prefix}})
     expect(r.failed?).to eq(true)
     expect(r.error).to eq("S3 manifest_file #{@config[:archive_bucket]}/#{@manifest_file} does not exist!")
   end
@@ -50,14 +50,14 @@ describe Jobs::RestoreJob do
       CREATE TABLE "#{@schema}"."#{@table}FAKE"(id INT, txt VARCHAR);
     TEXT
     @bucket.objects[@ddl_file].write(ddl_text)
-    r = run_restore({db: {table: @table}, s3: {archive_prefix: @archive_prefix}})
+    r = run_restore({db: {table: @table}, s3: {prefix: @archive_prefix}})
     expect(r.failed?).to eq(true)
     expect(r.error).to eq("S3 ddl_file #{@config[:archive_bucket]}/#{@ddl_file} must contain a single valid CREATE TABLE statement!")
   end
 
   it 'should properly restore a table' do
     # RestoreJob should succeed.
-    r = run_restore({db: {table: @table}, s3: {archive_prefix: @archive_prefix}})
+    r = run_restore({db: {table: @table}, s3: {prefix: @archive_prefix}})
     expect(r.failed?).to eq(false)
     expect(r.result['schema']).to eq(@schema)
     expect(r.result['table']).to eq(@table)
