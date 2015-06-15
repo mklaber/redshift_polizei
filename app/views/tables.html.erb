@@ -311,11 +311,11 @@
               <br />
             </td>
             <td>
-              <button type="button" id="column_encode_<%= i %>"
-                      class="btn btn-xs <%= row['has_col_encodings'] ? 'btn-success' : 'btn-danger' %>"
-                      data-toggle="modal" data-target="#encoding_modal" data-schema-name="<%= row['schema_name'] %>"
-                      data-table-name="<%= row['table_name'] %>"> <%= row['has_col_encodings'] ? 'Yes' : 'No' %>
-              </button>
+              <% if row['has_col_encodings'] %>
+                <span class='label label-success'>Yes</span>
+              <% else %>
+                <span class="label label-danger">No</span>
+              <% end %>
             </td>
             <td>
       <span class='label label-<%= row['pct_skew_across_slices'].to_f > 100.0 ? 'danger' : 'success' %>'><%=
@@ -327,10 +327,17 @@
             <td class="text-center">
               <button id="update_button_<%= i %>" type="button" data-id="<%= i %>" data-schema-name="<%= row['schema_name'] %>" data-table-name="<%= row['table_name'] %>" class="tbl-update btn btn-info btn-xs">Refresh</button>
               <%= img '/images/ajax-loader.gif', id: "loading_img_#{i}", height: '25px', style: 'display: none;' %>
-              <button type="button" id="archive_button_<%= i %>" class="btn btn-primary btn-danger btn-xs"
-                      data-toggle="modal" data-target="#archive_modal" data-schema-name="<%= row['schema_name'] %>"
-                      data-table-name="<%= row['table_name'] %>">Archive
-              </button>
+              <div class="btn-group">
+                <button type="button" class="btn btn-warning btn-xs dropdown-toggle" data-toggle="dropdown" aria-expanded="false">
+                  More...<span class="caret"></span>
+                </button>
+                <ul class="dropdown-menu" style="right: 0; left: auto;" role="menu">
+                  <li data-toggle="modal" data-target="#archive_modal" data-schema-name="<%= row['schema_name'] %>"
+                      data-table-name="<%= row['table_name'] %>"><a>Archive Table...</a></li>
+                  <li data-toggle="modal" data-target="#encoding_modal" data-schema-name="<%= row['schema_name'] %>"
+                      data-table-name="<%= row['table_name'] %>"><a>Column Encodings...</a></li>
+                </ul>
+              </div>
             </td>
           </tr >
       <% end %>
