@@ -2,6 +2,8 @@ require_relative '../../main'
 require 'set'
 
 module Jobs
+  # TODO use desmond version, once/if available?, keep email hooks
+
   ##
   # exports the table structure of a set of tables
   # in the background.

@@ -75,11 +75,11 @@ class TableUtils
     end
   end
 
-    ##
-    # returns a boolean for each table indicating
-    # whether it has at least one column with an
-    # encoding
-    #
+  ##
+  # returns a boolean for each table indicating
+  # whether it has at least one column with an
+  # encoding
+  #
   def self.has_column_encodings(connection, table={})
     tmp = execute_grouped_by_table(connection, 'tables/has_encoding', table)
     tmp.hmap do |full_table_name, encoding_columns|
@@ -95,7 +95,7 @@ class TableUtils
   end
 
   ##
-  # groups  SQL results in a hash by 'schema_name'
+  # groups SQL results in a hash by 'schema_name'
   # and 'table_name' from the retrieved rows
   #
   def self.execute_grouped_by_table(*args)
