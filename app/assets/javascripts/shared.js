@@ -260,4 +260,8 @@ $(document).ready(function() {
         clearTimeout(window.refresh_size);
         window.refresh_size = setTimeout(function() { datatable_update_size(); }, 250);
     });
+    // when shown, modal focus gets set to the first input
+    $('.modal').on('shown.bs.modal', function () {
+        $(this).find('form').find('input:not([readonly])').first().focus();
+    });
 });
