@@ -55,7 +55,7 @@
         <div class="modal-body">
           <div class="alert alert-danger" role="alert">
             <p><strong>WARNING: </strong>Archiving will move the data into S3 and drop the database table!
-            Archiving currently does NOT support tables with constraints or foreign keys!</p>
+            Archiving currently does NOT support tables with constraints or foreign keys! Will NOT restore permissions as of now!</p>
           </div>
           <div class="form-group">
             <label for="archiveInputSchema" class="col-sm-4 control-label">Schema Name:</label>
@@ -216,10 +216,10 @@
           <h4 class="modal-title" id="encodingLabel">Recompute Column Encodings</h4>
         </div>
         <div class="modal-body">
-          <div class="alert alert-warning" role="alert">
+          <div class="alert alert-danger" role="alert">
             <p><strong>WARNING: </strong>This will archive the database table, and restore it with column encodings that Redshift recommends.
               The table will be unavailable for some time while this happens.
-              Currently does NOT support tables with constraints or foreign keys!</p>
+              Currently does NOT support tables with constraints or foreign keys! Will NOT restore permissions as of now!</p>
           </div>
           <div class="form-group">
             <label for="encodingInputSchema" class="col-sm-4 control-label">Schema Name:</label>
