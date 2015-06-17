@@ -165,8 +165,8 @@ $(document).ready(function() {
     var button = $(event.relatedTarget);
     var schema = button.attr('data-schema-name');
     var table = button.attr('data-table-name');
-    $(this).find('#archiveInputSchema').val(schema);
-    $(this).find('#archiveInputTable').val(table);
+    $(this).find('input[name=schema]').val(schema);
+    $(this).find('input[name=table]').val(table);
   });
   $('#restore_modal').on('show.bs.modal', function (event) {
     var button = $(event.relatedTarget);
@@ -174,18 +174,17 @@ $(document).ready(function() {
     var table = button.attr('data-table-name');
     var bucket = button.attr('data-bucket');
     var prefix = button.attr('data-prefix');
-    $(this).find('#restoreInputSchema').val(schema);
-    $(this).find('#restoreInputTable').val(table);
+    $(this).find('input[name=schema]').val(schema);
+    $(this).find('input[name=table]').val(table);
     $(this).find('#restoreInputArchiveBucket').val(bucket);
     $(this).find('#restoreInputArchivePrefix').val(prefix);
   });
-
-  // focus input when modal is shown
-  $('#archive_modal').on('shown.bs.modal', function () {
-    $('#archiveInputRedshiftUsername').focus();
-  });
-  $('#restore_modal').on('shown.bs.modal', function () {
-    $('#restoreInputRedshiftUsername').focus();
+  $('#encoding_modal').on('show.bs.modal', function (event) {
+    var button = $(event.relatedTarget);
+    var schema = button.attr('data-schema-name');
+    var table = button.attr('data-table-name');
+    $(this).find('input[name=schema]').val(schema);
+    $(this).find('input[name=table]').val(table);
   });
 
   // hide modals after submitting form

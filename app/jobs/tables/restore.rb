@@ -22,8 +22,8 @@ module Jobs
     # - s3
     #   - access_key_id: s3 access key
     #   - secret_access_key: s3 secret key
-    #   - archive_bucket: bucket that holds data, ddl, and manifest files
-    #   - archive_prefix: filename prefix of relevant data, ddl, and manifest files
+    #   - bucket: bucket that holds data, ddl, and manifest files
+    #   - prefix: filename prefix of relevant data, ddl, and manifest files
     #
     # the following +options+ are additionally supported:
     # - db
@@ -51,9 +51,9 @@ module Jobs
       fail 'Empty table name!' if table_name.nil? || table_name.empty?
 
       # file paths
-      archive_bucket = options[:s3][:archive_bucket]
+      archive_bucket = options[:s3][:bucket]
       fail 'Empty archive_bucket!' if archive_bucket.nil? || archive_bucket.empty?
-      archive_prefix = options[:s3][:archive_prefix]
+      archive_prefix = options[:s3][:prefix]
       fail 'Empty archive_prefix!' if archive_prefix.nil? || archive_prefix.empty?
       ddl_file = "#{archive_prefix}ddl"
       manifest_file = "#{archive_prefix}manifest"

@@ -55,7 +55,7 @@
         <div class="modal-body">
           <div class="alert alert-danger" role="alert">
             <p><strong>WARNING: </strong>Archiving will move the data into S3 and drop the database table!
-            Archiving currently does NOT support tables with constraints or foreign keys!</p>
+            Archiving currently does NOT support tables with constraints or foreign keys! Will NOT restore permissions as of now!</p>
           </div>
           <div class="form-group">
             <label for="archiveInputSchema" class="col-sm-4 control-label">Schema Name:</label>
@@ -112,6 +112,10 @@
                 <label for="inputSkipDrop" class="col-sm-4 control-label">Skip Table Drop:</label>
                 <div class="col-sm-8 checkbox">
                   <input type="checkbox" id="inputSkipDrop" style="margin-left: 0;" name="skip_drop" value="true">
+                </div>
+                <label for="inputAutoEncode" class="col-sm-4 control-label">Auto Column Encode:</label>
+                <div class="col-sm-8 checkbox">
+                  <input type="checkbox" id="inputAutoEncode" style="margin-left: 0;" name="auto_encode" value="true">
                 </div>
               </div>
             </div>
@@ -202,6 +206,57 @@
   </div>
 </div>
 
+<!-- Column Encodings Modal -->
+<div class="modal fade" id="encoding_modal" tabindex="-1" role="dialog" aria-labelledby="encodingLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <form id="encodingForm" class="form-horizontal" role="form" method="POST" action="<%= url '/tables/encoding' %>" style="margin-top: 10px;">
+        <div class="modal-header">
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+          <h4 class="modal-title" id="encodingLabel">Recompute Column Encodings</h4>
+        </div>
+        <div class="modal-body">
+          <div class="alert alert-danger" role="alert">
+            <p><strong>WARNING: </strong>This will archive the database table, and restore it with column encodings that Redshift recommends.
+              The table will be unavailable for some time while this happens.
+              Currently does NOT support tables with constraints or foreign keys! Will NOT restore permissions as of now!</p>
+          </div>
+          <div class="form-group">
+            <label for="encodingInputSchema" class="col-sm-4 control-label">Schema Name:</label>
+            <div class="col-sm-8">
+              <input readonly type="text" id="encodingInputSchema" name="schema" value="ERROR: SCHEMA NAME NOT FOUND" class="form-control">
+            </div>
+            <label for="encodingInputTable" class="col-sm-4 control-label">Table Name:</label>
+            <div class="col-sm-8">
+              <input readonly type="text" id="encodingInputTable" name="table" value="ERROR: TABLE NAME NOT FOUND" class="form-control">
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="encodingInputRedshiftUsername" class="col-sm-4 control-label">Redshift Username:</label>
+            <div class="col-sm-8">
+              <input type="text" class="form-control" id="encodingInputRedshiftUsername" name="redshift_username" placeholder="Username">
+            </div>
+            <label for="encodingInputRedshiftPassword" class="col-sm-4 control-label">Redshift Password:</label>
+            <div class="col-sm-8">
+              <input type="password" class="form-control" id="encodingInputRedshiftPassword" name="redshift_password" placeholder="*Password is not saved*">
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="encodingInputEmail" class="col-sm-4 control-label">Additional Emails:</label>
+            <div class="col-sm-8">
+              <input type="text" class="form-control" id="encodingInputEmail" name="email" placeholder="me@example.com, you@example.com" value="">
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+          <button type="submit" class="btn btn-warning" id="encoding_submit">Recompute Encodings</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
 <!-- Redshift and Archived tables -->
 <ul class="nav nav-tabs">
   <li class="active"><a data-toggle="tab" href="#redshift_tables">Redshift Tables</a></li>
@@ -257,9 +312,9 @@
             </td>
             <td>
               <% if row['has_col_encodings'] %>
-                  <span class='label label-success'>Yes</span>
+                <span class='label label-success'>Yes</span>
               <% else %>
-                  <span class="label label-danger">No</span>
+                <span class="label label-danger">No</span>
               <% end %>
             </td>
             <td>
@@ -272,7 +327,17 @@
             <td class="text-center">
               <button id="update_button_<%= i %>" type="button" data-id="<%= i %>" data-schema-name="<%= row['schema_name'] %>" data-table-name="<%= row['table_name'] %>" class="tbl-update btn btn-info btn-xs">Refresh</button>
               <%= img '/images/ajax-loader.gif', id: "loading_img_#{i}", height: '25px', style: 'display: none;' %>
-              <button type="button" id="archive_button_<%= i %>" class="btn btn-primary btn-danger btn-xs" data-toggle="modal" data-target="#archive_modal" data-schema-name="<%= row['schema_name'] %>" data-table-name="<%= row['table_name'] %>">Archive</button>
+              <div class="btn-group">
+                <button type="button" class="btn btn-warning btn-xs dropdown-toggle" data-toggle="dropdown" aria-expanded="false">
+                  More...<span class="caret"></span>
+                </button>
+                <ul class="dropdown-menu" style="right: 0; left: auto;" role="menu">
+                  <li data-toggle="modal" data-target="#archive_modal" data-schema-name="<%= row['schema_name'] %>"
+                      data-table-name="<%= row['table_name'] %>"><a>Archive Table...</a></li>
+                  <li data-toggle="modal" data-target="#encoding_modal" data-schema-name="<%= row['schema_name'] %>"
+                      data-table-name="<%= row['table_name'] %>"><a>Column Encodings...</a></li>
+                </ul>
+              </div>
             </td>
           </tr >
       <% end %>
