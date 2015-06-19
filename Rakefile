@@ -37,8 +37,8 @@ end
 namespace :redshift do
   namespace :auditlog do
     desc 'Import audit log files into polizei'
-    task :import, :just_one do |t, args|
-      Jobs::Queries::AuditLog::Import.run_persisted(0, just_one: args[:just_one])
+    task :import, :just_one, :file do |t, args|
+      Jobs::Queries::AuditLog::Import.run_persisted(0, just_one: args[:just_one], file: args[:file])
     end
 
     desc 'Discard old audit log entries'

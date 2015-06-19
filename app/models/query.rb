@@ -33,8 +33,9 @@ module Models
     #
     def self.strip_comments(q)
       # replaced with space since it functions as a separator and removing it might make statement invalid
-      q = q.gsub(/--(.*)\n/, ' ') # singe line -- comments
-      q = q.gsub(/(\/\*).+?(\*\/)/m, ' ') # multi-line /**/ comments
+      # first multi-line comments so that single line comments can't remove the closer of multi-lines
+      q = q.gsub(/(?<comment>(\/\*)(\g<comment>|.)*?(\*\/))/m, ' ') # multi-line /**/ comments
+      q = q.gsub(/(--.*?(\n|\z))/, ' ') # singe line -- comments
     end
 
     #
