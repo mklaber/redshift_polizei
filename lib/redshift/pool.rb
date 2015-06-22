@@ -2,14 +2,29 @@ require 'redshift/util'
 require 'connection_pool'
 
 class RSPool
+  RSPOOL_RECONNECT_RETRIES = 1
   def self.get
     if @pool.nil?
-      @pool = ConnectionPool.new { RSUtil.dedicated_connection(system_connection_allowed: true) }
+      reconnect!
     end
     @pool
   end
 
   def self.with(&block)
-    self.get.with { |c| block.call(c) }
+    tries ||= RSPOOL_RECONNECT_RETRIES
+    begin
+      self.get.with { |c| block.call(c) }
+    rescue PG::UnableToSend, PG::ConnectionBad
+      tries -= 1
+      if tries >= 0
+        reconnect!
+        retry
+      end
+    end
   end
+
+  def self.reconnect!
+    @pool = ConnectionPool.new { RSUtil.dedicated_connection(system_connection_allowed: true) }
+  end
+  private_class_method :reconnect!
 end
