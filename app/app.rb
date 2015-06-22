@@ -173,7 +173,7 @@ class Polizei < Sinatra::Application
     search = params['search']['value']
     selects = ((not params['selects'].nil?) && params['selects'] == 'true')
 
-    order_column = 0
+    order_column = -1
     order_dir = 'desc'
     if not(order.nil? || order.size == 0)
       order_column = order['0']['column'].to_i

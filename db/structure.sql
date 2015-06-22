@@ -23,6 +23,20 @@ CREATE EXTENSION IF NOT EXISTS plpgsql WITH SCHEMA pg_catalog;
 COMMENT ON EXTENSION plpgsql IS 'PL/pgSQL procedural language';
 
 
+--
+-- Name: pg_trgm; Type: EXTENSION; Schema: -; Owner: -
+--
+
+CREATE EXTENSION IF NOT EXISTS pg_trgm WITH SCHEMA public;
+
+
+--
+-- Name: EXTENSION pg_trgm; Type: COMMENT; Schema: -; Owner: -
+--
+
+COMMENT ON EXTENSION pg_trgm IS 'text similarity measurement and index searching based on trigrams';
+
+
 SET search_path = public, pg_catalog;
 
 SET default_tablespace = '';
@@ -1029,6 +1043,13 @@ CREATE INDEX queries_query_fts_idx ON queries USING gin (to_tsvector('english'::
 
 
 --
+-- Name: queries_query_trgm_idx; Type: INDEX; Schema: public; Owner: -; Tablespace: 
+--
+
+CREATE INDEX queries_query_trgm_idx ON queries USING gin (query gin_trgm_ops);
+
+
+--
 -- Name: queries_user_fts_idx; Type: INDEX; Schema: public; Owner: -; Tablespace: 
 --
 
@@ -1067,6 +1088,8 @@ INSERT INTO schema_migrations (version) VALUES ('16');
 INSERT INTO schema_migrations (version) VALUES ('17');
 
 INSERT INTO schema_migrations (version) VALUES ('18');
+
+INSERT INTO schema_migrations (version) VALUES ('19');
 
 INSERT INTO schema_migrations (version) VALUES ('2');
 
