@@ -66,9 +66,10 @@ module Jobs
           if !is_in_database && is_our_cluster && is_user_activity_log && last_modified > last_update
             # parse it after gzip decompression
             if full_path.ends_with?('.gz')
-              block.call(Zlib::GzipReader.new(file_reader), full_path)
+              # thank god that the S3 api even makes it easy to read files
+              block.call(Zlib::GzipReader.new(StringIO.new(file_reader.read)), full_path)
             else
-              block.call(file_reader, full_path)
+              block.call(StringIO.new(file_reader.read), full_path)
             end
             return if just_one
           end

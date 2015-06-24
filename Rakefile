@@ -54,7 +54,7 @@ namespace :redshift do
 
     desc 'Rerun the query classification'
     task :clear do
-      Models::Query.destroy_all
+      ActiveRecord::Base.connection.execute("truncate queries")
       Models::AuditLogConfig.get.update!(last_update: 0)
     end
   end
