@@ -24,25 +24,25 @@ module Models
     # returns all permissions for the given +user+.
     # +user+ can be `Models::DatabaseUser` or a username string.
     #
-    def self.for_user(user, dbobject=nil)
-      get_all_permissions_for_entity(Models::DatabaseUser, user, dbobject)
+    def self.for_user(user, dbobject=nil, declared=false)
+      get_all_permissions_for_entity(Models::DatabaseUser, user, dbobject, declared)
     end
 
     ##
     # returns all permissions for the given +group+.
     # +group+ can be `Models::DatabaseGroup` or a username string.
     #
-    def self.for_group(group, dbobject=nil)
-      get_all_permissions_for_entity(Models::DatabaseGroup, group, dbobject)
+    def self.for_group(group, dbobject=nil, declared=false)
+      get_all_permissions_for_entity(Models::DatabaseGroup, group, dbobject, declared)
     end
 
     ##
     # returns all permissions for the given table.
     #
-    def self.for_table(schema_name, table_name, entity_filter=nil)
+    def self.for_table(schema_name, table_name, entity_filter=nil, declared=false)
       fail ArgumentError, 'schema or table name cannot be nil' if schema_name.nil? || table_name.nil?
       table = Models::Table.find_by_full_name(schema_name, table_name)
-      tmp = get_all_permissions_for(self.where(dbobject: table))
+      tmp = get_all_permissions_for(self.where(dbobject: table, declared: declared))
       tmp = tmp.where(entity_type: entity_filter) unless entity_filter.nil?
       tmp.sort do |p1, p2|
         (p1.entity.name <=> p2.entity.name)
@@ -62,11 +62,11 @@ module Models
 
     private
 
-    def self.get_all_permissions_for_entity(entity_class, entity, dbobject_filter)
+    def self.get_all_permissions_for_entity(entity_class, entity, dbobject_filter, declared=false)
       fail ArgumentError, 'class or entity cannot be nil' if entity_class.nil? || entity.nil?
       entity = entity_class.find_by!(name: entity) if entity.is_a?(String)
       fail ArgumentError, "Unsupported entity type: #{group.class}" unless entity.is_a?(entity_class)
-      tmp = get_all_permissions_for(self.where(entity: entity))
+      tmp = get_all_permissions_for(self.where(entity: entity, declared: declared))
       tmp = tmp.where(dbobject_type: dbobject_filter) unless dbobject_filter.nil?
       tmp.sort do |p1, p2|
         schema_order = (p1.dbobject.schema.name <=> p2.dbobject.schema.name)

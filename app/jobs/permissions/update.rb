@@ -9,8 +9,9 @@ module Jobs
         # update our list of schemas and tables with the real deal
         Jobs::Tables::UpdateList.run(user_id)
         # update our list of table permissions
-        Jobs::Permissions::UpdateUserTablePermissions.run(user_id)
-        Jobs::Permissions::UpdateGroupTablePermissions.run(user_id)
+        Jobs::Permissions::UpdateGroupTableDeclaredPermissions.run(user_id)
+        Jobs::Permissions::UpdateUserTableDeclaredPermissions.run(user_id)
+        Jobs::Permissions::UpdateUserTableEffectivePermissions.run(user_id)
       end
     end
   end
