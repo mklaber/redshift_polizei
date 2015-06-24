@@ -34,7 +34,10 @@ module Jobs
 
         def iterate_log_streams(last_update, file, just_one, &block)
           unless file.nil?
-            block.call(File.open(file, 'r'), file)
+            Dir.glob(file).sort_by { |f| File.mtime(f) }.reverse.each do |filename|
+              tmp = File.open(filename, 'r')
+              choose_correct_files(filename, tmp.mtime, last_update, tmp, just_one, &block)
+            end
           else
             bucket  = AWS::S3.new.buckets[GlobalConfig.polizei('aws_redshift_audit_log_bucket')]
             objects = bucket.objects
@@ -43,38 +46,35 @@ module Jobs
             end
             # start from the newest and work our way back
             tmp = objects.sort_by { |obj| obj.last_modified }.reverse
-            #tmp = bucket.objects
             tmp.each do |obj|
-              begin
-                filename       = obj.key.split('/')[-1].split('.')[0] # gets rid of the path before the actual filename
-                filename_parts = filename.split('_') # the filename contains several pieces of info
-                cluster_name   = filename_parts[3]
-                logtype        = filename_parts[4]
-                logtimestamp   = filename_parts[5]
-
-                is_our_cluster       = (cluster_name == GlobalConfig.polizei('aws_cluster_identifier'))
-                is_user_activity_log = (logtype == 'useractivitylog')
-                #Que.log level: :debug, message: "log file from '#{cluster_name}' of type '#{logtype}' timed at #{logtimestamp}: #{is_our_cluster}, #{is_user_activity_log}, #{obj.last_modified > last_update}"
-                if is_our_cluster && is_user_activity_log && obj.last_modified > last_update
-                  # we are going to parse the file while downloading making this a little more complicated
-                  reader, writer = IO.pipe
-                  # "download" thread, can't do without it
-                  thread = Thread.new do
-                    begin
-                      obj.read do |chunk|
-                        writer.write chunk
-                      end
-                    ensure
-                      writer.close
-                    end
-                  end
-                  # parse it after gzip decompression
-                  block.call(Zlib::GzipReader.new(reader), obj.key)
-                  return if just_one
-                end
-              end
+              choose_correct_files(obj.key, obj.last_modified, last_update, obj, just_one, &block)
             end
           end
+        end
+
+        def choose_correct_files(full_path, last_modified, last_update, file_reader, just_one, &block)
+          filename       = full_path.split('/')[-1].split('.')[0] # gets rid of the path before the actual filename
+          filename_parts = filename.split('_') # the filename contains several pieces of info
+          cluster_name   = filename_parts[3]
+          logtype        = filename_parts[4]
+          logtimestamp   = filename_parts[5]
+
+          is_our_cluster       = (cluster_name == GlobalConfig.polizei('aws_cluster_identifier'))
+          is_user_activity_log = (logtype == 'useractivitylog')
+          is_in_database       = Models::Query.where(logfile: full_path).exists?
+          #Que.log level: :debug, message: "log file from '#{cluster_name}' of type '#{logtype}' timed at #{logtimestamp}: #{is_in_database}, #{is_our_cluster}, #{is_user_activity_log}, #{last_modified > last_update}"
+          if !is_in_database && is_our_cluster && is_user_activity_log && last_modified > last_update
+            # parse it after gzip decompression
+            if full_path.ends_with?('.gz')
+              block.call(Zlib::GzipReader.new(file_reader), full_path)
+            else
+              block.call(file_reader, full_path)
+            end
+            return if just_one
+          end
+        rescue
+          Que.log level: :error, message: "Error processing file '#{full_path}'"
+          raise
         end
 
         def import(reader, logfile_name, options={})

@@ -939,6 +939,13 @@ CREATE INDEX index_permissions_on_updated_at ON permissions USING btree (updated
 
 
 --
+-- Name: index_queries_on_logfile; Type: INDEX; Schema: public; Owner: -; Tablespace: 
+--
+
+CREATE INDEX index_queries_on_logfile ON queries USING btree (logfile);
+
+
+--
 -- Name: index_queries_on_query_type; Type: INDEX; Schema: public; Owner: -; Tablespace: 
 --
 
@@ -1047,7 +1054,7 @@ CREATE UNIQUE INDEX permissions_unique ON permissions USING btree (entity_id, en
 -- Name: queries_query_fts_idx; Type: INDEX; Schema: public; Owner: -; Tablespace: 
 --
 
-CREATE INDEX queries_query_fts_idx ON queries USING gin (to_tsvector('english'::regconfig, query));
+CREATE INDEX queries_query_fts_idx ON queries USING gin (to_tsvector('english'::regconfig, "left"(query, 16384)));
 
 
 --
@@ -1102,6 +1109,10 @@ INSERT INTO schema_migrations (version) VALUES ('19');
 INSERT INTO schema_migrations (version) VALUES ('2');
 
 INSERT INTO schema_migrations (version) VALUES ('20');
+
+INSERT INTO schema_migrations (version) VALUES ('21');
+
+INSERT INTO schema_migrations (version) VALUES ('22');
 
 INSERT INTO schema_migrations (version) VALUES ('3');
 

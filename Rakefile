@@ -19,6 +19,7 @@ class Rake::Application
     PolizeiLogger.logger('rake').exception ex
   end
 end
+ActiveRecord::Base.logger = nil
 
 task :environment do
   ENV["RACK_ENV"] || 'development'
@@ -49,6 +50,12 @@ namespace :redshift do
     desc 'Rerun the query classification'
     task :reclassify do
       Jobs::Queries::AuditLog::Reclassify.run_persisted(0)
+    end
+
+    desc 'Rerun the query classification'
+    task :clear do
+      Models::Query.destroy_all
+      Models::AuditLogConfig.get.update!(last_update: 0)
     end
   end
 
