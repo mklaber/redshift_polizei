@@ -50,7 +50,7 @@ module Jobs
 
             unless search_vec.blank?
               q_query = q_query.where(
-                'to_tsvector(\'english\', queries.user::text) @@ plainto_tsquery(\'english\', ?) OR to_tsvector(\'english\', queries.query) @@ plainto_tsquery(\'english\', ?)',
+                'to_tsvector(\'english\', queries.user::text) @@ plainto_tsquery(\'english\', ?) OR to_tsvector(\'english\', left(queries.query, 16384)) @@ plainto_tsquery(\'english\', ?)',
                 search_vec, search_vec
               )
             end
@@ -70,7 +70,7 @@ module Jobs
             q_query = q_query.order(order_str)
           elsif !search_vec.blank?
             q_query = q_query.order(
-              "ts_rank_cd(to_tsvector(\'english\', queries.query), plainto_tsquery(\'english\', '#{Desmond::PGUtil.escape_string(search_vec)}')) desc")
+              "ts_rank_cd(to_tsvector(\'english\', left(queries.query, 16384)), plainto_tsquery(\'english\', '#{Desmond::PGUtil.escape_string(search_vec)}')) desc")
           end
           q_query = q_query.order('record_time desc')
           # get data

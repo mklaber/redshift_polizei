@@ -358,14 +358,14 @@ class Polizei < Sinatra::Application
 
   get '/permissions/user2tables' do
     {
-      permissions: Models::Permission.for_user(params[:value], Models::Table)
+      permissions: Models::Permission.for_user(params[:value], Models::Table, false)
     }.to_json
   end
 
   get '/permissions/group2tables' do
     {
       members: Models::DatabaseGroup.find_by!(name: params[:value]).users.order(:name),
-      permissions: Models::Permission.for_group(params[:value], Models::Table)
+      permissions: Models::Permission.for_group(params[:value], Models::Table, true)
     }.to_json
   end
 
@@ -373,7 +373,7 @@ class Polizei < Sinatra::Application
     schema_name, table_name = params[:value].split("-->")
     {
       owner: Models::Table.find_by_full_name(schema_name, table_name).owner,
-      permissions: Models::Permission.for_table(schema_name, table_name, Models::DatabaseUser)
+      permissions: Models::Permission.for_table(schema_name, table_name, Models::DatabaseUser, false)
     }.to_json
   end
 
@@ -381,7 +381,7 @@ class Polizei < Sinatra::Application
     schema_name, table_name = params[:value].split("-->")
     {
       owner: Models::Table.find_by_full_name(schema_name, table_name).owner,
-      permissions: Models::Permission.for_table(schema_name, table_name, Models::DatabaseGroup)
+      permissions: Models::Permission.for_table(schema_name, table_name, Models::DatabaseGroup, true)
     }.to_json
   end
 

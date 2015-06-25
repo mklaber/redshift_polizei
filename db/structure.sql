@@ -295,7 +295,8 @@ CREATE TABLE permissions (
     has_delete boolean NOT NULL,
     has_references boolean NOT NULL,
     created_at timestamp without time zone NOT NULL,
-    updated_at timestamp without time zone NOT NULL
+    updated_at timestamp without time zone NOT NULL,
+    declared boolean NOT NULL
 );
 
 
@@ -917,6 +918,13 @@ CREATE INDEX index_permissions_on_dbobject_type_and_dbobject_id ON permissions U
 
 
 --
+-- Name: index_permissions_on_declared; Type: INDEX; Schema: public; Owner: -; Tablespace: 
+--
+
+CREATE INDEX index_permissions_on_declared ON permissions USING btree (declared);
+
+
+--
 -- Name: index_permissions_on_entity_type_and_entity_id; Type: INDEX; Schema: public; Owner: -; Tablespace: 
 --
 
@@ -928,6 +936,13 @@ CREATE INDEX index_permissions_on_entity_type_and_entity_id ON permissions USING
 --
 
 CREATE INDEX index_permissions_on_updated_at ON permissions USING btree (updated_at);
+
+
+--
+-- Name: index_queries_on_logfile; Type: INDEX; Schema: public; Owner: -; Tablespace: 
+--
+
+CREATE INDEX index_queries_on_logfile ON queries USING btree (logfile);
 
 
 --
@@ -1032,14 +1047,14 @@ CREATE UNIQUE INDEX index_users_on_google_id ON users USING btree (google_id);
 -- Name: permissions_unique; Type: INDEX; Schema: public; Owner: -; Tablespace: 
 --
 
-CREATE UNIQUE INDEX permissions_unique ON permissions USING btree (entity_id, entity_type, dbobject_id, dbobject_type);
+CREATE UNIQUE INDEX permissions_unique ON permissions USING btree (entity_id, entity_type, dbobject_id, dbobject_type, declared);
 
 
 --
 -- Name: queries_query_fts_idx; Type: INDEX; Schema: public; Owner: -; Tablespace: 
 --
 
-CREATE INDEX queries_query_fts_idx ON queries USING gin (to_tsvector('english'::regconfig, query));
+CREATE INDEX queries_query_fts_idx ON queries USING gin (to_tsvector('english'::regconfig, "left"(query, 16384)));
 
 
 --
@@ -1092,6 +1107,12 @@ INSERT INTO schema_migrations (version) VALUES ('18');
 INSERT INTO schema_migrations (version) VALUES ('19');
 
 INSERT INTO schema_migrations (version) VALUES ('2');
+
+INSERT INTO schema_migrations (version) VALUES ('20');
+
+INSERT INTO schema_migrations (version) VALUES ('21');
+
+INSERT INTO schema_migrations (version) VALUES ('22');
 
 INSERT INTO schema_migrations (version) VALUES ('3');
 

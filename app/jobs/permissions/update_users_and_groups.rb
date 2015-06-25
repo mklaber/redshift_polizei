@@ -9,7 +9,7 @@ module Jobs
       def execute(job_id, user_id, options={})
         # retrieve the current list of users and groups from RedShift
         results = RSPool.with do |connection|
-          SQL.execute(connection, 'permissions/users_groups')
+          SQL.execute(connection, 'permissions/users_in_groups')
         end
         # update our local copy, at least touching them, so old entries can be deleted
         now = Time.now.utc
@@ -28,6 +28,13 @@ module Jobs
             rescue
               Que.log level: :error, message: "error while processing #{data}"
               raise
+            end
+            public_group = Models::DatabaseGroup.find_or_initialize_by(name: 'public')
+            public_group.update!(database_id: 0)
+            Models::DatabaseUser.all.each do |user|
+              unless Models::DatabaseGroupMemberships.where(user: user, group: public_group).exists?
+                Models::DatabaseGroupMemberships.create!(user: user, group: public_group)
+              end
             end
           end
         end

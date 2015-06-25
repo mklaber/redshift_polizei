@@ -18,7 +18,7 @@
   </ul>
   <div id="permissions_tab_content">
     <div class="tabbedMenuContent" id="user2tables">
-      <p><b>Select a user to view all tables they have access to.</b> Includes group rules of users.</p>
+      <p><b>Select a user to view all tables they have access to.</b> Includes group rules of users. If table is not listed, user has no access.</p>
       <form class="form-horizontal">
         <div class="form-group">
           <label for="user2tables_dd" class="col-sm-2 control-label">User</label>
@@ -41,7 +41,7 @@
     </div>
 
     <div class="tabbedMenuContent" id="group2tables">
-      <p><b>Select a group to view all tables the group has access to.</b></p>
+      <p><b>Select a group to view all tables the group has access to.</b> If table is not listed, group has no access.</p>
       <form class="form-horizontal">
         <div class="form-group">
           <label for="group2tables_dd" class="col-sm-2 control-label">Group</label>
@@ -64,7 +64,7 @@
     </div>
 
     <div class="tabbedMenuContent" id="table2users">
-      <p><b>Select a table to view all users with access to it.</b> Includes group rules of users.</p>
+      <p><b>Select a table to view all users with access to it.</b> Includes group rules of users. If user is not listed, he has no access to the selected table.</p>
       <form class="form-horizontal">
         <div class="form-group">
           <label for="table2users_dd" class="col-sm-2 control-label">Table</label>
@@ -87,7 +87,7 @@
     </div>
 
     <div class="tabbedMenuContent" id="table2groups">
-      <p><b>Select a table to view all groups with access to it.</b></p>
+      <p><b>Select a table to view all groups with access to it.</b> If group is not listed, it has no access to the selected table.</p>
       <form class="form-horizontal">
         <div class="form-group">
           <label for="table2groups_dd" class="col-sm-2 control-label">Table</label>
