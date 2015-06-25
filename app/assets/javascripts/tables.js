@@ -182,7 +182,7 @@ $(document).ready(function() {
     $(this).find('#restoreInputArchiveBucket').val(bucket);
     $(this).find('#restoreInputArchivePrefix').val(prefix);
   });
-  $('#encoding_modal').on('show.bs.modal', function (event) {
+  $('#regenerate_modal').on('show.bs.modal', function (event) {
     var button = $(event.relatedTarget);
     var schema = button.attr('data-schema-name');
     var table = button.attr('data-table-name');
