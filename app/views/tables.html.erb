@@ -206,23 +206,20 @@
   </div>
 </div>
 
-<!-- Column Encodings Modal -->
+<!-- Regenerate Table Modal -->
 <div class="modal fade" id="encoding_modal" tabindex="-1" role="dialog" aria-labelledby="encodingLabel" aria-hidden="true">
   <div class="modal-dialog">
     <div class="modal-content">
-      <form id="encodingForm" class="form-horizontal" role="form" method="POST" action="<%= url '/tables/encoding' %>" style="margin-top: 10px;">
+      <form id="encodingForm" class="form-horizontal" role="form" method="POST" action="<%= url '/tables/regenerate' %>" style="margin-top: 10px;">
         <div class="modal-header">
           <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-          <h4 class="modal-title" id="encodingLabel">Recompute Column Encodings</h4>
+          <h4 class="modal-title" id="encodingLabel">Regenerate Table</h4>
         </div>
         <div class="modal-body">
           <div class="alert alert-danger" role="alert">
             <p><strong>WARNING: </strong>This will archive the database table, and restore it with column encodings that Redshift recommends.
               The table will be unavailable for some time while this happens.
               Currently does NOT support tables with constraints or foreign keys! Will NOT restore permissions as of now!</p>
-          </div>
-          <div class="alert alert-info" role="alert">
-            <p>The table has to have more than 100,000 rows to have any effect</p>
           </div>
           <div class="form-group">
             <label for="encodingInputSchema" class="col-sm-4 control-label">Schema Name:</label>
@@ -232,6 +229,68 @@
             <label for="encodingInputTable" class="col-sm-4 control-label">Table Name:</label>
             <div class="col-sm-8">
               <input readonly type="text" id="encodingInputTable" name="table" value="ERROR: TABLE NAME NOT FOUND" class="form-control">
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="col-sm-4 control-label">Column Encodings:</label>
+            <div class="col-sm-8 btn-group" data-toggle="buttons">
+              <label class="btn btn-default active" data-toggle="tooltip"
+                     title="Recompute optimal encodings for each column. Only valid for tables with more than 100,000 rows.">
+                <input class="form-control" type="radio" name="colEncode" value="recompute">Recompute
+              </label>
+              <label class="btn btn-default" data-toggle="tooltip"
+                     title="Use the current column encodings.">
+                <input class="form-control" type="radio" name="colEncode" value="keepCurrent">Keep Current
+              </label>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="col-sm-4 control-label">Distribution Style:</label>
+            <div class="col-sm-8 btn-group" data-toggle="buttons">
+              <label class="btn btn-default active" data-toggle="tooltip"
+                     title="Distribute rows across nodes evenly, regardless of values.">
+                <input class="form-control" type="radio" name="distStyle" value="EVEN">Even
+              </label>
+              <label class="btn btn-default" data-toggle="tooltip"
+                     title="Distribute rows based on the value of a specified column.">
+                <input class="form-control" type="radio" name="distStyle" value="KEY">Key
+              </label>
+              <label class="btn btn-default" data-toggle="tooltip"
+                     title="Store a copy of the entire table at each node.">
+                <input class="form-control" type="radio" name="distStyle" value="ALL">All
+              </label>
+            </div>
+            <div class="collapse" id="distKeySelection">
+              <label for="distKey" class="col-sm-4 control-label">Distribute On:</label>
+              <div class="col-sm-8">
+                <input type="text" class="form-control" name="distKey" id="distKey" placeholder="key" value="">
+              </div>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="col-sm-4 control-label">Sort Style:</label>
+            <div class="col-sm-8 btn-group" data-toggle="buttons">
+              <label class="btn btn-default active">
+                <input class="form-control" type="radio" name="sortStyle" value="<UNSORTED>">Unsorted
+              </label>
+              <label class="btn btn-default" data-toggle="tooltip"
+                     title="Store data based on the values of a specified column.">
+                <input class="form-control" type="radio" name="sortStyle" value="">Single
+              </label>
+              <label class="btn btn-default" data-toggle="tooltip"
+                     title="Store data based on the values of the specified sort keys, in the order that they are listed.">
+                <input class="form-control" type="radio" name="sortStyle" value="COMPOUND">Compound
+              </label>
+              <label class="btn btn-default" data-toggle="tooltip"
+                     title="Store data such that every specified sort key has equal importance.">
+                <input class="form-control" type="radio" name="sortStyle" value="INTERLEAVED">Interleaved
+              </label>
+            </div>
+            <div class="collapse" id="sortKeySelection">
+              <label for="sortKeys" class="col-sm-4 control-label">Sort By:</label>
+              <div class="col-sm-8">
+                <input type="text" class="form-control" name="sortKeys" id="sortKeys" value="">
+              </div>
             </div>
           </div>
           <div class="form-group">
@@ -253,7 +312,7 @@
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
-          <button type="submit" class="btn btn-warning" id="encoding_submit">Recompute Encodings</button>
+          <button type="submit" class="btn btn-warning" id="encoding_submit">Regenerate Table</button>
         </div>
       </form>
     </div>
@@ -338,7 +397,7 @@
                   <li data-toggle="modal" data-target="#archive_modal" data-schema-name="<%= row['schema_name'] %>"
                       data-table-name="<%= row['table_name'] %>"><a>Archive Table...</a></li>
                   <li data-toggle="modal" data-target="#encoding_modal" data-schema-name="<%= row['schema_name'] %>"
-                      data-table-name="<%= row['table_name'] %>"><a>Column Encodings...</a></li>
+                      data-table-name="<%= row['table_name'] %>"><a>Regenerate Table...</a></li>
                 </ul>
               </div>
             </td>

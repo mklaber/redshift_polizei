@@ -8,7 +8,7 @@ module Jobs
   # Please see `BaseJob` class documentation on how to run
   # any job using its general interface.
   #
-  class RecomputeEncodingJob < Desmond::BaseJobNoJobId
+  class RegenerateTableJob < Desmond::BaseJobNoJobId
     ##
     # runs a job that recomputes the column encodings for a table
     #
@@ -28,6 +28,7 @@ module Jobs
     # the following +options+ are additionally supported:
     # - db
     #   - timeout: connection timeout to database
+    # TODO: additional options for archiving
     # - redshift: options for how Redshift should UNLOAD and COPY
     #   - allowoverwrite: if true, will use the ALLOWOVERWRITE unload option
     #   - gzip: if true, will use GZIP
@@ -36,8 +37,23 @@ module Jobs
     #   - null_as: string to use for NULL AS
     #
     def execute(job_id, user_id, options={})
+      fail 'No database options!' if options[:db].nil?
+      fail 'No s3 options!' if options[:s3].nil?
+
+      # ensure dist key and sort keys are available for the table
+      conn = Desmond::PGUtil.dedicated_connection(options[:db])
+      schema = options[:db][:schema]
+      table = options[:db][:table]
+      avail_keys = TableUtils.get_columns(conn, {schema_name: schema, table_name: table})["#{schema}.#{table}"].map {|k| k['name']}
+      dist_key = options[:db][:distkey_override]
+      fail "Distribution key #{dist_key} not found. Keys Available: #{avail_keys}" unless dist_key.nil? or avail_keys.include?(dist_key)
+      sort_keys = options[:db][:sortkeys_override]
+      sort_keys.each do |key|
+        fail "Sort key #{key} not found. Keys Available: #{avail_keys}" unless avail_keys.include?(key)
+      end unless sort_keys.nil?
+
       # set up common options for archiving and restoring
-      options = options.deep_merge({db: {skip_drop: false, auto_encode: true} })
+      options = options.deep_merge({db: {skip_drop: false} })
       unless options[:redshift].nil?
         quotes = options[:redshift][:quotes]
         unload_options = {addquotes: quotes}.merge(options[:redshift])
@@ -57,8 +73,8 @@ module Jobs
     # in case of success
     #
     def success(job_run, job_id, user_id, options={})
-      subject = 'Recomputing column encoding succeeded'
-      body = "Succeeded in recomputing column encodings for  #{options[:db][:schema]}.#{options[:db][:table]}"
+      subject = 'Regenerating table succeeded'
+      body = "Succeeded in regenerating table #{options[:db][:schema]}.#{options[:db][:table]}"
       mail(options[:email], subject, body, options.fetch('mail', {}))
     end
 
@@ -66,8 +82,8 @@ module Jobs
     # in case of error
     #
     def error(job_run, job_id, user_id, options={})
-      subject = 'ERROR: Recomputing column encodings failed'
-      body = "Failed to recompute column encodings for #{options[:db][:schema]}.#{options[:db][:table]}
+      subject = 'ERROR: Regenerating table failed'
+      body = "Failed to regenerate table #{options[:db][:schema]}.#{options[:db][:table]}
 The following error description might be helpful: '#{job_run.error}'"
 
       mail_options = {

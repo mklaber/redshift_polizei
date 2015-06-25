@@ -271,20 +271,30 @@ class Polizei < Sinatra::Application
     redirect to('/tables')
   end
 
-  post '/tables/encoding' do
+  post '/tables/regenerate' do
     email_list = validate_email_list("#{current_user.email}, #{params[:email]}")
     time = Time.now.utc.strftime('%Y_%m_%dT%H_%M_%S_%LZ')
     bucket = GlobalConfig.polizei('aws_archive_bucket')
     prefix = "#{params[:schema]}/#{params[:table]}/#{time}-"
     access_key = GlobalConfig.polizei('aws_access_key_id')
     secret_key = GlobalConfig.polizei('aws_secret_access_key')
-    Jobs::RecomputeEncodingJob.enqueue(current_user.id,
+    auto_encode = params[:colEncode] == 'recompute'
+    dist_style = params[:distStyle]
+    dist_key = dist_style == 'KEY' ? params[:distKey].strip : nil
+    sort_style = params[:sortStyle] != '<UNSORTED' ? params[:sortStyle] : nil
+    sort_keys = sort_style != nil ? params[:sortKeys].split(',').map(&:strip) : []
+    Jobs::RegenerateTableJob.enqueue(current_user.id,
                              db: {
                                  connection_id: "redshift_#{Sinatra::Application.environment}",
                                  username: params[:redshift_username],
                                  password: params[:redshift_password],
                                  schema: params[:schema],
-                                 table: params[:table]
+                                 table: params[:table],
+                                 auto_encode: auto_encode,
+                                 diststyle_override: dist_style,
+                                 distkey_override: dist_key,
+                                 sortstyle_override: sort_style,
+                                 sortkeys_override: sort_keys,
                              },
                              s3: {
                                  access_key_id: access_key,

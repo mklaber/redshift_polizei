@@ -1,4 +1,7 @@
 $(document).ready(function() {
+  // initialize tooltips
+  $('[data-toggle=tooltip]').tooltip();
+
   // show relative or absolute date of last data update
   var last_update_container = $('#last_update');
   var last_update = $('#last_update_store').text();
@@ -193,6 +196,28 @@ $(document).ready(function() {
   });
   $('#restoreForm').submit(function () {
     $('#restore_modal').modal('hide')
+  });
+
+  // show/hide additional inputs on Regenerate modal
+  $("input[type=radio][name=distStyle]").on('change', function() {
+    if (this.value == 'KEY') {
+      $('#distKeySelection').show();
+    } else {
+      $('#distKeySelection').hide();
+    }
+  });
+  $("input[type=radio][name=sortStyle]").on('change', function() {
+    var selector = $('#sortKeySelection');
+    var inp = $('#sortKeys');
+    if (this.value == '') {
+      selector.show();
+      inp.attr('placeholder', 'key');
+    } else if (this.value == 'COMPOUND' || this.value == 'INTERLEAVED') {
+      selector.show();
+      inp.attr("placeholder", "key1, key2");
+    } else {
+      selector.hide();
+    }
   });
 
 });
