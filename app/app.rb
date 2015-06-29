@@ -280,8 +280,15 @@ class Polizei < Sinatra::Application
     secret_key = GlobalConfig.polizei('aws_secret_access_key')
     auto_encode = params[:colEncode] == 'recompute'
     dist_style = params[:distStyle]
-    dist_key = dist_style == 'KEY' ? params[:distKey].strip : nil
-    sort_style = params[:sortStyle] != '<UNSORTED' ? params[:sortStyle] : nil
+    dist_key = dist_style == 'key' ? params[:distKey].strip : nil
+    sort_style = case params[:sortStyle]
+                   when 'single'
+                     ''
+                   when 'compound', 'interleaved'
+                     params[:sortStyle]
+                   else
+                     nil
+                 end
     sort_keys = sort_style != nil ? params[:sortKeys].split(',').map(&:strip) : []
     Jobs::RegenerateTableJob.enqueue(current_user.id,
                              db: {

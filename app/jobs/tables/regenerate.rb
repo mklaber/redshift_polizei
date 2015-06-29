@@ -46,7 +46,7 @@ module Jobs
       table = options[:db][:table]
       avail_keys = TableUtils.get_columns(conn, {schema_name: schema, table_name: table})["#{schema}.#{table}"].map {|k| k['name']}
       dist_key = options[:db][:distkey_override]
-      fail "Distribution key #{dist_key} not found. Keys Available: #{avail_keys}" unless dist_key.nil? or avail_keys.include?(dist_key)
+      fail "Distribution key #{dist_key} not found. Keys Available: #{avail_keys}" unless dist_key.nil? || avail_keys.include?(dist_key)
       sort_keys = options[:db][:sortkeys_override]
       sort_keys.each do |key|
         fail "Sort key #{key} not found. Keys Available: #{avail_keys}" unless avail_keys.include?(key)

@@ -235,12 +235,12 @@
             <label class="col-sm-4 control-label">Column Encodings:</label>
             <div class="col-sm-8 btn-group" data-toggle="buttons">
               <label class="btn btn-default active" data-toggle="tooltip"
-                     title="Recompute optimal encodings for each column. Only valid for tables with more than 100,000 rows.">
-                <input class="form-control" type="radio" name="colEncode" value="recompute">Recompute
+                     title="Use the current column encodings.">
+                <input class="form-control" type="radio" name="colEncode" value="keepCurrent" checked>Keep Current
               </label>
               <label class="btn btn-default" data-toggle="tooltip"
-                     title="Use the current column encodings.">
-                <input class="form-control" type="radio" name="colEncode" value="keepCurrent">Keep Current
+                     title="Recompute optimal encodings for each column. Only valid for tables with more than 100,000 rows.">
+                <input class="form-control" type="radio" name="colEncode" value="recompute">Recompute
               </label>
             </div>
           </div>
@@ -249,15 +249,15 @@
             <div class="col-sm-8 btn-group" data-toggle="buttons">
               <label class="btn btn-default active" data-toggle="tooltip"
                      title="Distribute rows across nodes evenly, regardless of values.">
-                <input class="form-control" type="radio" name="distStyle" value="EVEN">Even
+                <input class="form-control" type="radio" name="distStyle" value="even" checked>Even
               </label>
               <label class="btn btn-default" data-toggle="tooltip"
                      title="Distribute rows based on the value of a specified column.">
-                <input class="form-control" type="radio" name="distStyle" value="KEY">Key
+                <input class="form-control" type="radio" name="distStyle" value="key">Key
               </label>
               <label class="btn btn-default" data-toggle="tooltip"
                      title="Store a copy of the entire table at each node.">
-                <input class="form-control" type="radio" name="distStyle" value="ALL">All
+                <input class="form-control" type="radio" name="distStyle" value="all">All
               </label>
             </div>
             <div class="collapse" id="distKeySelection">
@@ -271,19 +271,19 @@
             <label class="col-sm-4 control-label">Sort Style:</label>
             <div class="col-sm-8 btn-group" data-toggle="buttons">
               <label class="btn btn-default active">
-                <input class="form-control" type="radio" name="sortStyle" value="<UNSORTED>">Unsorted
+                <input class="form-control" type="radio" name="sortStyle" value="unsorted" checked>Unsorted
               </label>
               <label class="btn btn-default" data-toggle="tooltip"
                      title="Store data based on the values of a specified column.">
-                <input class="form-control" type="radio" name="sortStyle" value="">Single
+                <input class="form-control" type="radio" name="sortStyle" value="single">Single
               </label>
               <label class="btn btn-default" data-toggle="tooltip"
                      title="Store data based on the values of the specified sort keys, in the order that they are listed.">
-                <input class="form-control" type="radio" name="sortStyle" value="COMPOUND">Compound
+                <input class="form-control" type="radio" name="sortStyle" value="compound">Compound
               </label>
               <label class="btn btn-default" data-toggle="tooltip"
                      title="Store data such that every specified sort key has equal importance.">
-                <input class="form-control" type="radio" name="sortStyle" value="INTERLEAVED">Interleaved
+                <input class="form-control" type="radio" name="sortStyle" value="interleaved">Interleaved
               </label>
             </div>
             <div class="collapse" id="sortKeySelection">
@@ -397,7 +397,17 @@
                   <li data-toggle="modal" data-target="#archive_modal" data-schema-name="<%= row['schema_name'] %>"
                       data-table-name="<%= row['table_name'] %>"><a>Archive Table...</a></li>
                   <li data-toggle="modal" data-target="#regenerate_modal" data-schema-name="<%= row['schema_name'] %>"
-                      data-table-name="<%= row['table_name'] %>"><a>Regenerate Table...</a></li>
+                      data-table-name="<%= row['table_name'] %>" data-dist-style="<%= row['dist_style'] %>"
+                      data-dist-key="<%= row['dist_key'] %>"
+                      data-sort-style="<%= case row['sort_keys'].length
+                                             when 0
+                                               'unsorted'
+                                             when 1
+                                               'single'
+                                             else
+                                               'compound'
+                                           end %>"
+                      data-sort-keys="<%= row['sort_keys'].join(', ') %>"><a>Regenerate Table...</a></li>
                 </ul>
               </div>
             </td>

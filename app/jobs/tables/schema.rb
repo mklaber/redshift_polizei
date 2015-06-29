@@ -159,7 +159,7 @@ You can view it in your browser by using this link: #{view_url}"
         table_dependencies = dependencies[full_table_name] || Set.new
 
         # make sure we have the data for all dependencies
-        unless table_names.superset?(table_dependencies) or options[:export_single_table]
+        unless table_names.superset?(table_dependencies) || options[:export_single_table]
           table_dependencies.each do |table_dependency|
             schema_name, table_name = deconstruct_full_table_name(table_dependency)
             tables += get_tables_data_with_dependencies(connection,
@@ -262,10 +262,10 @@ You can view it in your browser by using this link: #{view_url}"
         end
       end.join(",\n")
       structure_sql  += "\n)\n"
-      structure_sql  += "DISTSTYLE #{diststyle}\n" unless diststyle.nil? or diststyle.empty?
-      structure_sql  += "DISTKEY (#{distkey_sql})\n" unless distkey.nil? or distkey.empty?
-      structure_sql  += "#{sortstyle} " unless sortstyle.nil? or sortstyle.empty?
-      structure_sql  += "SORTKEY (#{sortkeys_sql})\n" unless sortkeys.nil? or sortkeys.empty?
+      structure_sql  += "DISTSTYLE #{Desmond::PGUtil.escape_string(diststyle)}\n" unless diststyle.nil? || diststyle.empty?
+      structure_sql  += "DISTKEY (#{distkey_sql})\n" unless distkey.nil? || distkey.empty?
+      structure_sql  += "#{Desmond::PGUtil.escape_string(sortstyle)} " unless sortstyle.nil? || sortstyle.empty?
+      structure_sql  += "SORTKEY (#{sortkeys_sql})\n" unless sortkeys.nil? || sortkeys.empty?
       structure_sql  += ';'
       structure_sql
     rescue => e
