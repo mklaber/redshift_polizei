@@ -8,9 +8,9 @@ GIT
 
 GIT
   remote: git@github.com:AnalyticsMediaGroup/desmond.git
-  revision: e5f673710aab65d514927310cb673defaa1305dc
+  revision: f1f7d3bdf43b93113976b30c88d40a033c23a927
   specs:
-    desmond (0.1.0)
+    desmond (0.2.0)
       activerecord (~> 4.2)
       activesupport (~> 4.2)
       aws-sdk-v1 (~> 1)
@@ -83,7 +83,7 @@ GEM
     chronic (0.10.2)
     coderay (1.1.0)
     connection_pool (2.2.0)
-    daemons (1.2.2)
+    daemons (1.2.3)
     diff-lcs (1.2.5)
     docile (1.1.5)
     email_spec (1.6.0)
@@ -104,7 +104,7 @@ GEM
     jmespath (1.0.2)
       multi_json (~> 1.0)
     jsmin (1.0.1)
-    json (1.8.2)
+    json (1.8.3)
     jwt (1.5.0)
     launchy (2.4.3)
       addressable (~> 2.3)
