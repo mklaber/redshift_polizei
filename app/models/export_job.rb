@@ -34,7 +34,7 @@ module Models
           col_sep: self.export_options['delimiter'],
           return_headers: self.export_options['include_header']
         }
-      }.merge(options))
+      }.deep_merge(options))
     end
 
     def self.test(user, options={})

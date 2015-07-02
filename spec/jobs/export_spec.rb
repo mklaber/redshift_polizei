@@ -18,9 +18,12 @@ describe Jobs::PolizeiExportJob do
       query: "SELECT * FROM #{table} order by id;",
       export_format: 'csv',
       export_options: { delimiter: '|' }
-    }.merge(model_options)).enqueue(enqueue_options[:user] || Models::User.first, @config[:export_username], @config[:export_password], { s3: {
-      bucket: @config[:export_bucket]
-    }}.merge(enqueue_options))
+    }.deep_merge(model_options)).enqueue(enqueue_options[:user] || Models::User.first, @config[:export_username], @config[:export_password], {
+      s3: {
+        bucket: @config[:export_bucket]
+      }, db: {
+        fetch_size: 100
+    }}.deep_merge(enqueue_options))
   ensure
     AWS::S3.new.buckets[@config[:export_bucket]].objects[run.filename].delete unless options[:donotdelete]
     c.exec("DROP TABLE IF EXISTS #{table}")
