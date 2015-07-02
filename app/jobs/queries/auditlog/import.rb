@@ -36,7 +36,7 @@ module Jobs
           unless file.nil?
             Dir.glob(file).sort_by { |f| File.mtime(f) }.reverse.each do |filename|
               tmp = File.open(filename, 'r')
-              choose_correct_files(filename, tmp.mtime, last_update, tmp, just_one, &block)
+              choose_correct_files(filename, tmp.mtime, last_update, tmp, &block)
             end
           else
             bucket  = AWS::S3.new.buckets[GlobalConfig.polizei('aws_redshift_audit_log_bucket')]
@@ -45,14 +45,21 @@ module Jobs
               objects = objects.select { |o| File.basename(o.key) == just_one }
             end
             # start from the newest and work our way back
-            tmp = objects.sort_by { |obj| obj.last_modified }.reverse
+            if just_one
+              tmp = objects
+            else
+              tmp = objects.sort_by { |obj| obj.last_modified }.reverse
+            end
             tmp.each do |obj|
-              choose_correct_files(obj.key, obj.last_modified, last_update, obj, just_one, &block)
+              if choose_correct_files(obj.key, obj.last_modified, last_update, obj, &block)
+                # only return if choose_correct_files returned true (actually imported the file)
+                return if just_one
+              end
             end
           end
         end
 
-        def choose_correct_files(full_path, last_modified, last_update, file_reader, just_one, &block)
+        def choose_correct_files(full_path, last_modified, last_update, file_reader, &block)
           filename       = full_path.split('/')[-1].split('.')[0] # gets rid of the path before the actual filename
           filename_parts = filename.split('_') # the filename contains several pieces of info
           cluster_name   = filename_parts[3]
@@ -71,7 +78,9 @@ module Jobs
             else
               block.call(StringIO.new(file_reader.read), full_path)
             end
-            return if just_one
+            return true
+          else
+            return false
           end
         rescue
           Que.log level: :error, message: "Error processing file '#{full_path}'"
