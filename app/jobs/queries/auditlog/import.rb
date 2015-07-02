@@ -82,6 +82,7 @@ module Jobs
           Que.log level: :info, message: "Importing #{logfile_name}"
           max_import_size = options[:max_import_size] || MAX_IMPORT_SIZE
           # read user activity log
+          readfirstquery = false
           lineno = 0
           columns = [ :record_time, :db, :user, :pid, :userid, :xid, :query_type, :query, :logfile ]
           import_options = { validate: false }
@@ -89,11 +90,12 @@ module Jobs
           reader.each_line do |line|
             lineno += 1
             if line.match("'[0-9]{4}\-[0-9]{2}\-[0-9]{2}T").nil?
-              next if lineno == 1 # the first line sometimes contains a single query, which makes the file corrupt
+              next unless readfirstquery # the first lines sometimes contain a single query, which makes the file corrupt without metadata
               # part of previous query => append to query
               raise "Corrupt file on line #{lineno} in file #{logfile_name}" if queries.empty?
               queries.last[7] += line
             else
+              readfirstquery = true
               metadata_end = line.index(']\'')
               raise "Unsupported line format on line #{lineno} in file #{logfile_name}" if metadata_end.nil?
               metadata = line[0, metadata_end]
