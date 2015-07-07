@@ -262,6 +262,6 @@ $(document).ready(function() {
     });
     // when shown, modal focus gets set to the first input
     $('.modal').on('shown.bs.modal', function () {
-        $(this).find('form').find('input:not([readonly])').first().focus();
+        $(this).find('form').find('input:visible:not([readonly]):first').focus();
     });
 });
