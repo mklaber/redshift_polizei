@@ -36,7 +36,7 @@ module Jobs
           unless file.nil?
             Dir.glob(file).sort_by { |f| File.mtime(f) }.reverse.each do |filename|
               tmp = File.open(filename, 'r')
-              choose_correct_files(filename, tmp.mtime, last_update, tmp, just_one, &block)
+              choose_correct_files(filename, tmp.mtime, last_update, tmp, &block)
             end
           else
             bucket  = AWS::S3.new.buckets[GlobalConfig.polizei('aws_redshift_audit_log_bucket')]
@@ -45,14 +45,21 @@ module Jobs
               objects = objects.select { |o| File.basename(o.key) == just_one }
             end
             # start from the newest and work our way back
-            tmp = objects.sort_by { |obj| obj.last_modified }.reverse
+            if just_one
+              tmp = objects
+            else
+              tmp = objects.sort_by { |obj| obj.last_modified }.reverse
+            end
             tmp.each do |obj|
-              choose_correct_files(obj.key, obj.last_modified, last_update, obj, just_one, &block)
+              if choose_correct_files(obj.key, obj.last_modified, last_update, obj, &block)
+                # only return if choose_correct_files returned true (actually imported the file)
+                return if just_one
+              end
             end
           end
         end
 
-        def choose_correct_files(full_path, last_modified, last_update, file_reader, just_one, &block)
+        def choose_correct_files(full_path, last_modified, last_update, file_reader, &block)
           filename       = full_path.split('/')[-1].split('.')[0] # gets rid of the path before the actual filename
           filename_parts = filename.split('_') # the filename contains several pieces of info
           cluster_name   = filename_parts[3]
@@ -71,7 +78,9 @@ module Jobs
             else
               block.call(StringIO.new(file_reader.read), full_path)
             end
-            return if just_one
+            return true
+          else
+            return false
           end
         rescue
           Que.log level: :error, message: "Error processing file '#{full_path}'"
@@ -82,6 +91,7 @@ module Jobs
           Que.log level: :info, message: "Importing #{logfile_name}"
           max_import_size = options[:max_import_size] || MAX_IMPORT_SIZE
           # read user activity log
+          readfirstquery = false
           lineno = 0
           columns = [ :record_time, :db, :user, :pid, :userid, :xid, :query_type, :query, :logfile ]
           import_options = { validate: false }
@@ -89,11 +99,12 @@ module Jobs
           reader.each_line do |line|
             lineno += 1
             if line.match("'[0-9]{4}\-[0-9]{2}\-[0-9]{2}T").nil?
-              next if lineno == 1 # the first line sometimes contains a single query, which makes the file corrupt
+              next unless readfirstquery # the first lines sometimes contain a single query, which makes the file corrupt without metadata
               # part of previous query => append to query
               raise "Corrupt file on line #{lineno} in file #{logfile_name}" if queries.empty?
               queries.last[7] += line
             else
+              readfirstquery = true
               metadata_end = line.index(']\'')
               raise "Unsupported line format on line #{lineno} in file #{logfile_name}" if metadata_end.nil?
               metadata = line[0, metadata_end]

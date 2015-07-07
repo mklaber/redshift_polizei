@@ -30,10 +30,12 @@ module Jobs
               u = @user_cache[data['username']]
               t = @table_cache[data['schema_name']][data['table_name']]
 
-              p = Models::Permission.new(entity: u, dbobject: t, declared: false)
-              p.update!(has_select: data['has_select'], has_insert: data['has_insert'],
-                has_update: data['has_update'], has_delete: data['has_delete'],
-                has_references: data['has_references'])
+              unless u.nil? || t.nil?
+                p = Models::Permission.new(entity: u, dbobject: t, declared: false)
+                p.update!(has_select: data['has_select'], has_insert: data['has_insert'],
+                  has_update: data['has_update'], has_delete: data['has_delete'],
+                  has_references: data['has_references'])
+              end
             rescue
               Que.log level: :error, message: "error while processing #{data}"
               raise
