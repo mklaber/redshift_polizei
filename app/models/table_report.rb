@@ -14,5 +14,6 @@ module Models
     # sort_keys              :json             not null
     # has_col_encodings      :boolean          not null
     # dist_style             :string(255)      null
+    # sort_style             :string(255)      null
   end
 end

@@ -46,10 +46,10 @@ class TableUtils
   end
 
   ##
-  # returns the distribution style of tables
+  # returns the distribution & sorting styles of tables
   #
-  def self.get_dist_styles(connection, table={})
-    tmp = execute_grouped_by_table(connection, 'tables/dist_style', table)
+  def self.get_sort_and_dist_styles(connection, table={})
+    tmp = execute_grouped_by_table(connection, 'tables/dist_sort_style', table)
     tmp.hmap do |full_table_name, dist_style_array|
       dist_style_array[0] # there is only one dist style, so don't return an array
     end

@@ -94,6 +94,28 @@ describe Jobs::TableReports do
     expect(report.dist_style).to eq('all')
   end
 
+  it 'should extract compound sort style' do
+    schema_name = @config[:export_schema]
+    table_name = "polizei_test_#{rand(1024)}"
+    report = create_and_return_report(
+      schema_name: schema_name,
+      table_name: table_name,
+      create_sql: "CREATE TABLE #{schema_name}.#{table_name}(id INT, txt VARCHAR) COMPOUND SORTKEY(id)"
+    )
+    expect(report.sort_style).to eq('compound')
+  end
+
+  it 'should extract compound sort style' do
+    schema_name = @config[:export_schema]
+    table_name = "polizei_test_#{rand(1024)}"
+    report = create_and_return_report(
+      schema_name: schema_name,
+      table_name: table_name,
+      create_sql: "CREATE TABLE #{schema_name}.#{table_name}(id INT, txt VARCHAR) INTERLEAVED SORTKEY(id)"
+    )
+    expect(report.sort_style).to eq('interleaved')
+  end
+
   it 'should extract column encodings' do
     schema_name = @config[:export_schema]
     table_name = "polizei_test_#{rand(1024)}"

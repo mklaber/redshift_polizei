@@ -18,6 +18,12 @@ $(document).ready(function() {
     $(this).find('span.relative').toggle();
   });
 
+  // sort style tooltips
+  $('span.label[data-toggle="tooltip"]').tooltip();
+  $('#tablereports').on('draw.dt', function() { // after rerender we need to reinitialize
+    $('span.label[data-toggle="tooltip"]').tooltip();
+  });
+
   // export schemas button
   $('#schema_export_submit').on('click', function(e) {
     $('#schema_export_submit').hide();

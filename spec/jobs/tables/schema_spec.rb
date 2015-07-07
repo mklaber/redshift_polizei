@@ -102,14 +102,6 @@ describe Jobs::TableStructureExportJob do
     expect(schema_sql).to eq(table_sql + "\n;")
   end
 
-  it 'should create schema from basic table with sort keys' do
-    table_name = new_table_name
-    table_sql = "CREATE TABLE #{schema_name}.\"#{table_name}\"(\n\t\"id\" integer NULL ENCODE raw,\n\t\"id2\" integer NULL ENCODE raw\n)\nDISTSTYLE all\nSORTKEY (\"id2\", \"id\")";
-    create_table(table_sql)
-    schema_sql = retrieve_schema(table_name)
-    expect(schema_sql).to eq(table_sql + "\n;")
-  end
-
   it 'should create schema from basic table with unique constraint' do
     table_name = new_table_name
     table_sql = "CREATE TABLE #{schema_name}.\"#{table_name}\"(\n\t\"id\" integer NULL ENCODE raw,\n\tUNIQUE (\"id\")\n)\nDISTSTYLE all";
@@ -149,6 +141,45 @@ describe Jobs::TableStructureExportJob do
       "\n\t\"id6\" integer NULL ENCODE raw,\n\t\"id7\" integer NULL ENCODE raw,"\
       "\n\t\"id8\" integer NULL ENCODE raw,\n\t\"id9\" integer NULL ENCODE raw,"\
       "\n\t\"id10\" integer NULL ENCODE raw\n)\nDISTSTYLE all";
+    create_table(table_sql)
+    schema_sql = retrieve_schema(table_name)
+    expect(schema_sql).to eq(table_sql + "\n;")
+  end
+
+  it 'should create schema from basic table with single sort key' do
+    table_name = new_table_name
+    table_sql = "CREATE TABLE #{schema_name}.\"#{table_name}\"(\n\t\"id\" integer NULL ENCODE raw\n)\nDISTSTYLE all\nCOMPOUND SORTKEY (\"id\")";
+    create_table(table_sql)
+    schema_sql = retrieve_schema(table_name)
+    expect(schema_sql).to eq(table_sql + "\n;")
+  end
+
+  it 'should create schema from basic table with compound sort style' do
+    table_name = new_table_name
+    table_sql = "CREATE TABLE #{schema_name}.\"#{table_name}\"(\n\t\"id\" integer NULL ENCODE raw,\n\t\"id2\" integer NULL ENCODE raw\n)\nDISTSTYLE all\nCOMPOUND SORTKEY (\"id\", \"id2\")";
+    create_table(table_sql)
+    schema_sql = retrieve_schema(table_name)
+    expect(schema_sql).to eq(table_sql + "\n;")
+  end
+
+  it 'should create schema from basic table with interleaved sort style' do
+    table_name = new_table_name
+    table_sql = "CREATE TABLE #{schema_name}.\"#{table_name}\"(\n\t\"id\" integer NULL ENCODE raw,\n\t\"id2\" integer NULL ENCODE raw\n)\nDISTSTYLE all\nINTERLEAVED SORTKEY (\"id\", \"id2\")";
+    create_table(table_sql)
+    schema_sql = retrieve_schema(table_name)
+    expect(schema_sql).to eq(table_sql + "\n;")
+  end
+
+  it 'should create schema from basic table with sort keys in right order' do
+    # first direction
+    table_name = new_table_name
+    table_sql = "CREATE TABLE #{schema_name}.\"#{table_name}\"(\n\t\"id\" integer NULL ENCODE raw,\n\t\"id2\" integer NULL ENCODE raw\n)\nDISTSTYLE all\nCOMPOUND SORTKEY (\"id\", \"id2\")";
+    create_table(table_sql)
+    schema_sql = retrieve_schema(table_name)
+    expect(schema_sql).to eq(table_sql + "\n;")
+    # reversed direction
+    table_name = new_table_name
+    table_sql = "CREATE TABLE #{schema_name}.\"#{table_name}\"(\n\t\"id\" integer NULL ENCODE raw,\n\t\"id2\" integer NULL ENCODE raw\n)\nDISTSTYLE all\nCOMPOUND SORTKEY (\"id2\", \"id\")";
     create_table(table_sql)
     schema_sql = retrieve_schema(table_name)
     expect(schema_sql).to eq(table_sql + "\n;")

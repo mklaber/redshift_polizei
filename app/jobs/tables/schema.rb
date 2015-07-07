@@ -90,7 +90,7 @@ You can view it in your browser by using this link: #{view_url}"
             tbl[:table_name],
             tbl[:columns],
             tbl[:constraints],
-            tbl[:dist_style],
+            tbl[:sort_dist_styles],
             tbl[:sort_dist_keys]
           )
 
@@ -137,10 +137,10 @@ You can view it in your browser by using this link: #{view_url}"
       # occasionally one of these queries can fail with the error:
       # relation with OID XXXX does not exist
       # see: http://www.postgresql.org/message-id/29508.1187413841@sss.pgh.pa.us
-      columns        = TableUtils.get_columns(connection, table)
-      constraints    = TableUtils.get_table_constraints(connection, table)
-      dist_style     = TableUtils.get_dist_styles(connection, table)
-      sort_dist_keys = TableUtils.get_sort_and_dist_keys(connection, table)
+      columns          = TableUtils.get_columns(connection, table)
+      constraints      = TableUtils.get_table_constraints(connection, table)
+      sort_dist_styles = TableUtils.get_sort_and_dist_styles(connection, table)
+      sort_dist_keys   = TableUtils.get_sort_and_dist_keys(connection, table)
 
       table_names    = Set.new(columns.keys)
       dependencies   = calculate_tables_dependencies(constraints)
@@ -166,7 +166,7 @@ You can view it in your browser by using this link: #{view_url}"
           dependencies: table_dependencies,
           columns: columns[full_table_name],
           constraints: constraints[full_table_name],
-          dist_style: dist_style[full_table_name],
+          sort_dist_styles: sort_dist_styles[full_table_name],
           sort_dist_keys: sort_dist_keys[full_table_name]
         }
       end
@@ -203,12 +203,13 @@ You can view it in your browser by using this link: #{view_url}"
     ##
     # rebuilds and returns the SQL to recreate the given table
     #
-    def build_sql(schema_name, table_name, columns, constraints, diststyle, sort_dist_keys)
+    def build_sql(schema_name, table_name, columns, constraints, sort_dist_styles, sort_dist_keys)
       constraints ||= []
       sort_dist_keys ||= {}
-      diststyle = diststyle['dist_style']
-      sortkeys = sort_dist_keys['sort_keys'] || []
-      distkey = sort_dist_keys['dist_key'] || nil
+      sortstyle = sort_dist_styles['sort_style']
+      diststyle = sort_dist_styles['dist_style']
+      sortkeys  = sort_dist_keys['sort_keys'] || []
+      distkey   = sort_dist_keys['dist_key'] || nil
 
       schema_name_sql = self.class.escape_rs_identifier(schema_name)
       table_name_sql  = self.class.escape_rs_identifier(table_name)
@@ -247,9 +248,10 @@ You can view it in your browser by using this link: #{view_url}"
         end
       end.join(",\n")
       structure_sql  += "\n)\n"
-      structure_sql  += "DISTSTYLE #{diststyle}\n"
-      structure_sql  += "DISTKEY (#{distkey_sql})\n" unless distkey.nil?
-      structure_sql  += "SORTKEY (#{sortkeys_sql})\n" unless sortkeys.empty?
+      structure_sql  += "DISTSTYLE #{Desmond::PGUtil.escape_string(diststyle)}\n" unless diststyle.nil? || diststyle.empty?
+      structure_sql  += "DISTKEY (#{distkey_sql})\n" unless distkey.nil? || distkey.empty?
+      structure_sql  += "#{Desmond::PGUtil.escape_string(sortstyle.upcase)} " unless sortstyle.nil? || sortstyle.empty?
+      structure_sql  += "SORTKEY (#{sortkeys_sql})\n" unless sortkeys.nil? || sortkeys.empty?
       structure_sql  += ';'
       structure_sql
     rescue => e

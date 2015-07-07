@@ -67,27 +67,26 @@ module Jobs
     def get_table_reports(connection, table)
       statistics = TableUtils.get_size_skew_populated(connection, table)
       col_encodings = TableUtils.has_column_encodings(connection, table)
-      dist_styles = TableUtils.get_dist_styles(connection, table)
+      sort_dist_styles = TableUtils.get_sort_and_dist_styles(connection, table)
       sort_dist_keys = TableUtils.get_sort_and_dist_keys(connection, table)
 
       statistics.hmap do |full_table_name, stats|
         begin
-          r = stats[0] # TODO this can fail???, stats is sometimes nil, why?
-          col_encoding = col_encodings[full_table_name] || false
-          dist_style = dist_styles[full_table_name] || {}
-          sort_dist_key = sort_dist_keys[full_table_name] || {}
-          sort_key = sort_dist_key['sort_keys'] || []
-          dist_key = sort_dist_key['dist_key']
+          r = stats[0]
+          col_encoding    = col_encodings[full_table_name] || false
+          sort_dist_style = sort_dist_styles[full_table_name] || {}
+          sort_dist_key   = sort_dist_keys[full_table_name] || {}
           {
             schema_name: r['schema_name'].strip,
             table_name: r['table_name'].strip,
             table_id: r['table_id'].to_i,
-            dist_style: dist_style['dist_style'],
+            dist_style: sort_dist_style['dist_style'],
+            sort_style: sort_dist_style['sort_style'],
             size_in_mb: r['size_in_mb'].to_i,
             pct_skew_across_slices: r['pct_skew_across_slices'].to_f,
             pct_slices_populated: r['pct_slices_populated'].to_f,
-            sort_keys: sort_key.to_json,
-            dist_key: dist_key,
+            sort_keys: (sort_dist_key['sort_keys'] || []).to_json,
+            dist_key: sort_dist_key['dist_key'],
             has_col_encodings: col_encoding
           }
         end
