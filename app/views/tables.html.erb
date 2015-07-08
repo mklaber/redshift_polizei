@@ -350,7 +350,7 @@
             <td>
               <% if row['sort_keys'].present? %>
                   <%= row['sort_keys'].collect{|k|
-                    "<span class='label label-#{(k == row['sort_keys'].first ? 'primary' : 'info')}' data-toggle='tooltip' data-placement='top' title='#{row['sort_style'].upcase}'>#{k}</span>"
+                    "<span class='label label-#{(k == row['sort_keys'].first ? 'primary' : 'info')}' data-toggle='tooltip' data-placement='top' title='#{row['sort_style'].try(:upcase)}'>#{k}</span>"
                   }.join('<br />') %>
               <% else %>
                   <span class="label label-danger">None!</span>
