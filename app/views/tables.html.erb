@@ -396,16 +396,18 @@
                 <ul class="dropdown-menu" style="right: 0; left: auto;" role="menu">
                   <li data-toggle="modal" data-target="#archive_modal" data-schema-name="<%= row['schema_name'] %>"
                       data-table-name="<%= row['table_name'] %>"><a>Archive Table...</a></li>
-                  <li data-toggle="modal" data-target="#regenerate_modal" data-schema-name="<%= row['schema_name'] %>"
-                      data-table-name="<%= row['table_name'] %>" data-dist-style="<%= row['dist_style'] %>"
+                  <li data-toggle="modal" data-target="#regenerate_modal"
+                      data-schema-name="<%= row['schema_name'] %>"
+                      data-table-name="<%= row['table_name'] %>"
+                      data-dist-style="<%= row['dist_style'] %>"
                       data-dist-key="<%= row['dist_key'] %>"
-                      data-sort-style="<%= case row['sort_keys'].length
-                                             when 0
+                      data-sort-style="<%= case row['sort_style']
+                                             when nil
                                                'unsorted'
-                                             when 1
-                                               'single'
+                                             when 'compound'
+                                               (row['sort_keys'].length == 1) ? 'single' : 'compound'
                                              else
-                                               'compound'
+                                               row['sort_style']
                                            end %>"
                       data-sort-keys="<%= row['sort_keys'].join(', ') %>"><a>Regenerate Table...</a></li>
                 </ul>

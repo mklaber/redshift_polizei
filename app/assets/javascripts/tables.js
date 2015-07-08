@@ -202,7 +202,6 @@ $(document).ready(function() {
     $(this).find("input[name=distStyle][value!=" + distStyle + "]").parent().removeClass('active');
     var distKey = button.attr('data-dist-key');
     $(this).find('input[name=distKey]').val(distKey);
-    // TODO: support interleaved sort style
     var sortStyle = button.attr('data-sort-style');
     $(this).find("input[name=sortStyle][value=" + sortStyle + "]").change();
     $(this).find("input[name=sortStyle][value=" + sortStyle + "]").prop('checked', true);
