@@ -63,10 +63,10 @@ module Jobs
       end
 
       # archive
-      Jobs::ArchiveJob.run(job_id, user_id, options)
+      Jobs::ArchiveJob.run(job_id, user_id, options.merge({email: nil}))
 
       # restore
-      Jobs::RestoreJob.run(job_id, user_id, options)
+      Jobs::RestoreJob.run(job_id, user_id, options.merge({email: nil}))
     end
 
     ##

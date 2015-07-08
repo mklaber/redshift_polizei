@@ -67,8 +67,9 @@ module Jobs
       table_info = {}
       unless tbl.nil?
         table_info[:size_in_mb] = tbl.size_in_mb
-        table_info[:dist_key] = tbl.dist_key
         table_info[:dist_style] = tbl.dist_style
+        table_info[:dist_key] = tbl.dist_key
+        table_info[:sort_style] = tbl.sort_style
         table_info[:sort_keys] = tbl.sort_keys
         table_info[:has_col_encodings] = tbl.has_col_encodings
       end
@@ -79,19 +80,20 @@ module Jobs
 
       # run a TableStructureExportJob
       ddl_s3_key = "#{archive_prefix}ddl"
-      Jobs::TableStructureExportJob.run(job_id, user_id, {
-                                                  schema_name: schema_name,
-                                                  table_name: table_name,
-                                                  export_single_table: true,
-                                                  s3_bucket: archive_bucket,
-                                                  s3_key: ddl_s3_key,
-                                                  no_column_encoding: options[:db][:auto_encode],
-                                                  diststyle_override: options[:db][:diststyle_override],
-                                                  distkey_override: options[:db][:distkey_override],
-                                                  sortstyle_override: options[:db][:sortstyle_override],
-                                                  sortkeys_override: options[:db][:sortkeys_override],
-                                                  mail: {nomailer: true}
-                                              })
+      structure_options = {
+          schema_name: schema_name,
+          table_name: table_name,
+          export_single_table: true,
+          s3_bucket: archive_bucket,
+          s3_key: ddl_s3_key,
+          mail: {nomailer: true}
+      }
+      structure_options.merge!({no_column_encoding: options[:db][:auto_encode]}) if options[:db].key?(:auto_encode)
+      structure_options.merge!({diststyle_override: options[:db][:diststyle_override]}) if options[:db].key?(:diststyle_override)
+      structure_options.merge!({distkey_override: options[:db][:distkey_override]}) if options[:db].key?(:distkey_override)
+      structure_options.merge!({sortstyle_override: options[:db][:sortstyle_override]}) if options[:db].key?(:sortstyle_override)
+      structure_options.merge!({sortkeys_override: options[:db][:sortkeys_override]}) if options[:db].key?(:sortkeys_override)
+      Jobs::TableStructureExportJob.run(job_id, user_id, structure_options)
       ddl_obj = AWS::S3.new.buckets[archive_bucket].objects[ddl_s3_key]
       fail 'Failed to export DDL!' unless ddl_obj.exists?
       # ensure TableStructureExportJob outputted a single CREATE TABLE statement
@@ -132,7 +134,7 @@ module Jobs
     def success(job_run, job_id, user_id, options={})
       subject = "Archive succeeded"
       body = "Succeeded in archiving #{options[:db][:schema]}.#{options[:db][:table]}"
-      mail(options[:email], subject, body, options.fetch('mail', {}))
+      mail(options[:email], subject, body, options.fetch('mail', {})) unless options[:email].nil?
     end
 
     ##
@@ -147,7 +149,7 @@ The following error description might be helpful: '#{job_run.error}'"
           cc: GlobalConfig.polizei('job_failure_cc'),
           bcc: GlobalConfig.polizei('job_failure_bcc')
       }.merge(options.fetch('mail', {}))
-      mail(options[:email], subject, body, mail_options)
+      mail(options[:email], subject, body, mail_options) unless options[:email].nil?
     end
 
     private
