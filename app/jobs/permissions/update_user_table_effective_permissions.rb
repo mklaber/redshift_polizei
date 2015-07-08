@@ -4,7 +4,6 @@ module Jobs
     # Updates user table permissions defined in RedShift
     #
     class UpdateUserTableEffectivePermissions < Base
-      extend Jobs::BaseReportNoJobId
 
       #
       # this touches a lot of rows on each run (cross join of users and tables, starts at 60000 for us),

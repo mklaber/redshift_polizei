@@ -9,7 +9,6 @@ module Jobs
       # Job importing new queries into local audit log
       #
       class Import < Desmond::BaseJobNoJobId
-        extend Jobs::BaseReportNoJobId
 
         def execute(job_id, user_id, options={})
           Jobs::Queries::AuditLog::EnforceRetention.run(user_id)

@@ -4,7 +4,6 @@ module Jobs
     # Updates group table permissions defined in RedShift
     #
     class UpdateGroupTableDeclaredPermissions < Base
-      extend Jobs::BaseReportNoJobId
 
       def execute(job_id, user_id, options={})
         # retrieve group table permissions from RedShift

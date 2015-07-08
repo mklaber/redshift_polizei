@@ -5,7 +5,6 @@ module Jobs
       # Job deleting old audit log queries locally
       #
       class EnforceRetention < Desmond::BaseJobNoJobId
-        extend Jobs::BaseReportNoJobId
         
         def execute(job_id, user_id, options={})
           timestamp_now = Time.now.to_i

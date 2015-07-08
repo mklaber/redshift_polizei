@@ -4,7 +4,6 @@ module Jobs
     # Updates the local list of users and groups exisitng in RedShift
     #
     class UpdateUsersAndGroups < Desmond::BaseJobNoJobId
-      extend Jobs::BaseReportNoJobId
       
       def execute(job_id, user_id, options={})
         # retrieve the current list of users and groups from RedShift
