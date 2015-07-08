@@ -458,7 +458,8 @@ CREATE TABLE table_archives (
     sort_keys json,
     has_col_encodings boolean,
     created_at timestamp without time zone,
-    updated_at timestamp without time zone
+    updated_at timestamp without time zone,
+    sort_style character varying
 );
 
 
@@ -1116,6 +1117,8 @@ INSERT INTO schema_migrations (version) VALUES ('21');
 INSERT INTO schema_migrations (version) VALUES ('22');
 
 INSERT INTO schema_migrations (version) VALUES ('23');
+
+INSERT INTO schema_migrations (version) VALUES ('24');
 
 INSERT INTO schema_migrations (version) VALUES ('3');
 

@@ -119,7 +119,7 @@ module Jobs
     def success(job_run, job_id, user_id, options={})
       subject = "Restore succeeded"
       body = "Succeeded in restoring #{options[:db][:schema]}.#{options[:db][:table]}"
-      mail(options[:email], subject, body, options.fetch('mail', {}))
+      mail(options[:email], subject, body, options.fetch('mail', {})) unless options[:email].nil?
     end
 
     ##
@@ -134,7 +134,7 @@ The following error description might be helpful: '#{job_run.error}'"
           cc: GlobalConfig.polizei('job_failure_cc'),
           bcc: GlobalConfig.polizei('job_failure_bcc')
       }.merge(options.fetch('mail', {}))
-      mail(options[:email], subject, body, mail_options)
+      mail(options[:email], subject, body, mail_options) unless options[:email].nil?
     end
 
     private

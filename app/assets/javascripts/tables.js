@@ -212,12 +212,15 @@ $(document).ready(function() {
     $(this).find('input[name=sortKeys]').val(sortKeys);
   });
 
-  // hide modals after submitting form
+  // modal submit buttons change to a loading state
   $('#archiveForm').submit(function () {
-    $('#archive_modal').modal('hide')
+    $('#archive_submit').button('loading');
   });
   $('#restoreForm').submit(function () {
-    $('#restore_modal').modal('hide')
+    $('#restore_submit').button('loading');
+  });
+  $('#regenerateForm').submit(function () {
+    $('#regenerate_submit').button('loading');
   });
 
   // show/hide additional inputs on Regenerate modal
