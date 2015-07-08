@@ -21,6 +21,12 @@ $(document).ready(function() {
     $(this).find('span.relative').toggle();
   });
 
+  // sort style tooltips
+  $('span.label[data-toggle="tooltip"]').tooltip();
+  $('#tablereports').on('draw.dt', function() { // after rerender we need to reinitialize
+    $('span.label[data-toggle="tooltip"]').tooltip();
+  });
+
   // export schemas button
   $('#schema_export_submit').on('click', function(e) {
     $('#schema_export_submit').hide();
@@ -196,7 +202,6 @@ $(document).ready(function() {
     $(this).find("input[name=distStyle][value!=" + distStyle + "]").parent().removeClass('active');
     var distKey = button.attr('data-dist-key');
     $(this).find('input[name=distKey]').val(distKey);
-    // TODO: support interleaved sort style
     var sortStyle = button.attr('data-sort-style');
     $(this).find("input[name=sortStyle][value=" + sortStyle + "]").change();
     $(this).find("input[name=sortStyle][value=" + sortStyle + "]").prop('checked', true);

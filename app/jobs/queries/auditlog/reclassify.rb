@@ -5,7 +5,6 @@ module Jobs
       # Job reclassifying local audit log queries
       #
       class Reclassify < Desmond::BaseJobNoJobId
-        extend Jobs::BaseReportNoJobId
 
         def execute(job_id, user_id, options={})
           Models::Query.all.each do |q|

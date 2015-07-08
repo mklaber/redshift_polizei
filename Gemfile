@@ -14,7 +14,7 @@ gem 'pg'
 gem 'activerecord4-redshift-adapter', github: 'aamine/activerecord4-redshift-adapter'
 gem 'coderay' # sql pretty printing
 
-gem 'aws-sdk' # redshift, cloudwatch, dynamodb
+gem 'aws-sdk-v1' # redshift, cloudwatch, dynamodb, v2 is incompatible
 
 gem 'whenever', :require => false # cronjobs
 

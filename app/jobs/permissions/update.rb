@@ -1,7 +1,6 @@
 module Jobs
   module Permissions
     class Update < Desmond::BaseJobNoJobId
-      extend Jobs::BaseReportNoJobId
       
       def execute(job_id, user_id, options={})
         # update our list of groups and users with the real deal

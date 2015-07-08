@@ -498,7 +498,8 @@ CREATE TABLE table_reports (
     has_col_encodings boolean NOT NULL,
     created_at timestamp without time zone,
     updated_at timestamp without time zone,
-    dist_style character varying
+    dist_style character varying,
+    sort_style character varying
 );
 
 
@@ -1113,6 +1114,8 @@ INSERT INTO schema_migrations (version) VALUES ('20');
 INSERT INTO schema_migrations (version) VALUES ('21');
 
 INSERT INTO schema_migrations (version) VALUES ('22');
+
+INSERT INTO schema_migrations (version) VALUES ('23');
 
 INSERT INTO schema_migrations (version) VALUES ('3');
 

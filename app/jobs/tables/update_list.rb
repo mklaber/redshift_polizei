@@ -4,7 +4,6 @@ module Jobs
     # Updates the local list of schemas and tables exisitng in RedShift
     #
     class UpdateList < Desmond::BaseJobNoJobId
-      extend Jobs::BaseReportNoJobId
       
       def execute(job_id, user_id, options={})
         # retrieve latest set of schemas and tables from RedShift
