@@ -1,4 +1,7 @@
 $(document).ready(function() {
+  // initialize tooltips
+  $('[data-toggle=tooltip]').tooltip();
+
   // show relative or absolute date of last data update
   var last_update_container = $('#last_update');
   var last_update = $('#last_update_store').text();
@@ -185,12 +188,29 @@ $(document).ready(function() {
     $(this).find('#restoreInputArchiveBucket').val(bucket);
     $(this).find('#restoreInputArchivePrefix').val(prefix);
   });
-  $('#encoding_modal').on('show.bs.modal', function (event) {
+  $('#regenerate_modal').on('show.bs.modal', function (event) {
     var button = $(event.relatedTarget);
     var schema = button.attr('data-schema-name');
-    var table = button.attr('data-table-name');
     $(this).find('input[name=schema]').val(schema);
+    var table = button.attr('data-table-name');
     $(this).find('input[name=table]').val(table);
+    var distStyle = button.attr('data-dist-style');
+    $(this).find("input[name=distStyle][value=" + distStyle + "]").change();
+    $(this).find("input[name=distStyle][value=" + distStyle + "]").prop('checked', true);
+    $(this).find("input[name=distStyle][value=" + distStyle + "]").parent().addClass('active');
+    $(this).find("input[name=distStyle][value!=" + distStyle + "]").prop('checked', false);
+    $(this).find("input[name=distStyle][value!=" + distStyle + "]").parent().removeClass('active');
+    var distKey = button.attr('data-dist-key');
+    $(this).find('input[name=distKey]').val(distKey);
+    // TODO: support interleaved sort style
+    var sortStyle = button.attr('data-sort-style');
+    $(this).find("input[name=sortStyle][value=" + sortStyle + "]").change();
+    $(this).find("input[name=sortStyle][value=" + sortStyle + "]").prop('checked', true);
+    $(this).find("input[name=sortStyle][value=" + sortStyle + "]").parent().addClass('active');
+    $(this).find("input[name=sortStyle][value!=" + sortStyle + "]").prop('checked', false);
+    $(this).find("input[name=sortStyle][value!=" + sortStyle + "]").parent().removeClass('active');
+    var sortKeys = button.attr('data-sort-keys');
+    $(this).find('input[name=sortKeys]').val(sortKeys);
   });
 
   // hide modals after submitting form
@@ -199,6 +219,28 @@ $(document).ready(function() {
   });
   $('#restoreForm').submit(function () {
     $('#restore_modal').modal('hide')
+  });
+
+  // show/hide additional inputs on Regenerate modal
+  $("input[type=radio][name=distStyle]").change(function() {
+    if (this.value == 'key') {
+      $('#distKeySelection').show();
+    } else {
+      $('#distKeySelection').hide();
+    }
+  });
+  $("input[type=radio][name=sortStyle]").change(function() {
+    var selector = $('#sortKeySelection');
+    var inp = $('#sortKeys');
+    if (this.value == 'single') {
+      selector.show();
+      inp.attr('placeholder', 'key');
+    } else if (this.value == 'compound' || this.value == 'interleaved') {
+      selector.show();
+      inp.attr("placeholder", "key1, key2");
+    } else {
+      selector.hide();
+    }
   });
 
 });

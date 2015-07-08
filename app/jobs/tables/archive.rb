@@ -31,6 +31,7 @@ module Jobs
     #   - skip_drop: if true, will not drop the table after unloading. Defaults to false
     #   - auto_encode: if true, will not store the current column encodings,
     #     letting them be analyzed automatically when table is restored. Defaults to false
+    #   - <*_override> see TableStructureExportJob for info on options
     # - unload: options for the Redshift UNLOAD command
     #   - allowoverwrite: if true, will use the ALLOWOVERWRITE unload option
     #   - gzip: if true, will use the GZIP unload option
@@ -79,13 +80,18 @@ module Jobs
       # run a TableStructureExportJob
       ddl_s3_key = "#{archive_prefix}ddl"
       Jobs::TableStructureExportJob.run(job_id, user_id, {
-                                             schema_name: schema_name,
-                                             table_name: table_name,
-                                             s3_bucket: archive_bucket,
-                                             s3_key: ddl_s3_key,
-                                             no_column_encoding: options[:db][:auto_encode],
-                                             mail: {nomailer: true}
-                                         })
+                                                  schema_name: schema_name,
+                                                  table_name: table_name,
+                                                  export_single_table: true,
+                                                  s3_bucket: archive_bucket,
+                                                  s3_key: ddl_s3_key,
+                                                  no_column_encoding: options[:db][:auto_encode],
+                                                  diststyle_override: options[:db][:diststyle_override],
+                                                  distkey_override: options[:db][:distkey_override],
+                                                  sortstyle_override: options[:db][:sortstyle_override],
+                                                  sortkeys_override: options[:db][:sortkeys_override],
+                                                  mail: {nomailer: true}
+                                              })
       ddl_obj = AWS::S3.new.buckets[archive_bucket].objects[ddl_s3_key]
       fail 'Failed to export DDL!' unless ddl_obj.exists?
       # ensure TableStructureExportJob outputted a single CREATE TABLE statement
