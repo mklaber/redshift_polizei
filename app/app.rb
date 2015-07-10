@@ -142,6 +142,17 @@ class Polizei < Sinatra::Application
   end
 
   get '/' do
+    clusters_info = AWS::Redshift::Client.new.describe_clusters(
+      cluster_identifier: GlobalConfig.polizei('aws_cluster_identifier'))
+    cluster_info  = nil
+    cluster_info  = clusters_info[:clusters][0] unless clusters_info.blank?
+    if !cluster_info[:restore_status].nil?
+      @cluster_status = cluster_info[:restore_status][:status]
+    elsif cluster_info.nil?
+      @cluster_status = 'unknown'
+    else
+      @cluster_status = cluster_info[:cluster_status]
+    end
     erb :index, :locals => { :name => :home }
   end
 
