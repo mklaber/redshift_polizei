@@ -414,7 +414,8 @@
                                              else
                                                row['sort_style']
                                            end %>"
-                      data-sort-keys="<%= row['sort_keys'].join(', ') %>"><a>Regenerate Table...</a></li>
+                      data-sort-keys="<%= row['sort_keys'].join(', ') %>"
+                      data-has-col-encodings="<%= row['has_col_encodings'] %>"><a>Regenerate Table...</a></li>
                 </ul>
               </div>
             </td>

@@ -210,6 +210,23 @@ $(document).ready(function() {
     $(this).find("input[name=sortStyle][value!=" + sortStyle + "]").parent().removeClass('active');
     var sortKeys = button.attr('data-sort-keys');
     $(this).find('input[name=sortKeys]').val(sortKeys);
+    // Cannot select keepCurrent encodings if table doesn't have any encodings.
+    var hasColEncodings = button.attr('data-has-col-encodings') === 'true';
+    if (hasColEncodings) {
+      $(this).find('input[name=colEncode][value=keepCurrent]').prop('disabled', false);
+      $(this).find('input[name=colEncode][value=keepCurrent]').parent().removeClass('disabled');
+      $(this).find('input[name=colEncode][value=recompute]').prop('checked', false);
+      $(this).find('input[name=colEncode][value=recompute]').parent().removeClass('active');
+      $(this).find('input[name=colEncode][value=keepCurrent]').prop('checked', true);
+      $(this).find('input[name=colEncode][value=keepCurrent]').parent().addClass('active');
+    } else {
+      $(this).find('input[name=colEncode][value=keepCurrent]').prop('disabled', true);
+      $(this).find('input[name=colEncode][value=keepCurrent]').parent().addClass('disabled');
+      $(this).find('input[name=colEncode][value=recompute]').prop('checked', true);
+      $(this).find('input[name=colEncode][value=recompute]').parent().addClass('active');
+      $(this).find('input[name=colEncode][value=keepCurrent]').prop('checked', false);
+      $(this).find('input[name=colEncode][value=keepCurrent]').parent().removeClass('active');
+    }
   });
 
   // modal submit buttons change to a loading state
