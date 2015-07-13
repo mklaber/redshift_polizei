@@ -514,10 +514,14 @@ class Polizei < Sinatra::Application
   end
 
   error do
-    ExceptionNotifier.notify_exception(env['sinatra.error'], env: env) if Object.const_defined?('ExceptionNotifier')
-    @error = 'Sorry, there was a nasty error - ' + env['sinatra.error'].to_s
     status 500
-    erb :error
+    ExceptionNotifier.notify_exception(env['sinatra.error'], env: env) if Object.const_defined?('ExceptionNotifier')
+    if request.accept?('application/json')
+      { error: env['sinatra.error'].to_s }.to_json
+    else
+      @error = 'Sorry, there was a nasty error - ' + env['sinatra.error'].to_s
+      erb :error
+    end
   end
 
   error 403 do
