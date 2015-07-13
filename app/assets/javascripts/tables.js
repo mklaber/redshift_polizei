@@ -242,10 +242,15 @@ $(document).ready(function() {
 
   // show/hide additional inputs on Regenerate modal
   $("input[type=radio][name=distStyle]").change(function() {
+    var selector = $('#distKeySelection');
+    var inp = $('#distKey');
     if (this.value == 'key') {
-      $('#distKeySelection').show();
+      selector.show();
+      inp.attr('required', '');
+      inp.attr('title', 'Input a single valid key.');
     } else {
-      $('#distKeySelection').hide();
+      selector.hide();
+      inp.removeAttr('required');
     }
   });
   $("input[type=radio][name=sortStyle]").change(function() {
@@ -254,11 +259,16 @@ $(document).ready(function() {
     if (this.value == 'single') {
       selector.show();
       inp.attr('placeholder', 'key');
+      inp.attr('required', '');
+      inp.attr('title', 'Input a single valid key.');
     } else if (this.value == 'compound' || this.value == 'interleaved') {
       selector.show();
       inp.attr("placeholder", "key1, key2");
+      inp.attr('required', '');
+      inp.attr('title', 'Input a comma-separated list of valid keys.');
     } else {
       selector.hide();
+      inp.removeAttr('required');
     }
   });
 
