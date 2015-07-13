@@ -1,4 +1,14 @@
-<h2 name="queries" id="queries">Recent Queries</h2>
+<div style="overflow: auto;">
+    <div style="float: left;">
+        <h2 name="queries" id="queries">Recent Queries</h2>
+    </div>
+    <div style="float: right;">
+        <h2 name="cluster_status" id="cluster_status">
+            Cluster Status:
+            <span class="label label-<%= (@cluster_status == 'available') ? 'success' : (@cluster_status == 'hardware-failure') ? 'danger' : 'warning' %>"><%= @cluster_status %></span>
+        </h2>
+    </div>
+</div>
 
 <table style="display: none;" data-ajax="/queries/recent" id="queries_recent_tbl" class="table table-bordered table-striped table-condensed table-hover">
     <thead>
