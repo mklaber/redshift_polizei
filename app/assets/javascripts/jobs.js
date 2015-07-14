@@ -19,6 +19,12 @@ $(document).ready(function() {
   $('button#submitjob').click(function() {
     $('input#inputExecute').val(1);
   });
+  // save redshift username if 'remember me' is enabled
+  $('#exportForm').submit(function () {
+    if ($('#rememberMe').is(':checked')) {
+      Cookies.set('redshift_username', $('#inputRedshiftUsername').val());
+    }
+  });
 
   $('#export_options > li.export_option').click(function(e) {
     /*

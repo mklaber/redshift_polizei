@@ -70,7 +70,13 @@
           <div class="form-group">
             <label for="inputRedshiftUsername" class="col-sm-4 control-label">Redshift Username:</label>
             <div class="col-sm-8">
-              <input type="text" required class="form-control" id="archiveInputRedshiftUsername" name="redshift_username" placeholder="Username">
+              <div class="input-group">
+                <input type="text" required class="form-control redshift_username" id="archiveInputRedshiftUsername" name="redshift_username" placeholder="Username">
+                <span class="input-group-addon">
+                  <input type="checkbox" checked id="archiveRememberMe">
+                  <label for="archiveRememberMe"> Remember?</label>
+                </span>
+              </div>
             </div>
             <label for="inputRedshiftPassword" class="col-sm-4 control-label">Redshift Password:</label>
             <div class="col-sm-8">
@@ -156,7 +162,13 @@
           <div class="form-group">
             <label for="restoreInputRedshiftUsername" class="col-sm-4 control-label">Redshift Username:</label>
             <div class="col-sm-8">
-              <input type="text" required class="form-control" id="restoreInputRedshiftUsername" name="redshift_username" placeholder="Username">
+              <div class="input-group">
+                <input type="text" required class="form-control redshift_username" id="restoreInputRedshiftUsername" name="redshift_username" placeholder="Username">
+                <span class="input-group-addon">
+                  <input type="checkbox" checked id="restoreRememberMe">
+                  <label for="restoreRememberMe"> Remember?</label>
+                </span>
+              </div>
             </div>
             <label for="restoreInputRedshiftPassword" class="col-sm-4 control-label">Redshift Password:</label>
             <div class="col-sm-8">
@@ -296,7 +308,13 @@
           <div class="form-group">
             <label for="regenerateInputRedshiftUsername" class="col-sm-4 control-label">Redshift Username:</label>
             <div class="col-sm-8">
-              <input type="text" required class="form-control" id="regenerateInputRedshiftUsername" name="redshift_username" placeholder="Username">
+              <div class="input-group">
+                <input type="text" required class="form-control redshift_username" id="regenerateInputRedshiftUsername" name="redshift_username" placeholder="Username">
+                <span class="input-group-addon">
+                  <input type="checkbox" checked id="regenerateRememberMe">
+                  <label for="regenerateRememberMe"> Remember?</label>
+                </span>
+              </div>
             </div>
             <label for="regenerateInputRedshiftPassword" class="col-sm-4 control-label">Redshift Password:</label>
             <div class="col-sm-8">
