@@ -10,19 +10,19 @@
   <div class="form-group">
     <label for="inputJobName" class="col-sm-2 control-label">Job Name</label>
     <div class="col-sm-3">
-      <input type="text" class="form-control" id="inputJobName" name="name" placeholder="Exporting Media Markets" value="<%= h @form['name'] %>">
+      <input type="text" required class="form-control" id="inputJobName" name="name" placeholder="Exporting Media Markets" value="<%= h @form['name'] %>">
     </div>
   </div>
   <div class="form-group">
     <label for="inputEmailSuccess" class="col-sm-2 control-label">Success E-Mail</label>
     <div class="col-sm-3">
-      <input type="text" class="form-control" id="inputEmailSuccess" name="success_email" placeholder="success@example.com" value="<%= h @form['success_email'] %>">
+      <input type="email" multiple class="form-control" id="inputEmailSuccess" name="success_email" placeholder="success@example.com" value="<%= h @form['success_email'] %>">
     </div>
   </div>
   <div class="form-group">
     <label for="inputEmailFailure" class="col-sm-2 control-label">Failure E-Mail</label>
     <div class="col-sm-3">
-      <input type="text" class="form-control" id="inputEmailFailure" name="failure_email" placeholder="failure@example.com" value="<%= h @form['failure_email'] %>">
+      <input type="email" multiple class="form-control" id="inputEmailFailure" name="failure_email" placeholder="failure@example.com" value="<%= h @form['failure_email'] %>">
     </div>
   </div>
   <div class="form-group">
@@ -34,11 +34,11 @@
   <div class="form-group" style="border: 1px solid #ddd;">
     <label for="inputRedshiftUsername" class="col-sm-2 control-label">Redshift Username</label>
     <div class="col-sm-3">
-      <input type="text" class="form-control" id="inputRedshiftUsername" name="redshift_username" placeholder="Username">
+      <input type="text" required class="form-control" id="inputRedshiftUsername" name="redshift_username" placeholder="Username">
     </div>
     <label for="inputRedshiftPassword" class="col-sm-2 control-label">Redshift Password</label>
     <div class="col-sm-3">
-      <input type="password" class="form-control" id="inputRedshiftPassword" name="redshift_password">
+      <input type="password" required class="form-control" id="inputRedshiftPassword" name="redshift_password">
     </div>
     <div class="col-sm-2">
       <h5><span class="label label-info">not saved</span></h5>
@@ -47,7 +47,7 @@
   <div class="form-group">
     <label for="inputSQL" class="col-sm-2 control-label">SQL Query</label>
     <div class="col-sm-10">
-      <textarea class="form-control" id="inputSQL" name="query" rows="15" style="resize: vertical;" placeholder="SELECT * FROM media_markets;"><%= h @form['query'] %></textarea>
+      <textarea required class="form-control" id="inputSQL" name="query" rows="15" style="resize: vertical;" placeholder="SELECT * FROM media_markets;"><%= h @form['query'] %></textarea>
     </div>
   </div>
   <div class="form-group" role="navigation">
