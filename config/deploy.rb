@@ -47,7 +47,7 @@ task :production do
   role :app,  SERVER_URL
   role :web,  SERVER_URL
   role :db,   SERVER_URL, :primary => true
-  #role :cron, "www-staging.analyticsmediagroup.com"
+  after "deploy:update_code", "git:tag_last_deploy"
 end
 
 set :whenever_environment, defer { rails_env }
@@ -92,4 +92,13 @@ namespace :config do
   end
 end
 
-
+namespace :git do
+ desc "tag the deployment in git"
+ task :tag_last_deploy do
+   set :timestamp, Time.now
+   set :tag_name,  "deployed_to_#{rails_env}_#{timestamp.localtime.strftime("%Y-%m-%d_%H-%M-%S")}"
+   `git tag -a -m "Tagging deploy to #{rails_env} at #{timestamp}" #{tag_name}`
+   `git push --tags`
+   puts "Tagged release with #{tag_name}."
+ end
+end
