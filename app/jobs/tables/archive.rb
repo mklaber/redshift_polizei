@@ -83,7 +83,7 @@ module Jobs
       structure_options = {
           schema_name: schema_name,
           table_name: table_name,
-          export_single_table: true,
+          skip_dependencies: true,
           s3_bucket: archive_bucket,
           s3_key: ddl_s3_key,
           mail: {nomailer: true}
@@ -98,7 +98,8 @@ module Jobs
       fail 'Failed to export DDL!' unless ddl_obj.exists?
       # ensure TableStructureExportJob outputted a single CREATE TABLE statement
       ddl_match = ddl_obj.read.scan(/CREATE TABLE/mi)
-      fail 'Table has foreign constraints!' if ddl_match.length != 1
+      fail 'No DDL statement was exported!' if ddl_match.length < 1
+      fail 'Too many DDL statements were exported!' if ddl_match.length > 1
 
       # UNLOAD the entire table
       full_table_name = Desmond::PGUtil.get_escaped_table_name(options[:db], schema_name, table_name)

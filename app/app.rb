@@ -74,6 +74,7 @@ class Polizei < Sinatra::Application
       '/javascripts/lib/bootstrap.min.js',
       '/javascripts/lib/jquery.dataTables.min.js',
       '/javascripts/lib/dataTables.bootstrap.min.js',
+      '/javascripts/lib/js.cookie-2.0.2.min.js',
       '/javascripts/lib/moment.min.js',
       '/javascripts/shared.js'
     ]

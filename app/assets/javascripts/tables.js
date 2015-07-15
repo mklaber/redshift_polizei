@@ -229,14 +229,23 @@ $(document).ready(function() {
     }
   });
 
-  // modal submit buttons change to a loading state
+  // modal submit buttons
   $('#archiveForm').submit(function () {
+    if ($('#archiveRememberMe').is(':checked')) {
+      Cookies.set('redshift_username', $('#archiveInputRedshiftUsername').val());
+    }
     $('#archive_submit').button('loading');
   });
   $('#restoreForm').submit(function () {
+    if ($('#restoreRememberMe').is(':checked')) {
+      Cookies.set('redshift_username', $('#restoreInputRedshiftUsername').val());
+    }
     $('#restore_submit').button('loading');
   });
   $('#regenerateForm').submit(function () {
+    if ($('#regenerateRememberMe').is(':checked')) {
+      Cookies.set('redshift_username', $('#regenerateInputRedshiftUsername').val());
+    }
     $('#regenerate_submit').button('loading');
   });
 

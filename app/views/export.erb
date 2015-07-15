@@ -6,7 +6,7 @@
 </div>
 <% end %>
 
-<form class="form-horizontal" role="form" method="POST" action="#">
+<form id="exportForm" class="form-horizontal" role="form" method="POST" action="#">
   <div class="form-group">
     <label for="inputJobName" class="col-sm-2 control-label">Job Name</label>
     <div class="col-sm-3">
@@ -34,7 +34,13 @@
   <div class="form-group" style="border: 1px solid #ddd;">
     <label for="inputRedshiftUsername" class="col-sm-2 control-label">Redshift Username</label>
     <div class="col-sm-3">
-      <input type="text" required class="form-control" id="inputRedshiftUsername" name="redshift_username" placeholder="Username">
+      <div class="input-group">
+        <input type="text" required class="form-control redshift_username" id="inputRedshiftUsername" name="redshift_username" placeholder="Username">
+          <span class="input-group-addon">
+            <input type="checkbox" checked id="rememberMe">
+            <label for="rememberMe"> Remember?</label>
+          </span>
+      </div>
     </div>
     <label for="inputRedshiftPassword" class="col-sm-2 control-label">Redshift Password</label>
     <div class="col-sm-3">

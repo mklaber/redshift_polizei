@@ -272,4 +272,6 @@ $(document).ready(function() {
     $('.modal').on('shown.bs.modal', function () {
         $(this).find('form').find('input:visible:not([readonly]):first').focus();
     });
+    // 'remember me' for redshift usernames
+    $('.redshift_username').val(Cookies.get('redshift_username'));
 });
