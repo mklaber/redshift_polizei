@@ -55,7 +55,7 @@
         <div class="modal-body">
           <div class="alert alert-danger" role="alert">
             <p><strong>WARNING: </strong>Archiving will move the data into S3 and drop the database table!
-            Archiving currently does NOT support tables with constraints or foreign keys! Will NOT restore permissions as of now!</p>
+            Currently does not support tables that *other* tables have references to! Will NOT restore permissions as of now!</p>
           </div>
           <div class="form-group">
             <label for="archiveInputSchema" class="col-sm-4 control-label">Schema Name:</label>
@@ -231,7 +231,7 @@
           <div class="alert alert-danger" role="alert">
             <p><strong>WARNING: </strong>This will archive the database table, and restore it with the specified settings.
               The table will be unavailable for some time while this happens.
-              Currently does NOT support tables with constraints or foreign keys! Will NOT restore permissions as of now!</p>
+              Currently does not support tables that *other* tables have references to! Will NOT restore permissions as of now!</p>
           </div>
           <div class="form-group">
             <label for="regenerateInputSchema" class="col-sm-4 control-label">Schema Name:</label>
