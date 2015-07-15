@@ -1,13 +1,16 @@
-<div style="overflow: auto;">
-    <div style="float: left;">
-        <h2 name="queries" id="queries">Recent Queries</h2>
-    </div>
-    <div style="float: right;">
+<div class="row">
+  <div class="col-md-4">
+    <h2 name="queries" id="queries">Recent Queries</h2>
+  </div>
+  <div class="col-md-2">
+    <div id="chart_div" style="width: 400px; height: 120px;"></div>
+  </div>
+  <div class="col-md-6" style="text-align: right;">
         <h2 name="cluster_status" id="cluster_status">
             Cluster Status:
             <span class="label label-<%= (@cluster_status == 'available') ? 'success' : (@cluster_status == 'hardware-failure') ? 'danger' : 'warning' %>"><%= @cluster_status %></span>
         </h2>
-    </div>
+  </div>
 </div>
 
 <table style="display: none;" data-ajax="/queries/recent" id="queries_recent_tbl" class="table table-bordered table-striped table-condensed table-hover">
@@ -24,4 +27,5 @@
     <tbody></tbody>
 </table>
 
+<script type="text/javascript" src="//www.google.com/jsapi"></script>
 <%= js :queries %>

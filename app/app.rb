@@ -36,6 +36,9 @@ class Polizei < Sinatra::Application
       use ExceptionNotification::Rack, exp_notifier_options
       DesmondConfig.register_with_exception_notifier exp_notifier_options
     end
+    # grab info about cluster once in the beginning
+    tmp_clusters = AWS::Redshift::Client.new.describe_clusters(cluster_identifier: GlobalConfig.polizei('aws_cluster_identifier'))
+    set :gbl_cluster_info, tmp_clusters[:clusters][0].to_hash
   end
   # set logger in environment variable for rack to pick it up
   before do
@@ -142,6 +145,7 @@ class Polizei < Sinatra::Application
   end
 
   get '/' do
+    # overall status of cluster
     clusters_info = AWS::Redshift::Client.new.describe_clusters(
       cluster_identifier: GlobalConfig.polizei('aws_cluster_identifier'))
     cluster_info  = nil
@@ -154,6 +158,25 @@ class Polizei < Sinatra::Application
       @cluster_status = cluster_info[:cluster_status]
     end
     erb :index, :locals => { :name => :home }
+  end
+
+  get '/cluster/status' do
+    # cpu usage on computer nodes & leader node
+    cpu_leader = get_redshift_metric_leader(settings.gbl_cluster_info, {
+      namespace: 'AWS/Redshift',
+      metric_name: 'CPUUtilization',
+      period: 60,
+      statistics: ['Average']
+    }).try(:[], :average).try(:round, 2)
+    cpu_per_node = get_redshift_metric_computes(settings.gbl_cluster_info, {
+      namespace: 'AWS/Redshift',
+      metric_name: 'CPUUtilization',
+      period: 60,
+      statistics: ['Average']
+    })
+    cpu_computes = (cpu_per_node.map { |dp| dp[:average] }.inject{ |sum, el| sum + el }.to_f / cpu_per_node.size).round(2)
+
+    { cpu: { leader: cpu_leader, computes: cpu_computes }}.to_json
   end
 
   get '/queries/recent' do
@@ -201,10 +224,13 @@ class Polizei < Sinatra::Application
   end
 
   get '/disk_space' do
-    disk_space_report = Reports::DiskSpaceCloudwatch.new
-    data = disk_space_report.run
-    @period = data[:period]
-    @disks = data[:data]
+    @period = 60
+    @disks  = get_redshift_metric_computes(settings.gbl_cluster_info,
+        namespace: "AWS/Redshift",
+        metric_name: "PercentageDiskSpaceUsed",
+        period: @period,
+        statistics: ["Average"]
+    ).map { |t| { node: t[:node], pct: t[:average] } }
     erb :disk_space, :locals => {:name => :disk_space}
   end
   

@@ -10,11 +10,11 @@
     <% @disks.each do |disk| %>
       <tr>
         <% if disk["pct"] == 0 %>
-          <td class="text-right"><%= disk["node"] %></td>
+          <td class="text-right"><%= disk[:node] %></td>
           <td class="text-right">n/a</td>
         <% else %>
-          <td class="text-right"><%= disk["node"] %></td>
-          <td class="text-right"><%= "%.2f%" % (disk["pct"].to_f) %></td>
+          <td class="text-right"><%= disk[:node] %></td>
+          <td class="text-right"><%= "%.2f%" % (disk[:pct].to_f) %></td>
         <% end %>
       </tr>
     <% end %>
@@ -22,7 +22,7 @@
   <tfoot>
     <tr class="total success">
       <td class="text-right">Average: </td>
-      <td class="text-right"><%= "%.2f%" % (100 * @disks.map { |d| d["pct"].to_f}.sum / (@disks.size * 100))  %></td>
+      <td class="text-right"><%= "%.2f%" % (100 * @disks.map { |d| d[:pct].to_f}.sum / (@disks.size * 100))  %></td>
     </tr>
   </tfoot>
 </table>
