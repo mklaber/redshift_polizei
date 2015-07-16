@@ -101,6 +101,19 @@ module Jobs
       fail 'No DDL statement was exported!' if ddl_match.length < 1
       fail 'Too many DDL statements were exported!' if ddl_match.length > 1
 
+      # drop any foreign key references that point to this table
+      conn = Desmond::PGUtil.dedicated_connection(options[:db])
+      drop_constraints_sql = ''
+      add_constraints_sql = ''
+      filters = {'ref_namespace' => schema_name, 'ref_tablename' => table_name, 'constraint_type' => 'f'}
+      SQL.execute_grouped(conn, 'tables/constraints', filters: filters) do |result|
+        fail 'Error detecting foreign keys!' unless result.has_key?('schema_name') && result.has_key?('table_name') && result.has_key?('constraint_name') && result.has_key?('contraint_columnname') && result.has_key?('ref_columnname')
+        drop_constraints_sql += "ALTER TABLE #{result['schema_name']}.#{result['table_name']} DROP CONSTRAINT #{result['constraint_name']};\n"
+        add_constraints_sql += "ALTER TABLE #{result['schema_name']}.#{result['table_name']} ADD CONSTRAINT #{result['constraint_name']} FOREIGN KEY (#{result['contraint_columnname']}) REFERENCES #{schema_name}.#{table_name} (#{result['ref_columnname']});\n"
+      end
+      # constraints will be recreated upon table restoration
+      ddl_obj.write(ddl_obj.read + "\n---Foreign keys from other tables---\n" + add_constraints_sql) unless add_constraints_sql.empty?
+
       # UNLOAD the entire table
       full_table_name = Desmond::PGUtil.get_escaped_table_name(options[:db], schema_name, table_name)
       query = "SELECT * FROM #{full_table_name}"
@@ -108,9 +121,10 @@ module Jobs
 
       # DROP the table
       unless options[:db][:skip_drop]
-        drop_sql = "DROP TABLE #{full_table_name};"
-        conn = Desmond::PGUtil.dedicated_connection(options[:db])
-        conn.exec(drop_sql)
+        drop_sql = drop_constraints_sql + "DROP TABLE #{full_table_name};"
+        conn.transaction do
+          conn.exec(drop_sql)
+        end
       end
 
       # add new TableArchive database entry
