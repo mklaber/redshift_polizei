@@ -65,7 +65,8 @@ module Jobs
           logtype        = filename_parts[4]
           logtimestamp   = filename_parts[5]
 
-          is_our_cluster       = (cluster_name == GlobalConfig.polizei('aws_cluster_identifier'))
+          # in the test environment we don't care if we're importing the correct cluster
+          is_our_cluster       = (DesmondConfig.environment == :test || cluster_name == GlobalConfig.polizei('aws_cluster_identifier'))
           is_user_activity_log = (logtype == 'useractivitylog')
           is_in_database       = Models::Query.where(logfile: full_path).exists?
           #Que.log level: :debug, message: "log file from '#{cluster_name}' of type '#{logtype}' timed at #{logtimestamp}: #{is_in_database}, #{is_our_cluster}, #{is_user_activity_log}, #{last_modified > last_update}"

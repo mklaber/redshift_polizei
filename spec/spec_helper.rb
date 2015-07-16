@@ -16,6 +16,7 @@ require 'rack/test'
 
 # recreate test database from migrations
 #DesmondConfig.logger = Logger.new STDOUT
+ActiveRecord::Base.logger = DesmondConfig.logger
 ActiveRecord::Schema.verbose = false # no output for migrations
 Rake::Task['db:drop'].invoke
 Rake::Task['db:reset'].invoke
