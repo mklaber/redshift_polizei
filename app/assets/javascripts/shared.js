@@ -270,7 +270,7 @@ $(document).ready(function() {
     });
     // when shown, modal focus gets set to the first input
     $('.modal').on('shown.bs.modal', function () {
-        $(this).find('form').find('input:visible:not([readonly]):first').focus();
+        $(this).find('form').find('input:visible:not([readonly]):first').select();
     });
     // 'remember me' for redshift usernames
     $('.redshift_username').val(Cookies.get('redshift_username'));

@@ -1,6 +1,7 @@
 select
   trim(n.nspname) as schema_name,
   trim(c.relname) as table_name,
+  cs.conname as constraint_name,
   cs.contype as constraint_type,
   t1.attname as contraint_columnname,
   n2.nspname as ref_namespace,

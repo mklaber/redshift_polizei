@@ -101,6 +101,18 @@ module Jobs
       fail 'No DDL statement was exported!' if ddl_match.length < 1
       fail 'Too many DDL statements were exported!' if ddl_match.length > 1
 
+      # drop any foreign key references that point to this table
+      conn = Desmond::PGUtil.dedicated_connection(options[:db])
+      drop_constraints_sql = ''
+      add_constraints_sql = ''
+      dependent_tables = TableUtils.get_dependent_tables(conn, schema_name: schema_name, table_name: table_name)["#{schema_name}.#{table_name}"]
+      dependent_tables.each do |r|
+        drop_constraints_sql += "ALTER TABLE #{r['schema_name']}.#{r['table_name']} DROP CONSTRAINT #{r['constraint_name']};\n"
+        add_constraints_sql += "ALTER TABLE #{r['schema_name']}.#{r['table_name']} ADD CONSTRAINT #{r['constraint_name']} FOREIGN KEY (#{r['contraint_columnname']}) REFERENCES #{schema_name}.#{table_name} (#{r['ref_columnname']});\n"
+      end unless dependent_tables.nil?
+      # constraints will be recreated upon table restoration
+      ddl_obj.write(ddl_obj.read + "\n---Foreign keys from other tables---\n" + add_constraints_sql) unless add_constraints_sql.empty?
+
       # UNLOAD the entire table
       full_table_name = Desmond::PGUtil.get_escaped_table_name(options[:db], schema_name, table_name)
       query = "SELECT * FROM #{full_table_name}"
@@ -108,9 +120,10 @@ module Jobs
 
       # DROP the table
       unless options[:db][:skip_drop]
-        drop_sql = "DROP TABLE #{full_table_name};"
-        conn = Desmond::PGUtil.dedicated_connection(options[:db])
-        conn.exec(drop_sql)
+        drop_sql = drop_constraints_sql + "DROP TABLE #{full_table_name};"
+        conn.transaction do
+          conn.exec(drop_sql)
+        end
       end
 
       # add new TableArchive database entry

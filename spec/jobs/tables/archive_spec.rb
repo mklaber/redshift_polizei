@@ -107,7 +107,7 @@ describe Jobs::ArchiveJob do
     check_success(run_archive(options), options)
   end
 
-  it 'should fail on a table that other tables reference' do
+  it 'should succeed on a table that another table has a reference to' do
     table2 = "archive_test_#{Time.now.to_i}_#{rand(1024)}"
     @full_table_name2 = "#{@schema}.#{table2}"
     extra_sql = <<-SQL
@@ -116,11 +116,8 @@ describe Jobs::ArchiveJob do
         INSERT INTO #{@full_table_name2} VALUES (0), (1), (2);
     SQL
     @conn.exec(extra_sql)
-    options = merge_options({db: {table: @table, auto_encode: true},
-                             s3: {prefix: @archive_prefix}})
-    r = run_archive(options)
-    expect(r.failed?).to eq(true)
-    expect(r.error).to include('other objects depend on it')
+    options = merge_options({db: {table: @table, auto_encode: true}, s3: {prefix: @archive_prefix}})
+    check_success(run_archive(options), options)
   end
 
   before(:each) do
