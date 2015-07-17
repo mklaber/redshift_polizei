@@ -20,6 +20,7 @@ class RSPool
         reconnect!
         retry
       end
+      raise
     end
   end
 
