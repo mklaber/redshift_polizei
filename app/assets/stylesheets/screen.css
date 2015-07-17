@@ -20,7 +20,9 @@ p {
   color: #555555;
 }
 
-
+i.db_comment {
+  cursor: pointer;
+}
 
 .CodeRay div {
     overflow-y: auto;

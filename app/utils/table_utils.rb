@@ -109,6 +109,13 @@ class TableUtils
     end
   end
 
+  def self.get_table_comments(connection, table={})
+    tmp = execute_grouped_by_table(connection, 'tables/comments.sql', table)
+    tmp.hmap do |full_table_name, comments_array|
+      comments_array[0]
+    end
+  end
+
   ##
   # groups SQL results in a hash by 'schema_name'
   # and 'table_name' from the retrieved rows

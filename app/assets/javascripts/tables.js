@@ -1,6 +1,8 @@
 $(document).ready(function() {
   // initialize tooltips
-  $('[data-toggle=tooltip]').tooltip();
+  $('[data-toggle=tooltip]').on('mouseover', function(e) {
+    $(this).tooltip();
+  });
 
   // show relative or absolute date of last data update
   var last_update_container = $('#last_update');

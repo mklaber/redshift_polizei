@@ -68,6 +68,8 @@ module Jobs
       col_encodings = TableUtils.has_column_encodings(connection, table)
       sort_dist_styles = TableUtils.get_sort_and_dist_styles(connection, table)
       sort_dist_keys = TableUtils.get_sort_and_dist_keys(connection, table)
+      comments = TableUtils.get_table_comments(connection, table)
+      puts comments
 
       statistics.hmap do |full_table_name, stats|
         begin
@@ -75,6 +77,7 @@ module Jobs
           col_encoding    = col_encodings[full_table_name] || false
           sort_dist_style = sort_dist_styles[full_table_name] || {}
           sort_dist_key   = sort_dist_keys[full_table_name] || {}
+          comment         = comments[full_table_name] || {}
           {
             schema_name: r['schema_name'].strip,
             table_name: r['table_name'].strip,
@@ -86,7 +89,8 @@ module Jobs
             pct_slices_populated: r['pct_slices_populated'].to_f,
             sort_keys: (sort_dist_key['sort_keys'] || []).to_json,
             dist_key: sort_dist_key['dist_key'],
-            has_col_encodings: col_encoding
+            has_col_encodings: col_encoding,
+            comment: comment['comment']
           }
         end
       end

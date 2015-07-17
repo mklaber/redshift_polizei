@@ -361,7 +361,15 @@
       <% @tables.each_with_index do |row, i| %>
           <tr>
             <td><%= row['schema_name'] %></td>
-            <td><%= row['table_name'] %> <small class="secondary">(<%=row['table_id']%>)</small></td>
+            <td>
+              <%= row['table_name'] %>
+              <small class="secondary">(<%=row['table_id']%>)</small>
+              <% if row['comment'] %>
+                <i class='db_comment fa fa-comment' data-toggle='tooltip' data-placement='top' title=<%= row['comment'] %>></i>
+              <% else %>
+                <i class='db_comment fa fa-comment-o' data-toggle='tooltip' data-placement='top' title='*Add table comment*'></i>
+              <% end %>
+            </td>
             <td nowrap="nowrap"><%= (row['size_in_mb'].to_i / 1024.0).round(2) %></td>
             <td>
               <% if row['sort_style'] == 'interleaved' %>

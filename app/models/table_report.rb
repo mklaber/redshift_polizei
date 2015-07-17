@@ -15,5 +15,6 @@ module Models
     # has_col_encodings      :boolean          not null
     # dist_style             :string(255)      null
     # sort_style             :string(255)      null
+    # comment                :string(255)      null
   end
 end
