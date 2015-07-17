@@ -105,12 +105,11 @@ module Jobs
       conn = Desmond::PGUtil.dedicated_connection(options[:db])
       drop_constraints_sql = ''
       add_constraints_sql = ''
-      filters = {'ref_namespace' => schema_name, 'ref_tablename' => table_name, 'constraint_type' => 'f'}
-      SQL.execute_grouped(conn, 'tables/constraints', filters: filters) do |result|
-        fail 'Error detecting foreign keys!' unless result.has_key?('schema_name') && result.has_key?('table_name') && result.has_key?('constraint_name') && result.has_key?('contraint_columnname') && result.has_key?('ref_columnname')
-        drop_constraints_sql += "ALTER TABLE #{result['schema_name']}.#{result['table_name']} DROP CONSTRAINT #{result['constraint_name']};\n"
-        add_constraints_sql += "ALTER TABLE #{result['schema_name']}.#{result['table_name']} ADD CONSTRAINT #{result['constraint_name']} FOREIGN KEY (#{result['contraint_columnname']}) REFERENCES #{schema_name}.#{table_name} (#{result['ref_columnname']});\n"
-      end
+      dependent_tables = TableUtils.get_dependent_tables(conn, schema_name: schema_name, table_name: table_name)["#{schema_name}.#{table_name}"]
+      dependent_tables.each do |r|
+        drop_constraints_sql += "ALTER TABLE #{r['schema_name']}.#{r['table_name']} DROP CONSTRAINT #{r['constraint_name']};\n"
+        add_constraints_sql += "ALTER TABLE #{r['schema_name']}.#{r['table_name']} ADD CONSTRAINT #{r['constraint_name']} FOREIGN KEY (#{r['contraint_columnname']}) REFERENCES #{schema_name}.#{table_name} (#{r['ref_columnname']});\n"
+      end unless dependent_tables.nil?
       # constraints will be recreated upon table restoration
       ddl_obj.write(ddl_obj.read + "\n---Foreign keys from other tables---\n" + add_constraints_sql) unless add_constraints_sql.empty?
 

@@ -95,6 +95,21 @@ class TableUtils
   end
 
   ##
+  # returns info on all the tables that are dependent on the specified one
+  #
+  def self.get_dependent_tables(connection, table={})
+    filters = { 'constraint_type' => 'f' }
+    filters['ref_namespace'] = table[:schema_name] if table.has_key?(:schema_name)
+    filters['ref_tablename'] = table[:table_name] if table.has_key?(:table_name)
+    SQL.execute_grouped(connection, 'tables/constraints', filters: filters) do |r|
+      unless r.has_key?('schema_name') && r.has_key?('table_name') && r.has_key?('constraint_name') && r.has_key?('contraint_columnname') && r.has_key?('ref_columnname')
+        fail 'Missing constraint info'
+      end
+      self.build_full_table_name(r['ref_namespace'], r['ref_tablename'])
+    end
+  end
+
+  ##
   # groups SQL results in a hash by 'schema_name'
   # and 'table_name' from the retrieved rows
   #
