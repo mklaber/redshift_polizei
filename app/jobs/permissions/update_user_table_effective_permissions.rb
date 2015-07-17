@@ -12,18 +12,34 @@ module Jobs
       # but increases the speed a lot.
       #
       def execute(job_id, user_id, options={})
+        filters = {}
+        filters['schema_name'] = options[:schema_name] if options.has_key?(:schema_name)
+        filters['table_name']  = options[:table_name]  if options.has_key?(:table_name)
+
         # retrieve user table permissions from RedShift
         results = RSPool.with do |connection|
-          self.class.make_boolean(SQL.execute(connection, 'permissions/tables_for_users_effective'))
+          self.class.make_boolean(SQL.execute(connection,
+            'permissions/tables_for_users_effective', filters: filters))
         end
         now = Time.now.utc
-        # update or touch everything we found
+        # update everything we found
         build_user_cache
         build_table_cache
         @permissions_cache = {}
         Models::Permission.transaction do
-          Models::Permission.where('entity_type = ? AND dbobject_type = ? AND declared = ?',
-            'Models::DatabaseUser', 'Models::Table', false).delete_all
+          # delete all previous permissions of this category
+          # (between user & table and effective permission)
+          if filters.has_key?('schema_name') && filters.has_key?('table_name')
+            Models::Permission.where('declared = ? AND entity_type = ?',
+              false, 'Models::DatabaseUser').where(
+                dbobject: Models::Table.find_by!(schema: Models::Schema.find_by!(name: filters['schema_name']), name: filters['table_name'])
+              ).delete_all
+          elsif filters.has_key?(:schema_name) && !filters.has_key?(:table_name)
+            fail ArgumentError, 'Must provide none or all of schema_name, table_name'
+          else
+            Models::Permission.where('entity_type = ? AND dbobject_type = ? AND declared = ?',
+              'Models::DatabaseUser', 'Models::Table', false).delete_all
+          end
           results.each do |data|
             begin
               u = @user_cache[data['username']]
@@ -40,12 +56,7 @@ module Jobs
               raise
             end
           end
-          # this creates a huge sql query [id IN (thousands of id's)], but still seems worth it
-          #Models::Permission.where(id: touch_list).update_all(updated_at: now)
         end
-        # delete everything that wasn't touched
-        Models::Permission.where('entity_type = ? AND dbobject_type = ? AND declared = ? AND updated_at < ?',
-          'Models::DatabaseUser', 'Models::Table', false, now).destroy_all
         Models::Permission.connection.execute('VACUUM ANALYZE permissions')
         true
       end

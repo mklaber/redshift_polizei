@@ -6,14 +6,18 @@ module Jobs
     class UpdateGroupTableDeclaredPermissions < Base
 
       def execute(job_id, user_id, options={})
+        filters = {}
+        filters['schema_name'] = options[:schema_name] if options.has_key?(:schema_name)
+        filters['table_name']  = options[:table_name]  if options.has_key?(:table_name)
+
         # retrieve group table permissions from RedShift
         results =  RSPool.with do |connection|
           tmp  = self.class.make_boolean(SQL.execute(connection,
-            'permissions/tables_for_groups_declared').to_a).each do |perm|
+            'permissions/tables_for_groups_declared', filters: filters)).to_a.each do |perm|
                 perm['group'] = perm['grantee']
           end
           tmp += self.class.make_boolean(SQL.execute(connection,
-            'permissions/tables_for_public_group_declared').to_a).each do |perm|
+            'permissions/tables_for_public_group_declared', filters: filters).to_a).each do |perm|
                 perm['group'] = perm['grantee']
           end
           tmp

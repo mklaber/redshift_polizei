@@ -62,6 +62,7 @@ module Jobs
       fail 'Empty table name!' if table_name.nil? || table_name.empty?
 
       # get the latest info on the table for the later TableArchive creation
+      Jobs::Permissions::Update.run(user_id, schema_name: schema_name, table_name: table_name)
       Jobs::TableReports.run(job_id, user_id, schema_name: schema_name, table_name: table_name)
       tbl = Models::TableReport.find_by(schema_name: schema_name, table_name: table_name)
       table_info = {}
@@ -100,6 +101,12 @@ module Jobs
       ddl_match = ddl_obj.read.scan(/CREATE TABLE/mi)
       fail 'Table has foreign constraints!' if ddl_match.length != 1
 
+      # export the current permissions
+      perms_s3_key = "#{archive_prefix}permissions.sql"
+      Jobs::TablePermissionsSQL.run(user_id,
+        schema_name: schema_name,table_name: table_name,
+        bucket: archive_bucket, key: perms_s3_key)
+
       # UNLOAD the entire table
       full_table_name = Desmond::PGUtil.get_escaped_table_name(options[:db], schema_name, table_name)
       query = "SELECT * FROM #{full_table_name}"
@@ -123,7 +130,10 @@ module Jobs
       Jobs::TableReports.run(job_id, user_id, schema_name: schema_name, table_name: table_name) unless options[:db][:skip_drop]
 
       # done return the full path to the s3 manifest and DDL files
-      {ddl_file: "s3://#{archive_bucket}/#{ddl_s3_key}", manifest_file: "s3://#{archive_bucket}/#{archive_prefix}manifest"}
+      { ddl_file: "s3://#{archive_bucket}/#{ddl_s3_key}",
+        manifest_file: "s3://#{archive_bucket}/#{archive_prefix}manifest",
+        perms_file: "s3://#{archive_bucket}/#{perms_s3_key}", 
+      }
     ensure
       conn.close unless conn.nil?
     end
