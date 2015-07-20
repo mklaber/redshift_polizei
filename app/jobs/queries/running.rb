@@ -15,6 +15,7 @@ module Jobs
           end
           SQL.execute_raw(connection, sql)
         end
+        fail 'Could not retrieve running queries, returned nil' if queries.nil?
         queries = QueryUtils.sequence_merge(queries)
 
         # long queries are returned with multiple rows, so we'll need to join them

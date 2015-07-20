@@ -25,7 +25,7 @@ module Jobs
       subject = "ERROR: Your RedShift table schemas export failed"
       body = "Sorry, your table schemas export failed.
 This can happen if tables get deleted during the export, so please try once more and then let engineering know."
-      
+
       mail_options = {
         cc: GlobalConfig.polizei('job_failure_cc'),
         bcc: GlobalConfig.polizei('job_failure_bcc')
@@ -58,7 +58,7 @@ You can view it in your browser by using this link: #{view_url}"
     # actual job
     # the following +options+ are additionally supported:
     # - db
-    #   - export_single_table: if true, will not include the dependencies for the specified table
+    #   - skip_dependencies: if true, will only export schema of the specified table
     #   - no_column_encoding: if true, will not include the column encodings
     #   - diststyle_override: override for distribution styles {'EVEN' | 'KEY' | 'ALL'}
     #   - distkey_override: override for distribution keys. only valid for KEY diststyle
@@ -154,10 +154,14 @@ You can view it in your browser by using this link: #{view_url}"
 
       tables = []
       columns.each do |full_table_name, col_defs|
-        table_dependencies = dependencies[full_table_name] || Set.new
+        if options[:skip_dependencies]
+          table_dependencies = Set.new
+        else
+          table_dependencies = dependencies[full_table_name] || Set.new
+        end
 
         # make sure we have the data for all dependencies
-        unless table_names.superset?(table_dependencies) || options[:export_single_table]
+        unless table_names.superset?(table_dependencies)
           table_dependencies.each do |table_dependency|
             schema_name, table_name = deconstruct_full_table_name(table_dependency)
             tables += get_tables_data_with_dependencies(connection,

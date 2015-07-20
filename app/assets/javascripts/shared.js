@@ -105,8 +105,12 @@ $.fn.dataTable.pipeline = function (opts) {
                     drawCallback(json);
                 },
                 "error": function (req, textStatus, errorThrown) {
+                    var error = errorThrown;
+                    var responseBody = $.parseJSON(req.responseText);
+                    if (responseBody['error'])
+                        error = responseBody['error'];
                     var errorContainer = 'div#' + settings.sTableId + '_processing';
-                    var errorMsg = "Error loading table data, reason: '" + textStatus + "'";
+                    var errorMsg = "Error loading table data, reason: '" + error + "'";
                     $(errorContainer).text(errorMsg);
                 }
             });
@@ -149,8 +153,12 @@ $.fn.dataTable.ajaxload = function (opts) {
                 drawCallback(json);
             },
             "error": function (req, textStatus, errorThrown) {
+                var error = errorThrown;
+                var responseBody = $.parseJSON(req.responseText);
+                if (responseBody['error'])
+                    error = responseBody['error'];
                 var errorContainer = 'table#' + settings.sTableId + ' td.dataTables_empty';
-                var errorMsg = "Error loading table date, reason: '" + textStatus + "'";
+                var errorMsg = "Error loading table data, reason: '" + error + "'";
                 $(errorContainer).text(errorMsg);
             }
         });
@@ -262,6 +270,8 @@ $(document).ready(function() {
     });
     // when shown, modal focus gets set to the first input
     $('.modal').on('shown.bs.modal', function () {
-        $(this).find('form').find('input:visible:not([readonly]):first').focus();
+        $(this).find('form').find('input:visible:not([readonly]):first').select();
     });
+    // 'remember me' for redshift usernames
+    $('.redshift_username').val(Cookies.get('redshift_username'));
 });

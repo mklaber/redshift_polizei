@@ -19,6 +19,49 @@ module PolizeiHelpers
     Rack::Utils.escape_html(text)
   end
 
+  def get_redshift_metric_leader(cluster_info, options={})
+    cluster_identifier = cluster_info[:cluster_identifier]
+    dimensions = [{
+      name: 'ClusterIdentifier',
+      value: cluster_identifier
+    },{
+      name: 'NodeID',
+      value: 'Leader' # CloudWatch doesn't accept the names out of cluster info
+    }]
+    get_cloudwatch_metric(options.merge(dimensions: dimensions))
+  end
+
+  def get_redshift_metric_computes(cluster_info, options={})
+    cluster_identifier = cluster_info[:cluster_identifier]
+    i = 0
+    cluster_info[:cluster_nodes].select { |node| node[:node_role] != 'LEADER' }.map do |node|
+      nodeid = "Compute-#{i}" # CloudWatch doesn't accept the names out of cluster info
+      dimensions = [{
+        name: 'ClusterIdentifier',
+        value: cluster_identifier
+      },{
+        name: 'NodeID',
+        value: nodeid
+      }]
+      i += 1
+      tmp = get_cloudwatch_metric(options.merge(dimensions: dimensions))
+      tmp[:node] = nodeid
+      tmp
+    end
+  end
+
+  def get_cloudwatch_metric(options={})
+    num_safety_periods = 10
+    period = options[:period]
+    fail ArgumentError, 'No period given' if period.blank?
+
+    # fighting clock drift
+    AWS::CloudWatch::Client.new.get_metric_statistics(options.merge({
+      start_time: (Time.now - period * num_safety_periods).iso8601,
+      end_time:   (Time.now + period * num_safety_periods).iso8601
+    })).try(:[], :datapoints).try(:max_by) { |t| t[:timestamp] }
+  end
+
   def validate_email_list(emails, max=0)
     return [] if emails.nil?
     email_list = emails.split(',')

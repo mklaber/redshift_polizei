@@ -66,11 +66,11 @@ $(document).ready(function() {
     ]
   });
 
+  // absolute/relative time display code
   function abs_rel_toggle() {
     $(this).find('span.absolute').toggle();
     $(this).find('span.relative').toggle();
   }
-
   $('#queries_recent_tbl').on('init.dt', function() {
     $('table#queries_recent_tbl tbody').on('click', 'tr > td:nth-child(2)', abs_rel_toggle);
     $('table#queries_recent_tbl tbody').on('click', 'tr > td:nth-child(4)', abs_rel_toggle);
@@ -79,3 +79,44 @@ $(document).ready(function() {
     $('.abs_rel').tooltip();
   });
 });
+
+// cpu utilization gauge
+google.load("visualization", "1", {packages:["gauge"]});
+google.setOnLoadCallback(drawChart);
+
+function drawChart() {
+  var data = google.visualization.arrayToDataTable([
+    ['Label', 'Value'],
+    ['Leader', 0.0],
+    ['Computes', 0.0]
+  ]);
+
+  var options = {
+    width: 400, height: 120,
+    redFrom: 90, redTo: 100,
+    yellowFrom: 75, yellowTo: 90,
+    minorTicks: 5
+  };
+  var chart = new google.visualization.Gauge(document.getElementById('chart_div'));
+  chart.draw(data, options);
+
+  $.ajax({
+    "type":     'GET',
+    "url":      '/cluster/status',
+    "dataType": "json",
+    "cache":    false,
+    "timeout":  10000,
+    "success":  function (json, textStatus, req) {
+      data.setValue(0, 1, json['cpu'][['leader']]);
+      data.setValue(1, 1, json['cpu'][['computes']]);
+      chart.draw(data, options);
+    },
+    "error": function (req, textStatus, errorThrown) {
+      var error = errorThrown;
+      var responseBody = $.parseJSON(req.responseText);
+      if (responseBody['error'])
+          error = responseBody['error'];
+      console.log('error: ' + error);
+    }
+  });
+}

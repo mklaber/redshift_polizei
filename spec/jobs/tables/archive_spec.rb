@@ -1,7 +1,7 @@
 require_relative '../../spec_helper'
 
 describe Jobs::ArchiveJob do
-  
+
   #
   # Runs an ArchiveJob with the specified options and returns the job run.
   #
@@ -92,6 +92,34 @@ describe Jobs::ArchiveJob do
     check_success(run_archive(options), options)
   end
 
+  it 'should succeed on a table with a foreign key reference to another table' do
+    table2 = "archive_test_#{Time.now.to_i}_#{rand(1024)}"
+    full_table_name2 = "#{@schema}.#{table2}"
+    extra_sql = <<-SQL
+        CREATE TABLE #{full_table_name2}(id INT PRIMARY KEY);
+        INSERT INTO #{full_table_name2} VALUES (0), (1), (2);
+        ALTER TABLE #{@full_table_name}
+          ADD FOREIGN KEY(id) REFERENCES #{full_table_name2}(id);
+    SQL
+    @conn.exec(extra_sql)
+    options = merge_options({db: {table: @table, auto_encode: true},
+                             s3: {prefix: @archive_prefix}})
+    check_success(run_archive(options), options)
+  end
+
+  it 'should succeed on a table that another table has a reference to' do
+    table2 = "archive_test_#{Time.now.to_i}_#{rand(1024)}"
+    @full_table_name2 = "#{@schema}.#{table2}"
+    extra_sql = <<-SQL
+        CREATE TABLE #{@full_table_name2}
+          (id INT REFERENCES #{@full_table_name}(id));
+        INSERT INTO #{@full_table_name2} VALUES (0), (1), (2);
+    SQL
+    @conn.exec(extra_sql)
+    options = merge_options({db: {table: @table, auto_encode: true}, s3: {prefix: @archive_prefix}})
+    check_success(run_archive(options), options)
+  end
+
   it 'should archive permissions correctly' do
     # change permissions
     change_owner_sql = "ALTER TABLE \"#{@schema}\".\"#{@table}\" OWNER TO \"#{@test_user}\""
@@ -120,7 +148,7 @@ describe Jobs::ArchiveJob do
     @permissions_file = "#{@archive_prefix}permissions.sql"
 
     create_sql = <<-SQL
-        CREATE TABLE #{@full_table_name}(id INT, txt VARCHAR);
+        CREATE TABLE #{@full_table_name}(id INT PRIMARY KEY, txt VARCHAR);
         INSERT INTO #{@full_table_name} VALUES (0, 'hello'), (1, 'privyet'), (2, null);
     SQL
     @conn.exec(create_sql)
@@ -132,7 +160,7 @@ describe Jobs::ArchiveJob do
     tbl = Models::TableArchive.find_by(schema_name: @schema, table_name: @table)
     tbl.destroy unless tbl.nil?
     # Drop test redshift table.
-    @conn.exec("DROP TABLE IF EXISTS #{@full_table_name}")
+    @conn.exec("DROP TABLE IF EXISTS #{@full_table_name} CASCADE; DROP TABLE IF EXISTS #{@full_table_name2} CASCADE;")
     # Clean up S3 archive files.
     @bucket.objects.with_prefix(@archive_prefix).delete_all
   end

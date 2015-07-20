@@ -210,25 +210,56 @@ $(document).ready(function() {
     $(this).find("input[name=sortStyle][value!=" + sortStyle + "]").parent().removeClass('active');
     var sortKeys = button.attr('data-sort-keys');
     $(this).find('input[name=sortKeys]').val(sortKeys);
+    // Cannot select keepCurrent encodings if table doesn't have any encodings.
+    var hasColEncodings = button.attr('data-has-col-encodings') === 'true';
+    if (hasColEncodings) {
+      $(this).find('input[name=colEncode][value=keepCurrent]').prop('disabled', false);
+      $(this).find('input[name=colEncode][value=keepCurrent]').parent().removeClass('disabled');
+      $(this).find('input[name=colEncode][value=recompute]').prop('checked', false);
+      $(this).find('input[name=colEncode][value=recompute]').parent().removeClass('active');
+      $(this).find('input[name=colEncode][value=keepCurrent]').prop('checked', true);
+      $(this).find('input[name=colEncode][value=keepCurrent]').parent().addClass('active');
+    } else {
+      $(this).find('input[name=colEncode][value=keepCurrent]').prop('disabled', true);
+      $(this).find('input[name=colEncode][value=keepCurrent]').parent().addClass('disabled');
+      $(this).find('input[name=colEncode][value=recompute]').prop('checked', true);
+      $(this).find('input[name=colEncode][value=recompute]').parent().addClass('active');
+      $(this).find('input[name=colEncode][value=keepCurrent]').prop('checked', false);
+      $(this).find('input[name=colEncode][value=keepCurrent]').parent().removeClass('active');
+    }
   });
 
-  // modal submit buttons change to a loading state
+  // modal submit buttons
   $('#archiveForm').submit(function () {
+    if ($('#archiveRememberMe').is(':checked')) {
+      Cookies.set('redshift_username', $('#archiveInputRedshiftUsername').val());
+    }
     $('#archive_submit').button('loading');
   });
   $('#restoreForm').submit(function () {
+    if ($('#restoreRememberMe').is(':checked')) {
+      Cookies.set('redshift_username', $('#restoreInputRedshiftUsername').val());
+    }
     $('#restore_submit').button('loading');
   });
   $('#regenerateForm').submit(function () {
+    if ($('#regenerateRememberMe').is(':checked')) {
+      Cookies.set('redshift_username', $('#regenerateInputRedshiftUsername').val());
+    }
     $('#regenerate_submit').button('loading');
   });
 
   // show/hide additional inputs on Regenerate modal
   $("input[type=radio][name=distStyle]").change(function() {
+    var selector = $('#distKeySelection');
+    var inp = $('#distKey');
     if (this.value == 'key') {
-      $('#distKeySelection').show();
+      selector.show();
+      inp.attr('required', '');
+      inp.attr('title', 'Input a single valid key.');
     } else {
-      $('#distKeySelection').hide();
+      selector.hide();
+      inp.removeAttr('required');
     }
   });
   $("input[type=radio][name=sortStyle]").change(function() {
@@ -237,11 +268,16 @@ $(document).ready(function() {
     if (this.value == 'single') {
       selector.show();
       inp.attr('placeholder', 'key');
+      inp.attr('required', '');
+      inp.attr('title', 'Input a single valid key.');
     } else if (this.value == 'compound' || this.value == 'interleaved') {
       selector.show();
       inp.attr("placeholder", "key1, key2");
+      inp.attr('required', '');
+      inp.attr('title', 'Input a comma-separated list of valid keys.');
     } else {
       selector.hide();
+      inp.removeAttr('required');
     }
   });
 

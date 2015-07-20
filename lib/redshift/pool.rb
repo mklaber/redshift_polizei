@@ -20,11 +20,12 @@ class RSPool
         reconnect!
         retry
       end
+      raise
     end
   end
 
   def self.reconnect!
-    @pool = ConnectionPool.new { RSUtil.dedicated_connection(system_connection_allowed: true) }
+    @pool = ConnectionPool.new { RSUtil.dedicated_connection(system_connection_allowed: true, 'timeout' => 10) }
   end
   private_class_method :reconnect!
 end
