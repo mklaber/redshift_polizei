@@ -14,6 +14,28 @@
   </div>
 </div>
 
+<!-- Comment Modal -->
+<div class="modal fade" id="comment_modal" tabindex="-1" role="dialog" aria-labelledby="commentLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <form class="form-horizontal" style="margin-top: 10px;">
+        <div class="modal-header">
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+          <h4 class="modal-title" id="commentLabel">Edit Comment</h4>
+        </div>
+        <div class="modal-body">
+          <input type="textarea" multiple class="form-control" id="inputComment" name="comment" value="">
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+          <button type="submit" class="btn btn-success" id="comment_submit" data-loading-text="Submitting..."
+                  data-id="-1" data-schema-name="UNKNOWN" data-table-name="UNKNOWN">Confirm</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
 <!-- Export Structure Modal -->
 <div class="modal fade" id="export_structure_modal" tabindex="-1" role="dialog" aria-labelledby="exportStructureLabel" aria-hidden="true">
   <div class="modal-dialog">
@@ -365,10 +387,17 @@
               <%= row['table_name'] %>
               <small class="secondary">(<%=row['table_id']%>)</small>
               <% if row['comment'] %>
-                <i class='db_comment fa fa-comment' data-toggle='tooltip' data-placement='top' title=<%= row['comment'] %>></i>
+                <span data-toggle='tooltip' data-placement='top' title="<%= row['comment'] %>">
+                  <i class="db_comment fa fa-comment" data-toggle="modal" data-target="#comment_modal" id="comment_<%= i %>"
+                     data-id="<%= i %>" data-schema-name="<%= row['schema_name'] %>" data-table-name="<%= row['table_name'] %>" data-comment="<%= row['comment'] %>"></i>
+                </span>
               <% else %>
-                <i class='db_comment fa fa-comment-o' data-toggle='tooltip' data-placement='top' title='*Add table comment*'></i>
+                <span data-toggle="tooltip" data-placement="top" title="*Add a new table comment*">
+                  <i class="db_comment fa fa-comment-o" data-toggle="modal" data-target="#comment_modal" id="comment_<%= i %>"
+                     data-id="<%= i %>" data-schema-name="<%= row['schema_name'] %>" data-table-name="<%= row['table_name'] %>"></i>
+                </span>
               <% end %>
+              <i class="fa fa-refresh fa-spin" id="comment_load_<%= i %>" style="display: none;"></i>
             </td>
             <td nowrap="nowrap"><%= (row['size_in_mb'].to_i / 1024.0).round(2) %></td>
             <td>

@@ -1,8 +1,4 @@
 $(document).ready(function() {
-  // initialize tooltips
-  $('[data-toggle=tooltip]').on('mouseover', function(e) {
-    $(this).tooltip();
-  });
 
   // show relative or absolute date of last data update
   var last_update_container = $('#last_update');
@@ -23,10 +19,11 @@ $(document).ready(function() {
     $(this).find('span.relative').toggle();
   });
 
-  // sort style tooltips
-  $('span.label[data-toggle="tooltip"]').tooltip();
-  $('#tablereports').on('draw.dt', function() { // after rerender we need to reinitialize
-    $('span.label[data-toggle="tooltip"]').tooltip();
+  // init tooltips
+  $('[data-toggle="tooltip"]').tooltip();
+  $('#tablereports').on('draw.dt', function() {
+    // after rerender we need to reinitialize
+    $('[data-toggle=tooltip]').tooltip();
   });
 
   // export schemas button
@@ -168,6 +165,76 @@ $(document).ready(function() {
         alert("Error loading update, reason: '" + errorCause + "'");
       }
     });
+    return false;
+  });
+
+  // comment modal
+  $('#comment_modal').on('show.bs.modal', function(event) {
+    var button = $(event.relatedTarget);
+    var id = button.attr('data-id');
+    var schema = button.attr('data-schema-name');
+    var table = button.attr('data-table-name');
+    var comment = button.attr('data-comment');
+    var comment_el = $(this).find('input[name=comment]');
+    var submit_button = $('#comment_submit');
+    var label_el = $('#commentLabel');
+    submit_button.attr('data-id', id);
+    submit_button.attr('data-schema-name', schema);
+    submit_button.attr('data-table-name', table);
+    comment_el.val(comment);
+    if (comment) {
+      label_el.text("Edit Comment for " + schema + "." + table);
+      submit_button.text("Confirm Edit");
+    } else {
+      label_el.text("New Comment for " + schema + "." + table);
+      submit_button.text("Confirm Add");
+    }
+  });
+  $('#comment_submit').on('click', function(e) {
+    var row_id = $(e.target).attr("data-id");
+    var schema_name = $(e.target).attr("data-schema-name");
+    var table_name = $(e.target).attr("data-table-name");
+    var comment = $('#inputComment').val();
+
+    // saved in case user goes to a different page, which may move these out of view
+    var comment_button = $('#comment_' + row_id);
+    var loading_img = $('#comment_load_' + row_id);
+    comment_button.hide();
+    loading_img.show();
+    $.ajax({
+      "type":     'POST',
+      "url":      'tables/comment',
+      "data":     'schema_name=' + schema_name + '&table_name=' + table_name + '&comment=' + comment,
+      "dataType": "json",
+      "cache":    false,
+      "timeout":  45000,
+      "success":  function () {
+        // Update tooltip info in the table.
+        comment_button.removeClass('fa-comment fa-comment-o')
+        if (comment.length == 0) {
+          comment_button.removeAttr('data-comment');
+          comment_button.addClass('fa-comment-o');
+          comment_button.parent().attr('title', '*Add a new table comment*');
+        } else {
+          comment_button.attr('data-comment', comment);
+          comment_button.addClass('fa-comment');
+          comment_button.parent().attr('title', comment);
+        }
+        comment_button.parent().tooltip('destroy');
+        comment_button.parent().tooltip();
+        loading_img.hide();
+        comment_button.show();
+      },
+      "error": function (req, textStatus, errorThrown) {
+        loading_img.hide();
+        comment_button.show();
+        var errorCause = errorThrown;
+        if (req.responseJSON['error'])
+          errorCause = req.responseJSON['error'];
+        alert("Error loading update, reason: '" + errorCause + "'");
+      }
+    });
+    $('#comment_modal').modal('hide');
     return false;
   });
 

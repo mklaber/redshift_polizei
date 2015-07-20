@@ -5,7 +5,7 @@ class Polizei < Sinatra::Application
   POLIZEI_CONFIG_FILE = 'config/polizei.yml'
   JOB_WAIT_TIMEOUT = 30
   ARCHIVE_NULL_VALUE = '<<<NULL>>>'
-  
+
   set :root, File.dirname(__FILE__)
   set :views, "#{settings.root}/views"
   helpers PolizeiHelpers
@@ -234,7 +234,7 @@ class Polizei < Sinatra::Application
     ).map { |t| { node: t[:node], pct: t[:average] } }
     erb :disk_space, :locals => {:name => :disk_space}
   end
-  
+
   get '/tables' do
     @tables = Models::TableReport.order(size_in_mb: :desc)
     @archives = Models::TableArchive.order(created_at: :desc)
@@ -277,6 +277,25 @@ class Polizei < Sinatra::Application
                                     },
                                     email: email_list.join(', '))
     redirect to('/tables')
+  end
+
+  post '/tables/comment' do
+    content_type :json
+    begin
+      comment = (params[:comment].nil? || params[:comment].empty?) ? nil : params[:comment]
+      Jobs::CommentJob.enqueue_and_wait(
+        1,
+        current_user.id,
+        JOB_WAIT_TIMEOUT,
+        schema_name: params[:schema_name],
+        table_name: params[:table_name],
+        comment: comment
+      ).to_json
+    rescue => e
+      PolizeiLogger.logger.exception e
+      status 500
+      { error: e.message }.to_json
+    end
   end
 
   post '/tables/restore' do
