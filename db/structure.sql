@@ -459,7 +459,8 @@ CREATE TABLE table_archives (
     has_col_encodings boolean,
     created_at timestamp without time zone,
     updated_at timestamp without time zone,
-    sort_style character varying
+    sort_style character varying,
+    comment character varying
 );
 
 

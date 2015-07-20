@@ -60,6 +60,7 @@ module Jobs
       fail 'Empty schema name!' if schema_name.nil? || schema_name.empty?
       table_name = options[:db][:table]
       fail 'Empty table name!' if table_name.nil? || table_name.empty?
+      full_table_name = Desmond::PGUtil.get_escaped_table_name(options[:db], schema_name, table_name)
 
       # get the latest info on the table for the later TableArchive creation
       Jobs::TableReports.run(job_id, user_id, schema_name: schema_name, table_name: table_name)
@@ -72,6 +73,7 @@ module Jobs
         table_info[:sort_style] = tbl.sort_style
         table_info[:sort_keys] = tbl.sort_keys
         table_info[:has_col_encodings] = tbl.has_col_encodings
+        table_info[:comment] = tbl.comment
       end
 
       # check if archive already exists
@@ -97,7 +99,8 @@ module Jobs
       ddl_obj = AWS::S3.new.buckets[archive_bucket].objects[ddl_s3_key]
       fail 'Failed to export DDL!' unless ddl_obj.exists?
       # ensure TableStructureExportJob outputted a single CREATE TABLE statement
-      ddl_match = ddl_obj.read.scan(/CREATE TABLE/mi)
+      ddl_text = ddl_obj.read
+      ddl_match = ddl_text.scan(/CREATE TABLE/mi)
       fail 'No DDL statement was exported!' if ddl_match.length < 1
       fail 'Too many DDL statements were exported!' if ddl_match.length > 1
 
@@ -111,10 +114,14 @@ module Jobs
         add_constraints_sql += "ALTER TABLE #{r['schema_name']}.#{r['table_name']} ADD CONSTRAINT #{r['constraint_name']} FOREIGN KEY (#{r['contraint_columnname']}) REFERENCES #{schema_name}.#{table_name} (#{r['ref_columnname']});\n"
       end unless dependent_tables.nil?
       # constraints will be recreated upon table restoration
-      ddl_obj.write(ddl_obj.read + "\n---Foreign keys from other tables---\n" + add_constraints_sql) unless add_constraints_sql.empty?
+      ddl_text += "\n---Foreign keys from other tables---\n" + add_constraints_sql unless add_constraints_sql.empty?
+
+      # preserve the table comment if present
+      ddl_text += "\n---Table comment---\nCOMMENT ON TABLE #{full_table_name} IS '#{Desmond::PGUtil.escape_string(table_info[:comment])}';" unless table_info[:comment].nil?
+
+      ddl_obj.write(ddl_text) unless add_constraints_sql.empty? && table_info[:comment].nil?
 
       # UNLOAD the entire table
-      full_table_name = Desmond::PGUtil.get_escaped_table_name(options[:db], schema_name, table_name)
       query = "SELECT * FROM #{full_table_name}"
       Desmond::UnloadJob.run(user_id, options.deep_merge({db: {query: query}}))
 
