@@ -153,7 +153,7 @@ module Jobs
       # done return the full path to the s3 manifest and DDL files
       { ddl_file: "s3://#{archive_bucket}/#{ddl_s3_key}",
         manifest_file: "s3://#{archive_bucket}/#{archive_prefix}manifest",
-        perms_file: "s3://#{archive_bucket}/#{perms_s3_key}", 
+        perms_file: "s3://#{archive_bucket}/#{perms_s3_key}",
       }
     ensure
       conn.close unless conn.nil?

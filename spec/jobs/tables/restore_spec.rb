@@ -58,7 +58,7 @@ describe Jobs::RestoreJob do
   it 'should properly restore a table' do
     # RestoreJob should succeed.
     r = run_restore({db: {table: @table}, s3: {prefix: @archive_prefix}})
-    expect(r.failed?).to eq(false)
+    expect(r.failed?).to(eq(false), "Error: #{r.error}")
     expect(r.result['schema']).to eq(@schema)
     expect(r.result['table']).to eq(@table)
 
@@ -84,7 +84,7 @@ describe Jobs::RestoreJob do
 
   it 'should restore permissions correctly' do
     r = run_restore({db: {table: @table}, s3: {prefix: @archive_prefix}})
-    expect(r.failed?).to eq(false)
+    expect(r.failed?).to(eq(false), "Error: #{r.error}")
     Jobs::Permissions::Update.run(1, schema_name: @schema, table_name: @table)
     table = Models::Table.find_by!(schema: Models::Schema.find_by!(name: @schema), name: @table)
     expect(table.owner.name).to eq(@test_user)

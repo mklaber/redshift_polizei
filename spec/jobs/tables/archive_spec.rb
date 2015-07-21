@@ -122,9 +122,9 @@ describe Jobs::ArchiveJob do
 
   it 'should archive permissions correctly' do
     # change permissions
-    change_owner_sql = "ALTER TABLE \"#{@schema}\".\"#{@table}\" OWNER TO \"#{@test_user}\""
-    grant_group_sql = "GRANT INSERT, UPDATE, DELETE ON \"#{@schema}\".\"#{@table}\" TO GROUP \"#{@test_group}\""
-    grant_user_sql = "GRANT SELECT, REFERENCES ON \"#{@schema}\".\"#{@table}\" TO \"#{@conn.user}\""
+    change_owner_sql = "ALTER TABLE #{@full_table_name} OWNER TO \"#{@test_user}\""
+    grant_group_sql = "GRANT INSERT, UPDATE, DELETE ON #{@full_table_name} TO GROUP \"#{@test_group}\""
+    grant_user_sql = "GRANT SELECT, REFERENCES ON #{@full_table_name} TO \"#{@conn.user}\""
     @conn.exec(change_owner_sql)
     @conn.exec(grant_group_sql)
     @conn.exec(grant_user_sql)
@@ -140,12 +140,22 @@ describe Jobs::ArchiveJob do
     ])
   end
 
+  it 'should archive table comments successfully' do
+    add_cmt_sql = "COMMENT ON TABLE #{@full_table_name} IS 'test_comment_#{rand(1024)}'"
+    @conn.exec(add_cmt_sql)
+    options = merge_options({db: {table: @table, auto_encode: true}, s3: {prefix: @archive_prefix}})
+    check_success(run_archive(options), options)
+    # ensure ddl file contains the comment
+    expect(@bucket.objects[@ddl_file].read).to include(add_cmt_sql)
+  end
+
   before(:each) do
     @schema = @config[:archive_schema]
     @table = "archive_test_#{Time.now.to_i}_#{rand(1024)}"
-    @full_table_name = "#{@schema}.#{@table}"
+    @full_table_name = "\"#{@schema}\".\"#{@table}\""
     @archive_prefix = "test/#{@full_table_name}"
     @permissions_file = "#{@archive_prefix}permissions.sql"
+    @ddl_file = "#{@archive_prefix}ddl"
 
     create_sql = <<-SQL
         CREATE TABLE #{@full_table_name}(id INT PRIMARY KEY, txt VARCHAR);

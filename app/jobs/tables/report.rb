@@ -69,7 +69,6 @@ module Jobs
       sort_dist_styles = TableUtils.get_sort_and_dist_styles(connection, table)
       sort_dist_keys = TableUtils.get_sort_and_dist_keys(connection, table)
       comments = TableUtils.get_table_comments(connection, table)
-      puts comments
 
       statistics.hmap do |full_table_name, stats|
         begin
