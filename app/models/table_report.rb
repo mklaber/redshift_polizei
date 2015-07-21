@@ -16,5 +16,6 @@ module Models
     # dist_style             :string(255)      null
     # sort_style             :string(255)      null
     # comment                :string(255)      null
+    # columns                :string(255)      null
   end
 end

@@ -103,7 +103,7 @@ module Jobs
             sort_keys: (sort_dist_key['sort_keys'] || []).to_json,
             dist_key: sort_dist_key['dist_key'],
             has_col_encodings: col_encoding,
-            comment: comment['comment']
+            comment: comment['comment'],
             columns: columns
           }
         end

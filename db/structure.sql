@@ -502,7 +502,7 @@ CREATE TABLE table_reports (
     updated_at timestamp without time zone,
     dist_style character varying,
     sort_style character varying,
-    comment character varying
+    comment character varying,
     columns character varying
 );
 
@@ -1124,6 +1124,8 @@ INSERT INTO schema_migrations (version) VALUES ('23');
 INSERT INTO schema_migrations (version) VALUES ('24');
 
 INSERT INTO schema_migrations (version) VALUES ('25');
+
+INSERT INTO schema_migrations (version) VALUES ('26');
 
 INSERT INTO schema_migrations (version) VALUES ('3');
 
