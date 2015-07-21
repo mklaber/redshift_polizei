@@ -63,7 +63,19 @@ module Jobs
       end
     end
 
+    def generate_comma_seperated_columns(raw_columns)
+      if raw_columns !=nil && raw_columns.length!=0 
+        columns=""
+        raw_columns.each do |column|
+          columns << column["name"] << ", "
+        end
+        return columns[0..-3]
+      end
+      return nil
+    end
+
     def get_table_reports(connection, table)
+      all_columns = TableUtils.get_columns(connection, table)
       statistics = TableUtils.get_size_skew_populated(connection, table)
       col_encodings = TableUtils.has_column_encodings(connection, table)
       sort_dist_styles = TableUtils.get_sort_and_dist_styles(connection, table)
@@ -75,6 +87,8 @@ module Jobs
           col_encoding    = col_encodings[full_table_name] || false
           sort_dist_style = sort_dist_styles[full_table_name] || {}
           sort_dist_key   = sort_dist_keys[full_table_name] || {}
+          raw_columns = all_columns[full_table_name] || {}
+          columns = generate_comma_seperated_columns(raw_columns)
           {
             schema_name: r['schema_name'].strip,
             table_name: r['table_name'].strip,
@@ -86,7 +100,8 @@ module Jobs
             pct_slices_populated: r['pct_slices_populated'].to_f,
             sort_keys: (sort_dist_key['sort_keys'] || []).to_json,
             dist_key: sort_dist_key['dist_key'],
-            has_col_encodings: col_encoding
+            has_col_encodings: col_encoding,
+            columns: columns
           }
         end
       end

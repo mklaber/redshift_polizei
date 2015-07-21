@@ -1,7 +1,9 @@
 $(document).ready(function() {
   // initialize tooltips
   $('[data-toggle=tooltip]').tooltip();
-
+  $("[data-toggle=popover]").popover();
+  var searchBox = $('div.dataTables_filter input');
+  searchBox.focus();
   // show relative or absolute date of last data update
   var last_update_container = $('#last_update');
   var last_update = $('#last_update_store').text();
@@ -24,7 +26,8 @@ $(document).ready(function() {
   // sort style tooltips
   $('span.label[data-toggle="tooltip"]').tooltip();
   $('#tablereports').on('draw.dt', function() { // after rerender we need to reinitialize
-    $('span.label[data-toggle="tooltip"]').tooltip();
+    $('[data-toggle="tooltip"]').tooltip();
+    $("[data-toggle=popover]").popover();
   });
 
   // export schemas button

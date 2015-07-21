@@ -88,7 +88,6 @@ You can view it in your browser by using this link: #{view_url}"
         RSPool.with do |connection|
           tables = get_tables_data_with_dependencies(connection, table)
         end
-
         s3_writer.write("---------- #{tables.size} tables exported ----------\n") unless options[:nospacer]
         tables.each do |tbl|
           # build sql
