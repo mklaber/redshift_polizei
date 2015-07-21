@@ -1,5 +1,16 @@
 $(document).ready(function() {
 
+  // init tooltips
+  $('[data-toggle="tooltip"]').tooltip();
+  $("[data-toggle=popover]").popover();
+  $('#tablereports').on('draw.dt', function() {
+    // after rerender we need to reinitialize
+    $('[data-toggle=tooltip]').tooltip();
+    $("[data-toggle=popover]").popover();
+  });
+  //Search box auto focus
+  var searchBox = $('div.dataTables_filter input');
+  searchBox.focus();
   // show relative or absolute date of last data update
   var last_update_container = $('#last_update');
   var last_update = $('#last_update_store').text();
@@ -17,13 +28,6 @@ $(document).ready(function() {
   $('.abs_rel').click(function () {
     $(this).find('span.absolute').toggle();
     $(this).find('span.relative').toggle();
-  });
-
-  // init tooltips
-  $('[data-toggle="tooltip"]').tooltip();
-  $('#tablereports').on('draw.dt', function() {
-    // after rerender we need to reinitialize
-    $('[data-toggle=tooltip]').tooltip();
   });
 
   // export schemas button

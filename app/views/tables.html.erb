@@ -367,9 +367,16 @@
       <% @tables.each_with_index do |row, i| %>
           <tr>
             <td><%= row['schema_name'] %></td>
-            <td>
-              <%= row['table_name'] %>
-              <small class="secondary">(<%=row['table_id']%>)</small>
+            <td><%=
+            if row[:columns] != nil
+              split_values = row[:columns].split(',')
+              content="<div class=scrollable>"
+              content << split_values.collect { |x| x.strip()}.join('<br/>')
+              content<<"</div>"
+            else
+              content = "None<br/>"
+            end
+            "<a tabindex='0' data-toggle='popover' data-placement='auto' data-container='body' data-html='true' data-trigger='focus' data-content='#{content}'>#{row['table_name']}</a><small class='secondary'>(#{row['table_id']})</small>"%>
               <% if row['comment'] %>
                 <span data-toggle='tooltip' data-placement='top' title="<%= row['comment'] %>">
                   <i class="db_comment fa fa-comment" data-toggle="modal" data-target="#comment_modal" id="comment_<%= i %>"

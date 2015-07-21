@@ -25,6 +25,7 @@ describe Jobs::TableReports do
 
   it 'should create report on a table' do
     schema_name = @config[:export_schema]
+    columns="id, txt"
     table_name = "polizei_test_#{rand(1024)}"
     report = create_and_return_report(schema_name: schema_name, table_name: table_name)
     expect(report.schema_name).to eq(schema_name)
@@ -36,6 +37,7 @@ describe Jobs::TableReports do
     expect(report.dist_key.nil?).to eq(true)
     expect(report.sort_keys.empty?).to eq(true)
     expect(report.has_col_encodings).to eq(false)
+    expect(report.columns).to eq(columns)
   end
 
   it 'should extract sort key' do
