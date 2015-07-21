@@ -120,15 +120,33 @@ describe Jobs::ArchiveJob do
     check_success(run_archive(options), options)
   end
 
+  it 'should archive permissions correctly' do
+    # change permissions
+    change_owner_sql = "ALTER TABLE \"#{@schema}\".\"#{@table}\" OWNER TO \"#{@test_user}\""
+    grant_group_sql = "GRANT INSERT, UPDATE, DELETE ON \"#{@schema}\".\"#{@table}\" TO GROUP \"#{@test_group}\""
+    grant_user_sql = "GRANT SELECT, REFERENCES ON \"#{@schema}\".\"#{@table}\" TO \"#{@conn.user}\""
+    @conn.exec(change_owner_sql)
+    @conn.exec(grant_group_sql)
+    @conn.exec(grant_user_sql)
+    # run archive
+    options = merge_options({db: {table: @table},
+                             s3: {prefix: @archive_prefix}})
+    check_success(run_archive(options), options)
+    # check archived permissions
+    sqls = AWS::S3.new.buckets[@config[:archive_bucket]].objects[@permissions_file].read.split(";\n")
+    expect(sqls).to match_array([
+      change_owner_sql, grant_group_sql, grant_user_sql,
+      "GRANT SELECT, INSERT, UPDATE, DELETE, REFERENCES ON \"#{@schema}\".\"#{@table}\" TO \"#{@test_user}\""
+    ])
+  end
+
   before(:each) do
-    @connection_id = 'redshift_test'
     @schema = @config[:archive_schema]
     @table = "archive_test_#{Time.now.to_i}_#{rand(1024)}"
     @full_table_name = "#{@schema}.#{@table}"
     @archive_prefix = "test/#{@full_table_name}"
-    @conn = RSUtil.dedicated_connection(connection_id: @connection_id,
-                                        username: @config[:archive_username],
-                                        password: @config[:archive_password])
+    @permissions_file = "#{@archive_prefix}permissions.sql"
+
     create_sql = <<-SQL
         CREATE TABLE #{@full_table_name}(id INT PRIMARY KEY, txt VARCHAR);
         INSERT INTO #{@full_table_name} VALUES (0, 'hello'), (1, 'privyet'), (2, null);
@@ -146,5 +164,4 @@ describe Jobs::ArchiveJob do
     # Clean up S3 archive files.
     @bucket.objects.with_prefix(@archive_prefix).delete_all
   end
-
 end

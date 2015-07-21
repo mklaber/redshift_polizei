@@ -16,4 +16,4 @@ from (
   and trim(n.nspname) != 'pg_toast'
   and trim(n.nspname) != 'information_schema'
 )
-where has_select or has_delete or has_update or has_references or has_insert
+where (has_select or has_delete or has_update or has_references or has_insert)

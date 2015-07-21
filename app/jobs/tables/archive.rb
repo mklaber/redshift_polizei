@@ -63,6 +63,7 @@ module Jobs
       full_table_name = Desmond::PGUtil.get_escaped_table_name(options[:db], schema_name, table_name)
 
       # get the latest info on the table for the later TableArchive creation
+      Jobs::Permissions::Update.run(user_id, schema_name: schema_name, table_name: table_name)
       Jobs::TableReports.run(job_id, user_id, schema_name: schema_name, table_name: table_name)
       tbl = Models::TableReport.find_by(schema_name: schema_name, table_name: table_name)
       table_info = {}
@@ -121,6 +122,12 @@ module Jobs
 
       ddl_obj.write(ddl_text) unless add_constraints_sql.empty? && table_info[:comment].nil?
 
+      # export the current permissions
+      perms_s3_key = "#{archive_prefix}permissions.sql"
+      Jobs::TablePermissionsSQL.run(user_id,
+        schema_name: schema_name,table_name: table_name,
+        bucket: archive_bucket, key: perms_s3_key)
+
       # UNLOAD the entire table
       query = "SELECT * FROM #{full_table_name}"
       Desmond::UnloadJob.run(user_id, options.deep_merge({db: {query: query}}))
@@ -144,7 +151,10 @@ module Jobs
       Jobs::TableReports.run(job_id, user_id, schema_name: schema_name, table_name: table_name) unless options[:db][:skip_drop]
 
       # done return the full path to the s3 manifest and DDL files
-      {ddl_file: "s3://#{archive_bucket}/#{ddl_s3_key}", manifest_file: "s3://#{archive_bucket}/#{archive_prefix}manifest"}
+      { ddl_file: "s3://#{archive_bucket}/#{ddl_s3_key}",
+        manifest_file: "s3://#{archive_bucket}/#{archive_prefix}manifest",
+        perms_file: "s3://#{archive_bucket}/#{perms_s3_key}", 
+      }
     ensure
       conn.close unless conn.nil?
     end

@@ -82,8 +82,29 @@ describe Jobs::RestoreJob do
     expect(Models::TableArchive.find_by(schema_name: @schema, table_name: @table)).to be_nil
   end
 
+  it 'should restore permissions correctly' do
+    r = run_restore({db: {table: @table}, s3: {prefix: @archive_prefix}})
+    expect(r.failed?).to eq(false)
+    Jobs::Permissions::Update.run(1, schema_name: @schema, table_name: @table)
+    table = Models::Table.find_by!(schema: Models::Schema.find_by!(name: @schema), name: @table)
+    expect(table.owner.name).to eq(@test_user)
+    expect(Models::Permission.where(declared: true, dbobject: table).size).to eq(3)
+    gperm = Models::Permission.find_by!(declared: true, dbobject: table, entity: Models::DatabaseGroup.find_by!(name: @test_group))
+    uperm = Models::Permission.find_by!(declared: true, dbobject: table, entity: Models::DatabaseUser.find_by!(name: @conn.user))
+
+    expect(gperm.has_select).to eq(false)
+    expect(gperm.has_insert).to eq(true)
+    expect(gperm.has_update).to eq(true)
+    expect(gperm.has_delete).to eq(true)
+    expect(gperm.has_references).to eq(false)
+    expect(uperm.has_select).to eq(true)
+    expect(uperm.has_insert).to eq(false)
+    expect(uperm.has_update).to eq(false)
+    expect(uperm.has_delete).to eq(false)
+    expect(uperm.has_references).to eq(true)
+  end
+
   before(:each) do
-    @connection_id = 'redshift_test'
     @schema = @config[:archive_schema]
     @table = "restore_test_#{Time.now.to_i}_#{rand(1024)}"
     @full_table_name = "#{@schema}.#{@table}"
@@ -96,6 +117,13 @@ describe Jobs::RestoreJob do
       CREATE TABLE "#{@schema}"."#{@table}"(id INT, txt VARCHAR);
     TEXT
     @bucket.objects[@ddl_file].write(ddl_text)
+    @perms_file = "#{@archive_prefix}permissions.sql"
+    perms_text = <<-SQL
+ALTER TABLE "#{@schema}"."#{@table}" OWNER TO "#{@test_user}";
+GRANT INSERT, UPDATE, DELETE ON "#{@schema}"."#{@table}" TO GROUP "#{@test_group}";
+GRANT SELECT, REFERENCES ON "#{@schema}"."#{@table}" TO "#{@conn.user}"
+SQL
+    @bucket.objects[@perms_file].write(perms_text)
     @data_file= "#{@archive_prefix}-0000_part_00"
     data_text = <<-TEXT
 "0"|"hello"
@@ -116,10 +144,6 @@ describe Jobs::RestoreJob do
                                                 archive_bucket: @config[:archive_bucket],
                                                 archive_prefix: @archive_prefix)
     table_archive.save
-
-    @conn = RSUtil.dedicated_connection(connection_id: @connection_id,
-                                        username: @config[:archive_username],
-                                        password: @config[:archive_password])
   end
 
   after(:each) do
@@ -134,5 +158,4 @@ describe Jobs::RestoreJob do
     # Clean up S3 files.
     @bucket.objects.with_prefix(@archive_prefix).delete_all
   end
-
 end

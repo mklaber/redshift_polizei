@@ -14,9 +14,6 @@ module Jobs
     #
     # the following +options+ are required:
     # - db
-    #   - connection_id: ActiveRecord connection id used to connect to database
-    #   - username: database username
-    #   - password: database password
     #   - schema: schema of table to restore
     #   - table: name of table to restore
     # - s3
@@ -56,6 +53,7 @@ module Jobs
       archive_prefix = options[:s3][:prefix]
       fail 'Empty archive_prefix!' if archive_prefix.nil? || archive_prefix.empty?
       ddl_file = "#{archive_prefix}ddl"
+      perms_file = "#{archive_prefix}permissions.sql"
       manifest_file = "#{archive_prefix}manifest"
       s3_bucket = AWS::S3.new.buckets[archive_bucket]
       manifest_obj = s3_bucket.objects[manifest_file]
@@ -68,6 +66,11 @@ module Jobs
       ddl_match = /CREATE TABLE "#{Regexp.quote(schema_name)}"\."#{Regexp.quote(table_name)}".*;/m.match(ddl_obj.read)
       fail "S3 ddl_file #{archive_bucket}/#{ddl_file} must contain a single valid CREATE TABLE statement!" if ddl_match.nil? || ddl_match.length != 1
       create_table_statement = ddl_match[0]
+
+      # get the permissions statement
+      perms_obj = s3_bucket.objects[perms_file]
+      fail "S3 perms_file #{archive_bucket}/#{perms_file} does not exist!" unless perms_obj.exists?
+      permissions_statements = perms_obj.read
 
       # execute CREATE+COPY
       archive_bucket = Desmond::PGUtil.escape_string(archive_bucket)
@@ -87,13 +90,13 @@ module Jobs
       copy_sql = <<-SQL
           -- Create table and copy data from s3
           #{create_table_statement};
+          #{permissions_statements};
           COPY #{full_table_name}
           FROM 's3://#{archive_bucket}/#{manifest_file}'
           CREDENTIALS 'aws_access_key_id=#{access_key};aws_secret_access_key=#{secret_key}'
           MANIFEST #{copy_options};
       SQL
-      conn = Desmond::PGUtil.dedicated_connection(options[:db])
-      conn.transaction do
+      RSPool.with do |conn|
         conn.exec(copy_sql)
       end
 
@@ -109,8 +112,6 @@ module Jobs
 
       # done return schema+name of newly created table
       {schema: schema_name, table: table_name}
-    ensure
-      conn.close unless conn.nil?
     end
 
     ##
