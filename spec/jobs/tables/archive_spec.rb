@@ -152,8 +152,9 @@ describe Jobs::ArchiveJob do
   before(:each) do
     @schema = @config[:archive_schema]
     @table = "archive_test_#{Time.now.to_i}_#{rand(1024)}"
+    @table_with_schema = "#{@schema}.#{@table}"
     @full_table_name = "\"#{@schema}\".\"#{@table}\""
-    @archive_prefix = "test/#{@full_table_name}"
+    @archive_prefix = "test/#{@table_with_schema}"
     @permissions_file = "#{@archive_prefix}permissions.sql"
     @ddl_file = "#{@archive_prefix}ddl"
 
