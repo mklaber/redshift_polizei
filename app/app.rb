@@ -276,7 +276,7 @@ class Polizei < Sinatra::Application
                                         null_as: ARCHIVE_NULL_VALUE
                                     },
                                     email: email_list.join(', '))
-    redirect to('/tables')
+    {}.to_json
   end
 
   post '/tables/comment' do
@@ -290,7 +290,8 @@ class Polizei < Sinatra::Application
         schema_name: params[:schema_name],
         table_name: params[:table_name],
         comment: comment
-      ).to_json
+      )
+      {}.to_json
     rescue => e
       PolizeiLogger.logger.exception e
       status 500
@@ -325,7 +326,7 @@ class Polizei < Sinatra::Application
                                  null_as: ARCHIVE_NULL_VALUE
                              },
                              email: email_list.join(', '))
-    redirect to('/tables')
+    {}.to_json
   end
 
   post '/tables/regenerate' do
@@ -374,7 +375,7 @@ class Polizei < Sinatra::Application
                                  null_as: ARCHIVE_NULL_VALUE
                              },
                              email: email_list.join(', '))
-    redirect to('/tables')
+    {}.to_json
   end
 
   post '/tables/report' do
