@@ -367,11 +367,12 @@
       <% @tables.each_with_index do |row, i| %>
           <tr>
             <td><%= row['schema_name'] %></td>
-            <td><%=
-            if row[:columns] != nil
-              split_values = row[:columns].split(',')
+            <td><%= columns_array = row['columns']
+            if columns_array != nil and columns_array.length >0
+              split_values = columns_array
+              puts split_values.inspect
               content="<div class=scrollable>"
-              content << split_values.collect { |x| x.strip()}.join('<br/>')
+              content << split_values.join('<br/>')
               content<<"</div>"
             else
               content = "None<br/>"

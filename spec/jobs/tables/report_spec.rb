@@ -25,7 +25,7 @@ describe Jobs::TableReports do
 
   it 'should create report on a table' do
     schema_name = @config[:export_schema]
-    columns="id, txt"
+    columns="[\"id\",\"txt\"]"
     table_name = "polizei_test_#{rand(1024)}"
     report = create_and_return_report(schema_name: schema_name, table_name: table_name)
     expect(report.schema_name).to eq(schema_name)

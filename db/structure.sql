@@ -503,7 +503,7 @@ CREATE TABLE table_reports (
     dist_style character varying,
     sort_style character varying,
     comment character varying,
-    columns character varying
+    columns json
 );
 
 

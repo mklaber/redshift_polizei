@@ -64,14 +64,13 @@ module Jobs
     end
 
     def generate_comma_seperated_columns(raw_columns)
-      if raw_columns !=nil && raw_columns.length!=0 
-        columns=""
-        raw_columns.each do |column|
-          columns << column["name"] << ", "
+     columns=[]
+     if raw_columns !=nil && raw_columns.length!=0 
+       raw_columns.each do |column|
+          columns << column["name"]
         end
-        return columns[0..-3]
       end
-      return nil
+      return columns
     end
 
     def get_table_reports(connection, table)
@@ -89,7 +88,7 @@ module Jobs
           sort_dist_style = sort_dist_styles[full_table_name] || {}
           sort_dist_key   = sort_dist_keys[full_table_name] || {}
           comment         = comments[full_table_name] || {}
-          raw_columns = all_columns[full_table_name] || {}
+          raw_columns = all_columns[full_table_name] || []
           columns = generate_comma_seperated_columns(raw_columns)
           {
             schema_name: r['schema_name'].strip,
@@ -104,7 +103,7 @@ module Jobs
             dist_key: sort_dist_key['dist_key'],
             has_col_encodings: col_encoding,
             comment: comment['comment'],
-            columns: columns
+            columns: columns.to_json
           }
         end
       end
