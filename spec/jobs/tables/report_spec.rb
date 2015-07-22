@@ -5,7 +5,7 @@ describe Jobs::TableReports do
     connection_id = 'redshift_test'
     RSPool.with do |c|
       begin
-        schema_name = options[:schema_name] || @config[:export_schema]
+        schema_name = options[:schema_name] || @config[:schema]
         table_name = options[:table_name] || "polizei_test_#{rand(1024)}"
         create_sql = options[:create_sql] || "CREATE TABLE #{schema_name}.#{table_name}(id INT, txt VARCHAR)"
         c.exec(create_sql) unless options[:donotcreate]
@@ -17,14 +17,14 @@ describe Jobs::TableReports do
   end
 
   def create_and_return_report(options={})
-    schema_name = options[:schema_name] || @config[:export_schema]
+    schema_name = options[:schema_name] || @config[:schema]
     table_name = options[:table_name] || "polizei_test_#{rand(1024)}"
     create_report({ schema_name: schema_name, table_name: table_name }.merge(options))
     Models::TableReport.where(schema_name: schema_name, table_name: table_name).first
   end
 
   it 'should create report on a table' do
-    schema_name = @config[:export_schema]
+    schema_name = @config[:schema]
     table_name = "polizei_test_#{rand(1024)}"
     report = create_and_return_report(schema_name: schema_name, table_name: table_name)
     expect(report.schema_name).to eq(schema_name)
@@ -39,7 +39,7 @@ describe Jobs::TableReports do
   end
 
   it 'should extract sort key' do
-    schema_name = @config[:export_schema]
+    schema_name = @config[:schema]
 
     # test normal
     table_name = "polizei_test_#{rand(1024)}"
@@ -61,7 +61,7 @@ describe Jobs::TableReports do
   end
 
   it 'should extract dist key with style' do
-    schema_name = @config[:export_schema]
+    schema_name = @config[:schema]
     table_name = "polizei_test_#{rand(1024)}"
     report = create_and_return_report(
       schema_name: schema_name,
@@ -73,7 +73,7 @@ describe Jobs::TableReports do
   end
 
   it 'should extract even dist style' do
-    schema_name = @config[:export_schema]
+    schema_name = @config[:schema]
     table_name = "polizei_test_#{rand(1024)}"
     report = create_and_return_report(
       schema_name: schema_name,
@@ -84,7 +84,7 @@ describe Jobs::TableReports do
   end
 
   it 'should extract all dist style' do
-    schema_name = @config[:export_schema]
+    schema_name = @config[:schema]
     table_name = "polizei_test_#{rand(1024)}"
     report = create_and_return_report(
       schema_name: schema_name,
@@ -95,7 +95,7 @@ describe Jobs::TableReports do
   end
 
   it 'should extract compound sort style' do
-    schema_name = @config[:export_schema]
+    schema_name = @config[:schema]
     table_name = "polizei_test_#{rand(1024)}"
     report = create_and_return_report(
       schema_name: schema_name,
@@ -106,7 +106,7 @@ describe Jobs::TableReports do
   end
 
   it 'should extract compound sort style' do
-    schema_name = @config[:export_schema]
+    schema_name = @config[:schema]
     table_name = "polizei_test_#{rand(1024)}"
     report = create_and_return_report(
       schema_name: schema_name,
@@ -117,7 +117,7 @@ describe Jobs::TableReports do
   end
 
   it 'should extract column encodings' do
-    schema_name = @config[:export_schema]
+    schema_name = @config[:schema]
     table_name = "polizei_test_#{rand(1024)}"
     report = create_and_return_report(
       schema_name: schema_name,
@@ -128,7 +128,7 @@ describe Jobs::TableReports do
   end
 
   it 'should remove deleted tables' do
-    schema_name = @config[:export_schema]
+    schema_name = @config[:schema]
     table_name = "polizei_test_#{rand(1024)}"
     create_report(schema_name: schema_name, table_name: table_name)
     expect(Models::TableReport.where(schema_name: schema_name, table_name: table_name).exists?).to eq(true)

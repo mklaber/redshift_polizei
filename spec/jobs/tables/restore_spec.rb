@@ -10,15 +10,15 @@ describe Jobs::RestoreJob do
                                     {
                                         db: {
                                             connection_id: @connection_id,
-                                            username: @config[:archive_username],
-                                            password: @config[:archive_password],
-                                            schema: @config[:archive_schema],
+                                            username: @config[:rs_user],
+                                            password: @config[:rs_password],
+                                            schema: @config[:schema],
                                             table: nil
                                         },
                                         s3: {
-                                            access_key_id: @config[:access_key_id],
-                                            secret_access_key: @config[:secret_access_key],
-                                            bucket: @config[:archive_bucket],
+                                            access_key_id: @config[:aws_access_key_id],
+                                            secret_access_key: @config[:aws_secret_access_key],
+                                            bucket: @config[:bucket],
                                             prefix: nil
                                         },
                                         copy: {
@@ -35,14 +35,14 @@ describe Jobs::RestoreJob do
     @bucket.objects[@ddl_file].delete
     r = run_restore({db: {table: @table}, s3: {prefix: @archive_prefix}})
     expect(r.failed?).to eq(true)
-    expect(r.error).to eq("S3 ddl_file #{@config[:archive_bucket]}/#{@archive_prefix}ddl does not exist!")
+    expect(r.error).to eq("S3 ddl_file #{@config[:bucket]}/#{@archive_prefix}ddl does not exist!")
   end
 
   it 'should fail if manifest file does not exist' do
     @bucket.objects[@manifest_file].delete
     r = run_restore({db: {table: @table}, s3: {prefix: @archive_prefix}})
     expect(r.failed?).to eq(true)
-    expect(r.error).to eq("S3 manifest_file #{@config[:archive_bucket]}/#{@manifest_file} does not exist!")
+    expect(r.error).to eq("S3 manifest_file #{@config[:bucket]}/#{@manifest_file} does not exist!")
   end
 
   it 'should fail if ddl file does not contain valid DDL' do
@@ -52,7 +52,7 @@ describe Jobs::RestoreJob do
     @bucket.objects[@ddl_file].write(ddl_text)
     r = run_restore({db: {table: @table}, s3: {prefix: @archive_prefix}})
     expect(r.failed?).to eq(true)
-    expect(r.error).to eq("S3 ddl_file #{@config[:archive_bucket]}/#{@ddl_file} must contain a single valid CREATE TABLE statement!")
+    expect(r.error).to eq("S3 ddl_file #{@config[:bucket]}/#{@ddl_file} must contain a single valid CREATE TABLE statement!")
   end
 
   it 'should properly restore a table' do
@@ -105,12 +105,12 @@ describe Jobs::RestoreJob do
   end
 
   before(:each) do
-    @schema = @config[:archive_schema]
+    @schema = @config[:schema]
     @table = "restore_test_#{Time.now.to_i}_#{rand(1024)}"
     @full_table_name = "#{@schema}.#{@table}"
 
     # Write sample ddl, manifest, and data files to S3.
-    @bucket = AWS::S3.new.buckets[@config[:archive_bucket]]
+    @bucket = AWS::S3.new.buckets[@config[:bucket]]
     @archive_prefix = "test/#{@full_table_name}"
     @ddl_file = "#{@archive_prefix}ddl"
     ddl_text = <<-TEXT
@@ -135,13 +135,13 @@ SQL
     @bucket.objects[@data_file].write(data_text)
     @manifest_file = "#{@archive_prefix}manifest"
     manifest_text = <<-JSON
-      {"entries":[{"url":"s3://#{@config[:archive_bucket]}/#{@data_file}"}]}
+      {"entries":[{"url":"s3://#{@config[:bucket]}/#{@data_file}"}]}
     JSON
     @bucket.objects[@manifest_file].write(manifest_text)
 
     # Create TableArchive entry.
     table_archive = Models::TableArchive.create(schema_name: @schema, table_name: @table,
-                                                archive_bucket: @config[:archive_bucket],
+                                                archive_bucket: @config[:bucket],
                                                 archive_prefix: @archive_prefix)
     table_archive.save
   end

@@ -40,14 +40,16 @@ RSpec.configure { |c|
   end
 
   c.before(:all) do
-    @config = YAML.load_file(File.join root_path, 'config', 'tests.yml').symbolize_keys
+    @connection_id = 'redshift_test'
+    @config = GlobalConfig.polizei.symbolize_keys
+    @config.merge!(rs_user: ActiveRecord::Base.configurations[@connection_id]['username'],
+      rs_password: ActiveRecord::Base.configurations[@connection_id]['password'])
     AWS.config({
       access_key_id: @config[:access_key_id],
       secret_access_key: @config[:secret_access_key]
     })
 
     # supply a RedShift connection to all tests
-    @connection_id = 'redshift_test'
     @conn = RSUtil.dedicated_connection(connection_id: @connection_id,
                                         username: @config[:archive_username],
                                         password: @config[:archive_password])

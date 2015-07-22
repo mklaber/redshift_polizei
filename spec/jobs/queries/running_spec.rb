@@ -2,7 +2,7 @@ require_relative '../../spec_helper'
 
 describe Jobs::Queries::Running do
   def running_tbl
-    "#{@config[:test_schema]}.polizei_queries_running_test"
+    "#{@config[:schema]}.polizei_queries_running_test"
   end
   before(:all) do
     RSPool.with do |c|

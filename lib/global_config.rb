@@ -11,7 +11,7 @@ class GlobalConfig
     @env = env
   end
   def self.env
-    @env || ENV['RACK_ENV'] || ENV['RAILS_ENV']
+    @env || ENV['RACK_ENV'] || ENV['RAILS_ENV'] || 'development'
   end
   def self.load_config_file(name, path)
     raise "Configuration file '#{path}' doesn't exist!" if not(File.exists?(path))

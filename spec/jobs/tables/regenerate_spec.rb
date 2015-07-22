@@ -16,15 +16,15 @@ describe Jobs::RegenerateTableJob do
     return {
         db: {
             connection_id: @connection_id,
-            username: @config[:archive_username],
-            password: @config[:archive_password],
-            schema: @config[:archive_schema],
+            username: @config[:rs_user],
+            password: @config[:rs_password],
+            schema: @config[:schema],
             table: nil  # specify in options
         },
         s3: {
-            access_key_id: @config[:access_key_id],
-            secret_access_key: @config[:secret_access_key],
-            bucket: @config[:archive_bucket],
+            access_key_id: @config[:aws_access_key_id],
+            secret_access_key: @config[:aws_secret_access_key],
+            bucket: @config[:bucket],
             prefix: nil # specify in options
         },
         redshift: {
@@ -125,19 +125,19 @@ describe Jobs::RegenerateTableJob do
 
   before(:each) do
     @connection_id = 'redshift_test'
-    @schema = @config[:archive_schema]
+    @schema = @config[:schema]
     @table = "encoding_test_#{Time.now.to_i}_#{rand(1024)}"
     @full_table_name = "#{@schema}.#{@table}"
     @archive_prefix = "test/#{@full_table_name}"
     @conn = RSUtil.dedicated_connection(connection_id: @connection_id,
-                                        username: @config[:archive_username],
-                                        password: @config[:archive_password])
+                                        username: @config[:rs_user],
+                                        password: @config[:rs_password])
     create_sql = <<-SQL
         CREATE TABLE #{@full_table_name}(id INT ENCODE LZO, txt VARCHAR ENCODE LZO);
         INSERT INTO #{@full_table_name} VALUES (0, 'hello'), (1, 'privyet'), (2, null);
     SQL
     @conn.exec(create_sql)
-    @bucket = AWS::S3.new.buckets[@config[:archive_bucket]]
+    @bucket = AWS::S3.new.buckets[@config[:bucket]]
   end
 
   after(:each) do

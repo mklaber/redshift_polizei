@@ -6,8 +6,8 @@ describe Jobs::PolizeiExportJob do
   #
   def run_export(model_options={}, enqueue_options={}, options={})
     connection_id = 'redshift_test'
-    c = RSUtil.dedicated_connection(connection_id: connection_id, username: @config[:export_username], password: @config[:export_password])
-    table = "#{@config[:export_schema]}.polizei_test_#{rand(1024)}"
+    c = RSUtil.dedicated_connection(connection_id: connection_id, system_connection_allowed: true)
+    table = "#{@config[:schema]}.polizei_test_#{rand(1024)}"
     c.exec("CREATE TABLE #{table}(id INT, txt VARCHAR)")
     c.exec("INSERT INTO #{table} VALUES(0, 'null')")
     c.exec("INSERT INTO #{table} VALUES(1, 'eins')")
@@ -18,14 +18,14 @@ describe Jobs::PolizeiExportJob do
       query: "SELECT * FROM #{table} order by id;",
       export_format: 'csv',
       export_options: { delimiter: '|' }
-    }.deep_merge(model_options)).enqueue(enqueue_options[:user] || Models::User.first, @config[:export_username], @config[:export_password], {
+    }.deep_merge(model_options)).enqueue(enqueue_options[:user] || Models::User.first, @config[:rs_user], @config[:rs_password], {
       s3: {
-        bucket: @config[:export_bucket]
+        bucket: @config[:bucket]
       }, db: {
         fetch_size: 100
     }}.deep_merge(enqueue_options))
   ensure
-    AWS::S3.new.buckets[@config[:export_bucket]].objects[run.filename].delete unless options[:donotdelete]
+    AWS::S3.new.buckets[@config[:bucket]].objects[run.filename].delete unless options[:donotdelete]
     c.exec("DROP TABLE IF EXISTS #{table}")
     c.close
   end
@@ -39,7 +39,7 @@ describe Jobs::PolizeiExportJob do
     s3_obj = nil
     csv = nil
     begin
-      s3_obj = AWS::S3.new.buckets[@config[:export_bucket]].objects[run.filename]
+      s3_obj = AWS::S3.new.buckets[@config[:bucket]].objects[run.filename]
       csv = s3_obj.read
     ensure
       s3_obj.delete
@@ -62,14 +62,14 @@ describe Jobs::PolizeiExportJob do
 
   it 'should fail with invalid query' do
     expect(run_export({
-      query: "SELECT * FROM #{@config[:export_schema]}.polizei_test_invalid order by id;"
+      query: "SELECT * FROM #{@config[:schema]}.polizei_test_invalid order by id;"
     }).failed?).to eq(true)
   end
 
   it 'should send failure email' do
     user = Models::User.first
     expect(run_export({
-      query: "SELECT * FROM #{@config[:export_schema]}.polizei_test_invalid order by id;"
+      query: "SELECT * FROM #{@config[:schema]}.polizei_test_invalid order by id;"
     }, { user: user }).failed?).to eq(true)
 
     open_last_email

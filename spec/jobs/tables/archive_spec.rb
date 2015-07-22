@@ -41,15 +41,15 @@ describe Jobs::ArchiveJob do
     return {
         db: {
             connection_id: @connection_id,
-            username: @config[:archive_username],
-            password: @config[:archive_password],
-            schema: @config[:archive_schema],
+            username: @config[:rs_user],
+            password: @config[:rs_password],
+            schema: @config[:schema],
             table: nil
         },
         s3: {
-            access_key_id: @config[:access_key_id],
-            secret_access_key: @config[:secret_access_key],
-            bucket: @config[:archive_bucket],
+            access_key_id: @config[:aws_access_key_id],
+            secret_access_key: @config[:aws_secret_access_key],
+            bucket: @config[:bucket],
             prefix: nil
         },
         unload: {
@@ -133,7 +133,7 @@ describe Jobs::ArchiveJob do
                              s3: {prefix: @archive_prefix}})
     check_success(run_archive(options), options)
     # check archived permissions
-    sqls = AWS::S3.new.buckets[@config[:archive_bucket]].objects[@permissions_file].read.split(";\n")
+    sqls = AWS::S3.new.buckets[@config[:bucket]].objects[@permissions_file].read.split(";\n")
     expect(sqls).to match_array([
       change_owner_sql, grant_group_sql, grant_user_sql,
       "GRANT SELECT, INSERT, UPDATE, DELETE, REFERENCES ON \"#{@schema}\".\"#{@table}\" TO \"#{@test_user}\""
@@ -150,7 +150,7 @@ describe Jobs::ArchiveJob do
   end
 
   before(:each) do
-    @schema = @config[:archive_schema]
+    @schema = @config[:schema]
     @table = "archive_test_#{Time.now.to_i}_#{rand(1024)}"
     @table_with_schema = "#{@schema}.#{@table}"
     @full_table_name = "\"#{@schema}\".\"#{@table}\""
@@ -163,7 +163,7 @@ describe Jobs::ArchiveJob do
         INSERT INTO #{@full_table_name} VALUES (0, 'hello'), (1, 'privyet'), (2, null);
     SQL
     @conn.exec(create_sql)
-    @bucket = AWS::S3.new.buckets[@config[:archive_bucket]]
+    @bucket = AWS::S3.new.buckets[@config[:bucket]]
   end
 
   after(:each) do

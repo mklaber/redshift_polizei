@@ -50,14 +50,16 @@ class Polizei < Sinatra::Application
     PolizeiLogger.logger.info "#{request.ip} - #{session[:uid]} \"#{request.request_method} #{request.path}\" #{response.status} "
   end
 
-  use Rack::Session::Cookie, :key => 'rack.session',
-                             :expire_after => 86400 * 7, # sec
-                             :secret => GlobalConfig.polizei('cookie_secret')
   # configure OAuth authentication
-  use OmniAuth::Builder do
-    provider GlobalConfig.polizei('auth_provider'),
-      GlobalConfig.polizei('auth_client_id'),
-      GlobalConfig.polizei('auth_client_secret')
+  if Sinatra::Application.environment != :test
+    use Rack::Session::Cookie, :key => 'rack.session',
+        :expire_after => 86400 * 7, # sec
+        :secret => GlobalConfig.polizei('cookie_secret')
+    use OmniAuth::Builder do
+      provider GlobalConfig.polizei('auth_provider'),
+        GlobalConfig.polizei('auth_client_id'),
+        GlobalConfig.polizei('auth_client_secret')
+    end
   end
 
   # configure asset pipeline

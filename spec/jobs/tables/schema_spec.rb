@@ -2,7 +2,7 @@ require_relative '../../spec_helper'
 
 describe Jobs::TableStructureExportJob do
   def schema_name
-    PG::Connection.quote_ident(@config[:test_schema])
+    PG::Connection.quote_ident(@config[:schema])
   end
   def new_table_name
     "polizei_schema_test_#{rand(1024)}"
@@ -16,7 +16,7 @@ describe Jobs::TableStructureExportJob do
     RSPool.with do |c|
       begin
         aws_path = Jobs::TableStructureExportJob.run(1, 1, {
-          schema_name: @config[:test_schema],
+          schema_name: @config[:schema],
           table_name: table_name,
           nospacer: true,
           nomail: true
@@ -24,7 +24,7 @@ describe Jobs::TableStructureExportJob do
         s3_obj = AWS::S3.new.buckets[aws_path[:bucket]].objects[aws_path[:key]]
         return s3_obj.read
       ensure
-        c.exec("DROP TABLE IF EXISTS #{@config[:test_schema]}.#{table_name}")
+        c.exec("DROP TABLE IF EXISTS #{@config[:schema]}.#{table_name}")
         s3_obj.delete unless s3_obj.nil?
       end
     end
@@ -129,7 +129,7 @@ describe Jobs::TableStructureExportJob do
       schema_sql = retrieve_schema(table_name)
       expect(schema_sql).to eq(table2_sql + "\n;" + table_sql + "\n;")
     ensure
-      RSPool.with { |c| c.exec("DROP TABLE IF EXISTS #{@config[:test_schema]}.#{table_name2}") }
+      RSPool.with { |c| c.exec("DROP TABLE IF EXISTS #{@config[:schema]}.#{table_name2}") }
     end
   end
 
