@@ -45,8 +45,8 @@ RSpec.configure { |c|
     @config.merge!(rs_user: ActiveRecord::Base.configurations[@connection_id]['username'],
       rs_password: ActiveRecord::Base.configurations[@connection_id]['password'])
     AWS.config({
-      access_key_id: @config[:access_key_id],
-      secret_access_key: @config[:secret_access_key]
+      access_key_id: @config[:aws_access_key_id],
+      secret_access_key: @config[:aws_secret_access_key]
     })
 
     # supply a RedShift connection to all tests

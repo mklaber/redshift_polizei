@@ -10,7 +10,6 @@ Setup
 bundle install
 cp config/database.sample.yml config/database.yml
 cp config/polizei.sample.yml config/polizei.yml
-cp config/tests.sample.yml config/tests.yml
 ```
 Make sure to enable `pg_trgm` extension in the PostgreSQL database: `CREATE EXTENSION pg_trgm;`
 
