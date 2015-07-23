@@ -73,7 +73,7 @@ To get a console
 
 Running tests
 ---------------------
-1. Configure `config/tests.yml`
+1. Configure the `test` environment in `polizei.yml`
 2. Configure the `test` and `redshift_test` environments in `database.yml`
 3. Run `rspec`
 

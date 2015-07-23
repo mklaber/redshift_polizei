@@ -53,6 +53,7 @@ RSpec.configure { |c|
     @conn = RSUtil.dedicated_connection(connection_id: @connection_id,
                                         username: @config[:archive_username],
                                         password: @config[:archive_password])
+    fail 'Could not connect to Redshift' if @conn.nil?
 
     # create a test user & group
     o = [('a'..'z'), ('A'..'Z'), ('0'..'9')].map { |i| i.to_a }.flatten
