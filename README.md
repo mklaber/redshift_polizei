@@ -4,6 +4,8 @@ Redshift Polizei ("Police")
 
 Sinatra app for monitoring a Redshift cluster. Built using [Twitter Bootstrap](http://getbootstrap.com/), [Font Awesome](http://fortawesome.github.io/Font-Awesome/) and duck tape.
 
+[![Coverage Status](https://coveralls.io/repos/AnalyticsMediaGroup/redshift_polizei/badge.svg?branch=master&service=github)](https://coveralls.io/github/AnalyticsMediaGroup/redshift_polizei?branch=master)
+
 Setup
 ---------------------
 ```
