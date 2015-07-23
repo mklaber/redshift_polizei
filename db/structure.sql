@@ -460,7 +460,8 @@ CREATE TABLE table_archives (
     created_at timestamp without time zone,
     updated_at timestamp without time zone,
     sort_style character varying,
-    comment character varying
+    comment character varying,
+    columns json
 );
 
 

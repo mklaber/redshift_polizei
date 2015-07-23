@@ -87,6 +87,10 @@ tr.total {
     font-weight: bold;
 }
 
+.nobullets{
+  list-style-type:none
+}
+
 /* tables */
 .secondary {
   color: #999;

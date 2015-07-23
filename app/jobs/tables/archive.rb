@@ -75,6 +75,7 @@ module Jobs
         table_info[:sort_keys] = tbl.sort_keys
         table_info[:has_col_encodings] = tbl.has_col_encodings
         table_info[:comment] = tbl.comment
+        table_info[:columns] = tbl.columns
       end
 
       # check if archive already exists
@@ -139,14 +140,12 @@ module Jobs
           conn.exec(drop_sql)
         end
       end
-
       # add new TableArchive database entry
       table_archive = Models::TableArchive.create!(schema_name: schema_name, table_name: table_name,
                                                    archive_bucket: archive_bucket,
                                                    archive_prefix: archive_prefix)
       table_archive.update!(table_info) unless table_info.empty?
       table_archive.save
-
       # run TableReport to remove the reference to this dropped table
       Jobs::TableReports.run(job_id, user_id, schema_name: schema_name, table_name: table_name) unless options[:db][:skip_drop]
 

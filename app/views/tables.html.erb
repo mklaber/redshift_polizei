@@ -367,17 +367,16 @@
       <% @tables.each_with_index do |row, i| %>
           <tr>
             <td><%= row['schema_name'] %></td>
-            <td><%= columns_array = row['columns']
+            <td><% columns_array = row['columns']
             if columns_array != nil and columns_array.length >0
               split_values = columns_array
-              puts split_values.inspect
-              content="<div class=scrollable>"
-              content << split_values.join('<br/>')
-              content<<"</div>"
+              content="<div class=scrollable> <ul class=nobullets>"
+              content << split_values.collect{ |x| "<li>#{x}</li>" }.join('')
+              content<<"</ul></div>"
             else
               content = "None<br/>"
-            end
-            "<a tabindex='0' data-toggle='popover' data-placement='auto' data-container='body' data-html='true' data-trigger='focus' data-content='#{content}'>#{row['table_name']}</a><small class='secondary'>(#{row['table_id']})</small>"%>
+            end %>
+            <a tabindex='0' data-toggle='popover' data-placement='auto' data-container='body' data-html='true' data-trigger='focus' data-content='<%=content%>'><%=row['table_name']%></a><small class='secondary'><%=row['table_id']%></small>
               <% if row['comment'] %>
                 <span data-toggle='tooltip' data-placement='top' title="<%= row['comment'] %>">
                   <i class="db_comment fa fa-comment" data-toggle="modal" data-target="#comment_modal" id="comment_<%= i %>"
@@ -488,7 +487,17 @@
       <% @archives.each_with_index do |row, i| %>
           <tr>
             <td><%= row['schema_name'] %></td>
-            <td><%= row['table_name'] %></td>
+            <td><% columns_array = row['columns']
+              if columns_array != nil and columns_array.length >0
+                split_values = columns_array
+                content="<div class=scrollable> <ul class=nobullets>"
+                content << split_values.collect{ |x| "<li>#{x}</li>" }.join('')
+                content<<"</ul></div>"
+              else
+                content = "None<br/>"
+              end %>
+              <a tabindex='0' data-toggle='popover' data-placement='auto' data-container='body' data-html='true' data-trigger='focus' data-content='<%=content%>'><%=row['table_name']%></a>
+            </td>
             <td nowrap="nowrap"><%= (row['size_in_mb'].to_i / 1024.0).round(2) %></td>
             <td>
               <% if row['sort_style'] == 'interleaved' %>
