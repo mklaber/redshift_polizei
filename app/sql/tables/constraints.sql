@@ -14,4 +14,5 @@ inner join pg_attribute t1 on t1.attrelid = cs.conrelid and t1.attnum = cs.conke
 left join pg_class c2 on cs.confrelid = c2.oid
 left join pg_namespace n2 on n2.oid = c2.relnamespace
 left join pg_attribute t2 on t2.attrelid = cs.confrelid and t2.attnum = cs.confkey[1] and t2.attnum > 0 and not t2.attisdropped
-where trim(n.nspname) not in ('pg_catalog', 'pg_toast', 'information_schema')
+-- filter out system tables, temp tables, and indexes
+where c.reltype != 0 and n.nspname not in ('pg_catalog', 'information_schema', 'pg_toast') and n.nspname not like 'pg_temp_%%'

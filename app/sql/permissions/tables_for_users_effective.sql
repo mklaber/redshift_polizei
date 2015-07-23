@@ -12,8 +12,7 @@ from (
   from pg_namespace n
   join pg_class c on n.oid = c.relnamespace
   cross join pg_user u
-  where trim(n.nspname) != 'pg_catalog'
-  and trim(n.nspname) != 'pg_toast'
-  and trim(n.nspname) != 'information_schema'
+  -- filter out system tables, temp tables, and indexes
+  where c.reltype != 0 and n.nspname not in ('pg_catalog', 'information_schema', 'pg_toast') and n.nspname not like 'pg_temp_%%'
 )
 where (has_select or has_delete or has_update or has_references or has_insert)
