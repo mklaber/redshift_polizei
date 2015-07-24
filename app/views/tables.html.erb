@@ -69,7 +69,7 @@
 <div class="modal fade" id="archive_modal" tabindex="-1" role="dialog" aria-labelledby="archiveLabel" aria-hidden="true">
   <div class="modal-dialog">
     <div class="modal-content">
-      <form id="archiveForm" class="form-horizontal" role="form" method="POST" action="<%= url '/tables/archive' %>" style="margin-top: 10px;">
+      <form id="archiveForm" class="form-horizontal" style="margin-top: 10px;">
         <div class="modal-header">
           <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
           <h4 class="modal-title" id="archiveLabel">Archive Table</h4>
@@ -94,7 +94,7 @@
               <div class="input-group">
                 <input type="text" required class="form-control redshift_username" id="archiveInputRedshiftUsername" name="redshift_username" placeholder="Username">
                 <span class="input-group-addon">
-                  <input type="checkbox" checked id="archiveRememberMe">
+                  <input type="checkbox" class="redshift_username_remember" checked id="archiveRememberMe">
                   <label for="archiveRememberMe"> Remember?</label>
                 </span>
               </div>
@@ -161,7 +161,7 @@
 <div class="modal fade" id="restore_modal" tabindex="-1" role="dialog" aria-labelledby="restoreLabel" aria-hidden="true">
   <div class="modal-dialog">
     <div class="modal-content">
-      <form id="restoreForm" class="form-horizontal" role="form" method="POST" action="<%= url '/tables/restore' %>" style="margin-top: 10px;">
+      <form id="restoreForm" class="form-horizontal" style="margin-top: 10px;">
         <div class="modal-header">
           <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
           <h4 class="modal-title" id="restoreLabel">Restore Table</h4>
@@ -227,7 +227,7 @@
 <div class="modal fade" id="regenerate_modal" tabindex="-1" role="dialog" aria-labelledby="regenerateLabel" aria-hidden="true">
   <div class="modal-dialog">
     <div class="modal-content">
-      <form id="regenerateForm" class="form-horizontal" role="form" method="POST" action="<%= url '/tables/regenerate' %>" style="margin-top: 10px;">
+      <form id="regenerateForm" class="form-horizontal" style="margin-top: 10px;">
         <div class="modal-header">
           <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
           <h4 class="modal-title" id="regenerateLabel">Regenerate Table</h4>
@@ -315,7 +315,7 @@
               <div class="input-group">
                 <input type="text" required class="form-control redshift_username" id="regenerateInputRedshiftUsername" name="redshift_username" placeholder="Username">
                 <span class="input-group-addon">
-                  <input type="checkbox" checked id="regenerateRememberMe">
+                  <input type="checkbox" class="redshift_username_remember" checked id="regenerateRememberMe">
                   <label for="regenerateRememberMe"> Remember?</label>
                 </span>
               </div>

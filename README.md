@@ -4,13 +4,14 @@ Redshift Polizei ("Police")
 
 Sinatra app for monitoring a Redshift cluster. Built using [Twitter Bootstrap](http://getbootstrap.com/), [Font Awesome](http://fortawesome.github.io/Font-Awesome/) and duck tape.
 
+[![Coverage Status](https://coveralls.io/repos/AnalyticsMediaGroup/redshift_polizei/badge.svg?branch=master&service=github)](https://coveralls.io/github/AnalyticsMediaGroup/redshift_polizei?branch=master)
+
 Setup
 ---------------------
 ```
 bundle install
 cp config/database.sample.yml config/database.yml
 cp config/polizei.sample.yml config/polizei.yml
-cp config/tests.sample.yml config/tests.yml
 ```
 Make sure to enable `pg_trgm` extension in the PostgreSQL database: `CREATE EXTENSION pg_trgm;`
 
@@ -73,7 +74,7 @@ To get a console
 
 Running tests
 ---------------------
-1. Configure `config/tests.yml`
+1. Configure the `test` environment in `polizei.yml`
 2. Configure the `test` and `redshift_test` environments in `database.yml`
 3. Run `rspec`
 

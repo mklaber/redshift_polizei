@@ -1,4 +1,9 @@
 require 'simplecov'
+require 'coveralls'
+SimpleCov.formatter = SimpleCov::Formatter::MultiFormatter[
+  SimpleCov::Formatter::HTMLFormatter,
+  Coveralls::SimpleCov::Formatter
+]
 SimpleCov.start
 
 require 'rake'
@@ -40,17 +45,20 @@ RSpec.configure { |c|
   end
 
   c.before(:all) do
-    @config = YAML.load_file(File.join root_path, 'config', 'tests.yml').symbolize_keys
+    @connection_id = 'redshift_test'
+    @config = GlobalConfig.polizei.symbolize_keys
+    @config.merge!(rs_user: ActiveRecord::Base.configurations[@connection_id]['username'],
+      rs_password: ActiveRecord::Base.configurations[@connection_id]['password'])
     AWS.config({
-      access_key_id: @config[:access_key_id],
-      secret_access_key: @config[:secret_access_key]
+      access_key_id: @config[:aws_access_key_id],
+      secret_access_key: @config[:aws_secret_access_key]
     })
 
     # supply a RedShift connection to all tests
-    @connection_id = 'redshift_test'
     @conn = RSUtil.dedicated_connection(connection_id: @connection_id,
                                         username: @config[:archive_username],
                                         password: @config[:archive_password])
+    fail 'Could not connect to Redshift' if @conn.nil?
 
     # create a test user & group
     o = [('a'..'z'), ('A'..'Z'), ('0'..'9')].map { |i| i.to_a }.flatten

@@ -20,8 +20,8 @@ module Sinatra
 
     def mail_config_file=(path)
       c = load_config_file(CONFIG_NAME, path)
-      Pony.options = c.dup.deep_symbolize_keys[:mail]
-      if Object.const_defined?('ActionMailer')
+      Pony.options = c.dup.deep_symbolize_keys[:mail] || {}
+      if Object.const_defined?('ActionMailer') && Pony.options.size > 0
         ActionMailer::Base.delivery_method = Pony.options[:via].to_sym
         ActionMailer::Base.smtp_settings = Pony.options[:via_options]
       end

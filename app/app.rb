@@ -50,14 +50,16 @@ class Polizei < Sinatra::Application
     PolizeiLogger.logger.info "#{request.ip} - #{session[:uid]} \"#{request.request_method} #{request.path}\" #{response.status} "
   end
 
-  use Rack::Session::Cookie, :key => 'rack.session',
-                             :expire_after => 86400 * 7, # sec
-                             :secret => GlobalConfig.polizei('cookie_secret')
   # configure OAuth authentication
-  use OmniAuth::Builder do
-    provider GlobalConfig.polizei('auth_provider'),
-      GlobalConfig.polizei('auth_client_id'),
-      GlobalConfig.polizei('auth_client_secret')
+  if Sinatra::Application.environment != :test
+    use Rack::Session::Cookie, :key => 'rack.session',
+        :expire_after => 86400 * 7, # sec
+        :secret => GlobalConfig.polizei('cookie_secret')
+    use OmniAuth::Builder do
+      provider GlobalConfig.polizei('auth_provider'),
+        GlobalConfig.polizei('auth_client_id'),
+        GlobalConfig.polizei('auth_client_secret')
+    end
   end
 
   # configure asset pipeline
@@ -276,7 +278,7 @@ class Polizei < Sinatra::Application
                                         null_as: ARCHIVE_NULL_VALUE
                                     },
                                     email: email_list.join(', '))
-    redirect to('/tables')
+    {}.to_json
   end
 
   post '/tables/comment' do
@@ -290,7 +292,8 @@ class Polizei < Sinatra::Application
         schema_name: params[:schema_name],
         table_name: params[:table_name],
         comment: comment
-      ).to_json
+      )
+      {}.to_json
     rescue => e
       PolizeiLogger.logger.exception e
       status 500
@@ -325,7 +328,7 @@ class Polizei < Sinatra::Application
                                  null_as: ARCHIVE_NULL_VALUE
                              },
                              email: email_list.join(', '))
-    redirect to('/tables')
+    {}.to_json
   end
 
   post '/tables/regenerate' do
@@ -374,7 +377,7 @@ class Polizei < Sinatra::Application
                                  null_as: ARCHIVE_NULL_VALUE
                              },
                              email: email_list.join(', '))
-    redirect to('/tables')
+    {}.to_json
   end
 
   post '/tables/report' do

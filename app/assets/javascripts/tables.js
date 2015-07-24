@@ -174,24 +174,24 @@ $(document).ready(function() {
 
   // comment modal
   $('#comment_modal').on('show.bs.modal', function(event) {
-    var button = $(event.relatedTarget);
-    var id = button.attr('data-id');
-    var schema = button.attr('data-schema-name');
-    var table = button.attr('data-table-name');
-    var comment = button.attr('data-comment');
-    var comment_el = $(this).find('input[name=comment]');
-    var submit_button = $('#comment_submit');
-    var label_el = $('#commentLabel');
-    submit_button.attr('data-id', id);
-    submit_button.attr('data-schema-name', schema);
-    submit_button.attr('data-table-name', table);
-    comment_el.val(comment);
+    var $button = $(event.relatedTarget);
+    var id = $button.attr('data-id');
+    var schema = $button.attr('data-schema-name');
+    var table = $button.attr('data-table-name');
+    var comment = $button.attr('data-comment');
+    var $comment = $(this).find('input[name=comment]');
+    var $submit = $('#comment_submit');
+    var $label = $('#commentLabel');
+    $submit.attr('data-id', id);
+    $submit.attr('data-schema-name', schema);
+    $submit.attr('data-table-name', table);
+    $comment.val(comment);
     if (comment) {
-      label_el.text("Edit Comment for " + schema + "." + table);
-      submit_button.text("Confirm Edit");
+      $label.text("Edit Comment for " + schema + "." + table);
+      $submit.text("Confirm Edit");
     } else {
-      label_el.text("New Comment for " + schema + "." + table);
-      submit_button.text("Confirm Add");
+      $label.text("New Comment for " + schema + "." + table);
+      $submit.text("Confirm Add");
     }
   });
   $('#comment_submit').on('click', function(e) {
@@ -201,10 +201,10 @@ $(document).ready(function() {
     var comment = $('#inputComment').val();
 
     // saved in case user goes to a different page, which may move these out of view
-    var comment_button = $('#comment_' + row_id);
-    var loading_img = $('#comment_load_' + row_id);
-    comment_button.hide();
-    loading_img.show();
+    var $comment_btn = $('#comment_' + row_id);
+    var $loading_img = $('#comment_load_' + row_id);
+    $comment_btn.hide();
+    $loading_img.show();
     $.ajax({
       "type":     'POST',
       "url":      'tables/comment',
@@ -214,35 +214,62 @@ $(document).ready(function() {
       "timeout":  45000,
       "success":  function () {
         // Update tooltip info in the table.
-        comment_button.removeClass('fa-comment fa-comment-o')
+        $comment_btn.removeClass('fa-comment fa-comment-o')
         if (comment.length == 0) {
-          comment_button.removeAttr('data-comment');
-          comment_button.addClass('fa-comment-o');
-          comment_button.parent().attr('title', '*Add a new table comment*');
+          $comment_btn.removeAttr('data-comment');
+          $comment_btn.addClass('fa-comment-o');
+          $comment_btn.parent().attr('title', '*Add a new table comment*');
         } else {
-          comment_button.attr('data-comment', comment);
-          comment_button.addClass('fa-comment');
-          comment_button.parent().attr('title', comment);
+          $comment_btn.attr('data-comment', comment);
+          $comment_btn.addClass('fa-comment');
+          $comment_btn.parent().attr('title', comment);
         }
-        comment_button.parent().tooltip('destroy');
-        comment_button.parent().tooltip();
-        loading_img.hide();
-        comment_button.show();
+        $comment_btn.parent().tooltip('destroy');
+        $comment_btn.parent().tooltip();
       },
       "error": function (req, textStatus, errorThrown) {
-        loading_img.hide();
-        comment_button.show();
         var errorCause = errorThrown;
         if (req.responseJSON['error'])
           errorCause = req.responseJSON['error'];
-        alert("Error loading update, reason: '" + errorCause + "'");
+        alert("Error submitting, reason: '" + errorCause + "'");
+      },
+      "complete": function () {
+        $loading_img.hide();
+        $comment_btn.show();
       }
     });
     $('#comment_modal').modal('hide');
     return false;
   });
 
-  // modal load up schema and table name
+  // Common code for modal submit forms. Should only be called from form elements.
+  function asyncModalSubmitForm($form, targetURL) {
+    if ($form.find('input.redshift_username_remember').is(':checked')) {
+      Cookies.set('redshift_username', $form.find('input.redshift_username').val());
+    }
+    var $modal = $form.closest("div.modal");
+    var $submit = $form.find('button[type=submit]');
+    $submit.button('loading');
+    $.ajax({
+      "type"    : 'POST',
+      "url"     : targetURL,
+      "data"    : $form.serialize(),
+      "dataType": "json",
+      "cache"   : false,
+      "timeout" : 45000,
+      "error": function (req, textStatus, errorThrown) {
+        alert("Error submitting, reason: '" + errorThrown + "'");
+      },
+      "complete": function () {
+        $modal.modal('hide');
+        $form.trigger('reset');
+        $submit.button('reset');
+        remember_redshift_username();
+      }
+    });
+  }
+
+  // Archive Table
   $('#archive_modal').on('show.bs.modal', function (event) {
     var button = $(event.relatedTarget);
     var schema = button.attr('data-schema-name');
@@ -250,76 +277,78 @@ $(document).ready(function() {
     $(this).find('input[name=schema]').val(schema);
     $(this).find('input[name=table]').val(table);
   });
+  $('#archiveForm').submit(function() {
+    asyncModalSubmitForm($(this), 'tables/archive');
+    return false;
+  });
+
+  // Restore Table
   $('#restore_modal').on('show.bs.modal', function (event) {
-    var button = $(event.relatedTarget);
-    var schema = button.attr('data-schema-name');
-    var table = button.attr('data-table-name');
-    var bucket = button.attr('data-bucket');
-    var prefix = button.attr('data-prefix');
+    var $button = $(event.relatedTarget);
+    var schema = $button.attr('data-schema-name');
+    var table = $button.attr('data-table-name');
+    var bucket = $button.attr('data-bucket');
+    var prefix = $button.attr('data-prefix');
     $(this).find('input[name=schema]').val(schema);
     $(this).find('input[name=table]').val(table);
     $(this).find('#restoreInputArchiveBucket').val(bucket);
     $(this).find('#restoreInputArchivePrefix').val(prefix);
   });
-  $('#regenerate_modal').on('show.bs.modal', function (event) {
-    var button = $(event.relatedTarget);
-    var schema = button.attr('data-schema-name');
-    $(this).find('input[name=schema]').val(schema);
-    var table = button.attr('data-table-name');
-    $(this).find('input[name=table]').val(table);
-    var distStyle = button.attr('data-dist-style');
-    $(this).find("input[name=distStyle][value=" + distStyle + "]").change();
-    $(this).find("input[name=distStyle][value=" + distStyle + "]").prop('checked', true);
-    $(this).find("input[name=distStyle][value=" + distStyle + "]").parent().addClass('active');
-    $(this).find("input[name=distStyle][value!=" + distStyle + "]").prop('checked', false);
-    $(this).find("input[name=distStyle][value!=" + distStyle + "]").parent().removeClass('active');
-    var distKey = button.attr('data-dist-key');
-    $(this).find('input[name=distKey]').val(distKey);
-    var sortStyle = button.attr('data-sort-style');
-    $(this).find("input[name=sortStyle][value=" + sortStyle + "]").change();
-    $(this).find("input[name=sortStyle][value=" + sortStyle + "]").prop('checked', true);
-    $(this).find("input[name=sortStyle][value=" + sortStyle + "]").parent().addClass('active');
-    $(this).find("input[name=sortStyle][value!=" + sortStyle + "]").prop('checked', false);
-    $(this).find("input[name=sortStyle][value!=" + sortStyle + "]").parent().removeClass('active');
-    var sortKeys = button.attr('data-sort-keys');
-    $(this).find('input[name=sortKeys]').val(sortKeys);
-    // Cannot select keepCurrent encodings if table doesn't have any encodings.
-    var hasColEncodings = button.attr('data-has-col-encodings') === 'true';
-    if (hasColEncodings) {
-      $(this).find('input[name=colEncode][value=keepCurrent]').prop('disabled', false);
-      $(this).find('input[name=colEncode][value=keepCurrent]').parent().removeClass('disabled');
-      $(this).find('input[name=colEncode][value=recompute]').prop('checked', false);
-      $(this).find('input[name=colEncode][value=recompute]').parent().removeClass('active');
-      $(this).find('input[name=colEncode][value=keepCurrent]').prop('checked', true);
-      $(this).find('input[name=colEncode][value=keepCurrent]').parent().addClass('active');
-    } else {
-      $(this).find('input[name=colEncode][value=keepCurrent]').prop('disabled', true);
-      $(this).find('input[name=colEncode][value=keepCurrent]').parent().addClass('disabled');
-      $(this).find('input[name=colEncode][value=recompute]').prop('checked', true);
-      $(this).find('input[name=colEncode][value=recompute]').parent().addClass('active');
-      $(this).find('input[name=colEncode][value=keepCurrent]').prop('checked', false);
-      $(this).find('input[name=colEncode][value=keepCurrent]').parent().removeClass('active');
-    }
+  $('#restoreForm').submit(function() {
+    asyncModalSubmitForm($(this), 'tables/restore');
+    return false;
   });
 
-  // modal submit buttons
-  $('#archiveForm').submit(function () {
-    if ($('#archiveRememberMe').is(':checked')) {
-      Cookies.set('redshift_username', $('#archiveInputRedshiftUsername').val());
+  // Regenerate Table
+  $('#regenerate_modal').on('show.bs.modal', function (event) {
+    var $button = $(event.relatedTarget);
+    var schema = $button.attr('data-schema-name');
+    $(this).find('input[name=schema]').val(schema);
+    var table = $button.attr('data-table-name');
+    $(this).find('input[name=table]').val(table);
+    var distStyle = $button.attr('data-dist-style');
+    var $targetDistStyle = $(this).find("input[name=distStyle][value=" + distStyle + "]");
+    var $otherDistStyles = $(this).find("input[name=distStyle][value!=" + distStyle + "]");
+    $targetDistStyle.change();
+    $targetDistStyle.prop('checked', true);
+    $targetDistStyle.parent().addClass('active');
+    $otherDistStyles.prop('checked', false);
+    $otherDistStyles.parent().removeClass('active');
+    var distKey = $button.attr('data-dist-key');
+    $(this).find('input[name=distKey]').val(distKey);
+    var sortStyle = $button.attr('data-sort-style');
+    var $targetSortStyle = $(this).find("input[name=sortStyle][value=" + sortStyle + "]");
+    var $otherSortStyles = $(this).find("input[name=sortStyle][value!=" + sortStyle + "]");
+    $targetSortStyle.change();
+    $targetSortStyle.prop('checked', true);
+    $targetSortStyle.parent().addClass('active');
+    $otherSortStyles.prop('checked', false);
+    $otherSortStyles.parent().removeClass('active');
+    var sortKeys = $button.attr('data-sort-keys');
+    $(this).find('input[name=sortKeys]').val(sortKeys);
+    // Cannot select keepCurrent encodings if table doesn't have any encodings.
+    var hasColEncodings = $button.attr('data-has-col-encodings') === 'true';
+    var $keepCurrent = $(this).find('input[name=colEncode][value=keepCurrent]');
+    var $recompute = $(this).find('input[name=colEncode][value=recompute]');
+    if (hasColEncodings) {
+      $keepCurrent.prop('disabled', false);
+      $keepCurrent.parent().removeClass('disabled');
+      $recompute.prop('checked', false);
+      $recompute.parent().removeClass('active');
+      $keepCurrent.prop('checked', true);
+      $keepCurrent.parent().addClass('active');
+    } else {
+      $keepCurrent.prop('disabled', true);
+      $keepCurrent.parent().addClass('disabled');
+      $recompute.prop('checked', true);
+      $recompute.parent().addClass('active');
+      $keepCurrent.prop('checked', false);
+      $keepCurrent.parent().removeClass('active');
     }
-    $('#archive_submit').button('loading');
   });
-  $('#restoreForm').submit(function () {
-    if ($('#restoreRememberMe').is(':checked')) {
-      Cookies.set('redshift_username', $('#restoreInputRedshiftUsername').val());
-    }
-    $('#restore_submit').button('loading');
-  });
-  $('#regenerateForm').submit(function () {
-    if ($('#regenerateRememberMe').is(':checked')) {
-      Cookies.set('redshift_username', $('#regenerateInputRedshiftUsername').val());
-    }
-    $('#regenerate_submit').button('loading');
+  $('#regenerateForm').submit(function() {
+    asyncModalSubmitForm($(this), 'tables/regenerate');
+    return false;
   });
 
   // show/hide additional inputs on Regenerate modal
