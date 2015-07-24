@@ -18,4 +18,5 @@ join pg_namespace n on n.oid = c.relnamespace and n.nspname = cols.table_schema
 join pg_attribute a on a.attnum > 0 and not a.attisdropped and c.oid = a.attrelid and cols.column_name = a.attname
 left join pg_attrdef d1 on a.attrelid = d1.adrelid and a.attnum = d1.adnum and d1.adsrc not like '%%"identity"(%%'
 left join pg_attrdef d2 on a.attrelid = d2.adrelid and a.attnum = d2.adnum and d2.adsrc like '%%"identity"(%%'
-where trim(n.nspname) not in ('pg_catalog', 'pg_toast', 'information_schema')
+-- filter out system tables, temp tables, and indexes
+where c.reltype != 0 and n.nspname not in ('pg_catalog', 'information_schema', 'pg_toast') and n.nspname not like 'pg_temp_%%'

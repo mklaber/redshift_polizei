@@ -22,4 +22,5 @@ left join (select tableid, min(c) AS min_blocks_per_slice, max(c) as max_blocks_
         join stv_blocklist b on pc.oid = b.tbl
         group by pc.relname, pc.oid, slice)
   group by tableid) as t2 on t1.tableid = t2.tableid
-where nspname not in ('pg_catalog', 'pg_toast', 'information_schema')
+-- filter out system tables, temp tables, and indexes
+where c.reltype != 0 and n.nspname not in ('pg_catalog', 'information_schema', 'pg_toast') and n.nspname not like 'pg_temp_%%'

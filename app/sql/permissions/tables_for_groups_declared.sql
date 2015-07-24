@@ -41,7 +41,8 @@ from (
       from pg_catalog.pg_class c
       join pg_catalog.pg_namespace n on n.oid = c.relnamespace
       cross join pg_catalog.pg_group g
-      where trim(n.nspname) not in ('pg_catalog', 'pg_toast', 'information_schema')
+      -- filter out system tables, temp tables, and indexes
+      where c.reltype != 0 and n.nspname not in ('pg_catalog', 'information_schema', 'pg_toast') and n.nspname not like 'pg_temp_%%'
       -- limit search space to tables which have acl entries for our group somewhere
       and array_to_string(c.relacl, '|') like '%%group ' || g.groname || '=%%'
     )

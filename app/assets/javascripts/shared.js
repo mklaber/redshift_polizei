@@ -257,6 +257,11 @@ function datatable_client_init(table, user_options) {
     });
 }
 
+// 'remember me' for redshift usernames
+function remember_redshift_username() {
+    $('.redshift_username').val(Cookies.get('redshift_username'));
+}
+
 $(document).ready(function() {
     // every bootstrap table is going to be a data table
     $.each($('table.table'), function(idx, table) {
@@ -272,6 +277,5 @@ $(document).ready(function() {
     $('.modal').on('shown.bs.modal', function () {
         $(this).find('form').find('input:visible:not([readonly]):first').select();
     });
-    // 'remember me' for redshift usernames
-    $('.redshift_username').val(Cookies.get('redshift_username'));
+    remember_redshift_username();
 });

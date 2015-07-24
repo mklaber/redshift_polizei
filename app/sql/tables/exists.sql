@@ -11,4 +11,5 @@ from pg_class c
 join pg_namespace n on n.oid = c.relnamespace
 join pg_user u on c.relowner = u.usesysid
 join pg_user u2 on n.nspowner = u2.usesysid
-where trim(n.nspname) not in ('pg_catalog', 'pg_toast', 'information_schema')
+-- filter out system tables, temp tables, and indexes
+where c.reltype != 0 and n.nspname not in ('pg_catalog', 'information_schema', 'pg_toast') and n.nspname not like 'pg_temp_%%'

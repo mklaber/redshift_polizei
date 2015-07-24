@@ -140,7 +140,9 @@ describe Jobs::TableReports do
     RSPool.with do |c|
       tbl_count = c.exec("select count(*) as cnt
 from pg_class c join pg_namespace n on n.oid = c.relnamespace
-where trim(n.nspname) not in ('pg_catalog', 'pg_toast', 'information_schema')")[0]['cnt'].to_i
+where c.reltype != 0
+and n.nspname not in ('pg_catalog', 'information_schema', 'pg_toast')
+and n.nspname not like 'pg_temp_%%'")[0]['cnt'].to_i
       create_report(schema_name: nil, table_name: nil, donotcreate: true)
       expect(Models::TableReport.count).to eq(tbl_count)
     end
