@@ -233,10 +233,27 @@ function datatable_ajax_init(table, url, options) {
     datatable_client_init(table, options);
 }
 
+
 function datatable_client_init(table, user_options) {
-    options = {
-        'aaSorting': []
-    };
+    var options = null
+    if($(table).attr('complex-search')=='true'){
+        $.fn.dataTable.ext.type.order['complex-table-pre'] = function ( d ) {
+            regex = new RegExp('<a .*>(.*)</a>');
+            value = regex.exec(d);
+            return (value != null && value.length >= 2)?value[1]:null;
+        };
+        options = {
+            "columnDefs": [ {
+                "type": "complex-table",
+                "targets": 1
+            } ]
+        };
+    }
+    else{
+        options = {
+           'aaSorting': []
+        }
+    }
     $.extend(options, user_options);
     $(table).dataTable(options);
 
