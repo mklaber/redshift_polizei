@@ -42,7 +42,7 @@ set :ssh_options, {:forward_agent => true,
 
 task :production do
   set :rails_env, "production"
-  set :branch, "master"
+  set :branch, "stable"
   role :all,  SERVER_URL
   role :app,  SERVER_URL
   role :web,  SERVER_URL
