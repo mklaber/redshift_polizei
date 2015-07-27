@@ -153,7 +153,7 @@ class Polizei < Sinatra::Application
       cluster_identifier: GlobalConfig.polizei('aws_cluster_identifier'))
     cluster_info  = nil
     cluster_info  = clusters_info[:clusters][0] unless clusters_info.blank?
-    if !cluster_info[:restore_status].nil?
+    if !cluster_info[:restore_status].nil? && cluster_info[:restore_status][:status] != 'completed'
       @cluster_status = cluster_info[:restore_status][:status]
     elsif cluster_info.nil?
       @cluster_status = 'unknown'
