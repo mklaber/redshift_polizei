@@ -246,7 +246,8 @@ function datatable_client_init(table, user_options) {
             "columnDefs": [ {
                 "type": "complex-table",
                 "targets": 1
-            } ]
+            } ],
+            'aaSorting': []
         };
     }
     else{
