@@ -235,43 +235,30 @@ function datatable_ajax_init(table, url, options) {
 
 
 function datatable_client_init(table, user_options) {
-    var options = null
-    if($(table).attr('complex-search')=='true'){
-        $.fn.dataTable.ext.type.order['complex-table-pre'] = function ( d ) {
-            regex = new RegExp('<a .*>(.*)</a>');
-            value = regex.exec(d);
-            return (value != null && value.length >= 2)?value[1]:null;
-        };
-        options = {
-            "columnDefs": [ {
-                "type": "complex-table",
-                "targets": 1
-            } ]
-        };
+    var options = {
+           'aaSorting': []};
+    $.extend(options, user_options);
+    var callBack = $(table).attr('data-custom-init-callback');
+    if(callBack != null){
+        window[callBack](table, options);
     }
     else{
-        options = {
-           'aaSorting': []
-        }
+        $(table).dataTable(options);
+        var tableId = $(table).attr('id');
+        var filterContainer = $('div#' + tableId + '_filter label');
+        var searchBox = $('div#' + tableId + '_filter input');
+        var cfilter = $('<span class="label label-default" style="position: relative; left: 195px;">RegEx</span>');
+        filterContainer.prepend(cfilter);
+        searchBox.unbind();
+        searchBox.on('keyup click', function () {
+            var search_term = $(this).val();
+            $(table).DataTable().search(
+                search_term,
+                regex_is_valid(search_term), // only use as regex if valid
+                true
+            ).draw();
+        });
     }
-    $.extend(options, user_options);
-    $(table).dataTable(options);
-
-    var table_id = $(table).attr('id');
-    var filterContainer = $('div#' + table_id + '_filter label');
-    var searchBox = $('div#' + table_id + '_filter input');
-    var cfilter = $('<span class="label label-default" style="position: relative; left: 195px;">RegEx</span>');
-    filterContainer.prepend(cfilter);
-
-    searchBox.unbind();
-    searchBox.on('keyup click', function () {
-        var search_term = $(this).val();
-        $(table).DataTable().search(
-            search_term,
-            regex_is_valid(search_term), // only use as regex if valid
-            true
-        ).draw();
-    });
 }
 
 // 'remember me' for redshift usernames

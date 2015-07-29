@@ -349,7 +349,7 @@
 
 <div class="tab-content">
   <div id="redshift_tables" class="tab-pane fade in active">
-    <table id="tablereports" complex-search="true" data-auto="true" style="display: none;" class="table table-bordered table-striped table-condensed table-hover">
+    <table id="tablereports" data-custom-init-callback="customTableReportsArchivesInit" data-auto="true" style="display: none;" class="table table-bordered table-striped table-condensed table-hover">
       <thead>
       <tr>
         <th>Schema</th>
@@ -376,7 +376,7 @@
             else
               content = "None<br/>"
             end %>
-            <a tabindex='0' data-toggle='popover' data-placement='auto' data-container='body' data-html='true' data-trigger='focus' data-content='<%=content%>'><%=row['table_name']%></a><small class='secondary'><%=row['table_id']%></small>
+            <a class='hover-pointer' tabindex='0' data-toggle='popover' data-placement='auto' data-container='body' data-html='true' data-trigger='focus' data-content='<%=content%>'><%=row['table_name']%></a><small class='secondary'>(<%=row['table_id']%>)</small>
               <% if row['comment'] %>
                 <span data-toggle='tooltip' data-placement='top' title="<%= row['comment'] %>">
                   <i class="db_comment fa fa-comment" data-toggle="modal" data-target="#comment_modal" id="comment_<%= i %>"
@@ -470,7 +470,7 @@
   </div>
 
   <div id="archived_tables" class="tab-pane fade in">
-    <table id="tablearchives" complex-search="true" data-auto="true" style="display: none;" class="table table-bordered table-striped table-condensed table-hover">
+    <table id="tablearchives" data-custom-init-callback="customTableReportsArchivesInit" data-auto="true" style="display: none;" class="table table-bordered table-striped table-condensed table-hover">
       <thead>
       <tr>
         <th>Schema</th>
@@ -496,7 +496,7 @@
               else
                 content = "None<br/>"
               end %>
-              <a tabindex='0' data-toggle='popover' data-placement='auto' data-container='body' data-html='true' data-trigger='focus' data-content='<%=content%>'><%=row['table_name']%></a>
+              <a class='hover-pointer' tabindex='0' data-toggle='popover' data-placement='auto' data-container='body' data-html='true' data-trigger='focus' data-content='<%=content%>'><%=row['table_name']%></a>
             </td>
             <td nowrap="nowrap"><%= (row['size_in_mb'].to_i / 1024.0).round(2) %></td>
             <td>

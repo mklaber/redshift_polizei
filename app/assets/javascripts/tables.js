@@ -1,3 +1,190 @@
+function customFilter( settings, data, dataIndex ) {
+    var tableId = settings.sInstance;
+    if (tableId == 'tablereports' || tableId == 'tablearchives'){  
+      //If the table is not fully initialized with custom code and custom filters get fired (since filter configurations are global),
+      //then allow the data to pass through
+      if($('#'+tableId).dataTable().fnSettings().customInit != true)
+        return true;
+      var columnsSearchTerm = $('#'+tableId+'_columns_filter').val();
+      var tableSearchTerm = $('#'+tableId+'_tables_filter').val();
+      var schemaTableFilterFlag = false;
+      var columnsFilterFlag = false;
+      //try schema/table level match
+      if (tableSearchTerm == ""){
+        schemaTableFilterFlag = true;
+      }
+      else{
+        var criteria = null;
+        var searchable_data = "";
+        var regex = new RegExp('<a .*>(.*)</a>');
+        var value = regex.exec(data[1]);
+        var extractedData = (value != null && value.length >= 2)?value[1]:data[1];
+        searchable_data = data[0]+"."+extractedData;
+        criteria = $.fn.dataTable.ext.internal._fnFilterCreateSearch(tableSearchTerm, 
+                    false, settings.oPreviousSearch.bSmart, settings.oPreviousSearch.bCaseInsensitive);
+        schemaTableFilterFlag = criteria.test(searchable_data);
+      }
+      //Now do column level filtering
+      if (columnsSearchTerm == ""){
+        columnsFilterFlag = true;
+      }
+      else{
+        //Extract column names
+        //search_against=data[1];
+        var node = $.parseHTML(data[1]);
+        var search_against = '';
+        node = $(node).attr('data-content');
+        $(node).find('li').each(function(){
+          search_against += $(this).text() + ' ';
+        });
+        search_against = search_against.trim();
+        criteria = $.fn.dataTable.ext.internal._fnFilterCreateSearch(columnsSearchTerm, 
+                    settings.oPreviousSearch.bRegex, settings.oPreviousSearch.bSmart, settings.oPreviousSearch.bCaseInsensitive);
+        columnsFilterFlag = (criteria.test(search_against))
+      }
+      return (schemaTableFilterFlag && columnsFilterFlag);
+    }
+    return true;
+}
+
+function customTableReportsArchivesInit(table, options){
+  $.fn.dataTable.ext.type.order['complex-table-pre'] = function ( d ) {
+            regex = new RegExp('<a .*>(.*)</a>');
+            value = regex.exec(d);
+            return (value != null && value.length >= 2)?value[1]:d;
+  };
+  var custom_div_id = '#'+$(table).attr('id')+'_filter';
+  custom_options = {
+      "columnDefs": [ {
+          "type": "complex-table",
+          "targets": 1
+      } ],
+      'aaSorting': [],
+      'dom': "<'row'<'col-sm-6'l><'"+custom_div_id+".col-sm-6''>><'row'<'col-sm-12'tr>><'row'<'col-sm-6'i><'col-sm-6'p>>"
+  };
+  $.extend(options, custom_options);
+  $(table).dataTable(options);
+  var tableId = $(table).attr('id');
+  var custom_div_id = '#'+tableId+'_filter';
+  $(custom_div_id).append("<div style='text-align:right' >Search : <input placeholder='schema.table' id='"+tableId+"_tables_filter' class='form-control input-sm' type='search'></input>&nbsp<input id='"+tableId+"_columns_filter' placeholder='column' class='form-control input-sm' type='search'></input></div>");
+  //Set a custom flag to mark that the table has been fully initialized and customized
+  $('#'+tableId).dataTable().fnSettings().customInit = true;
+  var tableSearchBox = $('#'+tableId+'_tables_filter');
+  var columnsSearchBox = $('#'+tableId+'_columns_filter');
+  var filterFunctions = $.fn.dataTable.ext.search;
+  if (filterFunctions.indexOf(customFilter)==-1){
+    $.fn.dataTable.ext.search.push(customFilter);
+  }
+  tableSearchBox.on('keyup click', function () {
+        $(table).DataTable().draw();
+      });
+  columnsSearchBox.on('keyup click', function () {
+        $(table).DataTable().draw();
+      });
+}
+
+/*tableSearchBox.on('keyup', function () {
+      var searchTerm = $(this).val();
+      splitted_terms=searchTerm.split('.');
+      if(splitted_terms.length == 2){
+        $(table).DataTable().column(0).search(splitted_terms[0],
+            false,
+            true
+        ).column(1).search(splitted_terms[1],false,true);
+        var filtered_data = $('#tablereports').dataTable().fnSettings().aiDisplay.slice();
+        $(table).DataTable().columns().search('',
+            false,
+            true
+        );
+        $(table).DataTable().search(searchTerm,
+            true,
+            false
+        );
+        var filtered_data_global = $('#tablereports').dataTable().fnSettings().aiDisplay.slice();
+        filtered_data.concat(filtered_data_global.filter(function (data){
+          return filtered_data.indexOf(data)==-1;
+        }));
+        $('#tablereports').dataTable().fnSettings().aiDisplay=[];
+        $('#tablereports').dataTable().fnSettings().aiDisplay=filtered_data;
+        $.fn.dataTable.ext.internal._fnDraw($('#tablereports').dataTable().fnSettings())
+      }else{
+        //To make sure no columns filteres are applied along with the global search since all column level searches are preserved
+        $(table).DataTable().columns().search('',
+            false,
+            true
+        ).draw();
+        $(table).DataTable().search(searchTerm,
+            false,
+            true
+        ).draw();
+      }
+  });*/
+
+// function custom_redshift_search_old(table){
+//   var tableId = $(table).attr('id');
+//   var filterContainer = $('div#' + tableId + '_filter label');
+//   content = "<select id='redshift_table_select' class='form-control input-sm'><option value='schema_table' selected='selected'>Schema/Table</option><option value='columns'>Columns</option>"
+//   $(content).prependTo(filterContainer);
+//   var filterContainerContent = $(filterContainer).html()
+//   filterContainerContent = filterContainerContent.replace('Search:','');
+//   filterContainerContent = 'Search By : '+filterContainerContent;
+//   filterContainer.html(filterContainerContent);
+//   var searchBox = $('div#' + tableId + '_filter input');
+//   searchBox.unbind();
+//   $.fn.dataTable.ext.search.push(
+//       function( settings, data, dataIndex ) {
+//           tableid = settings.sInstance;
+//           if (tableId == 'tablereports' || tableId == 'tablearchives'){
+//             var searchTerm = $('div#' + tableId + '_filter input').val();
+//             if (search_term == "") 
+//               return true;
+//             //var searchBox = $('div#' + tableId + '_filter input');
+//             //is_search_by_columns = $("#redshift_table_select").val() == "schema_table"?false:true;
+//             is_search_by_tables_first = false;
+//             splitted_terms = search_term.split(".");
+//             var criteria = null;
+//             var searchable_data = "";
+//             if(splitted_terms.length > 1){
+//               is_search_by_tables_first = true;
+//             }
+//             if(is_search_by_tables_first){
+//               searchable_data = data[0]+"."+data[1];
+//               if (search_term.toLowerCase() == searchable_data.toLowerCase()) return true;
+//             }
+//             criteria = $.fn.dataTable.ext.internal._fnFilterCreateSearch(settings.oPreviousSearch.sSearch, settings.oPreviousSearch.bRegex,
+//                          settings.oPreviousSearch.bSmart, settings.oPreviousSearch.bCaseInsensitive);
+//             for(i=0;i<data.length;i++){
+//               search_against=data[i];
+//               if(i==1){
+//                 regex = new RegExp('<a .*>(.*)</a>');
+//                 value = regex.exec(data[i]);
+//                 search_against = (value != null && value.length >= 2)?value[1]:"";
+//               }
+//               if(criteria.test(search_against))
+//                 return true;
+//             }
+//             return false;
+//           }
+//           return true;
+//       }
+//   );
+//   searchBox.on('keyup', function () {
+//       var search_term = $(this).val();
+//       is_search_by_columns = $("#redshift_table_select").val() == "schema_table"?false:true;
+//       if(is_search_by_columns){
+        
+//       }
+//       else{
+//         search_term=search_term.replace('.',' ');
+//         $(table).DataTable().columns([0, 1]).search(
+//             search_term,
+//             false,
+//             true
+//         ).draw();
+//       }
+//   }); 
+// }
+
 $(document).ready(function() {
 
   // init tooltips

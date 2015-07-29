@@ -123,3 +123,7 @@ tr.strikeout button {
   border-color: #ccc;
   background-color: #ccc;
 }
+
+.hover-pointer:hover{
+  cursor: pointer;
+}
