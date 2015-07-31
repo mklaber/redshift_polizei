@@ -127,3 +127,10 @@ tr.strikeout button {
 .hover-pointer:hover{
   cursor: pointer;
 }
+
+input.spinner{
+  background-image:url('../images/ajax-loader.gif');
+  background-repeat:no-repeat;
+  background-position: right center /* Change to accommodate to your spinner */;
+  background-size: 10px 10px;
+}

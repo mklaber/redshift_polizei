@@ -1,48 +1,73 @@
+var tableSearchBoxTimer=null;
+var columnsSearchBoxTimer=null;
 function customFilter( settings, data, dataIndex ) {
     var tableId = settings.sInstance;
-    if (tableId == 'tablereports' || tableId == 'tablearchives'){  
+    if (tableId == 'tablereports' || tableId == 'tablearchives'){
       //If the table is not fully initialized with custom code and custom filters get fired (since filter configurations are global),
       //then allow the data to pass through
-      if($('#'+tableId).dataTable().fnSettings().customInit != true)
-        return true;
-      var columnsSearchTerm = $('#'+tableId+'_columns_filter').val();
-      var tableSearchTerm = $('#'+tableId+'_tables_filter').val();
-      var schemaTableFilterFlag = false;
-      var columnsFilterFlag = false;
-      //try schema/table level match
-      if (tableSearchTerm == ""){
-        schemaTableFilterFlag = true;
-      }
-      else{
-        var criteria = null;
-        var searchable_data = "";
-        var regex = new RegExp('<a .*>(.*)</a>');
-        var value = regex.exec(data[1]);
-        var extractedData = (value != null && value.length >= 2)?value[1]:data[1];
-        searchable_data = data[0]+"."+extractedData;
-        criteria = $.fn.dataTable.ext.internal._fnFilterCreateSearch(tableSearchTerm, 
-                    false, settings.oPreviousSearch.bSmart, settings.oPreviousSearch.bCaseInsensitive);
-        schemaTableFilterFlag = criteria.test(searchable_data);
-      }
-      //Now do column level filtering
-      if (columnsSearchTerm == ""){
-        columnsFilterFlag = true;
-      }
-      else{
-        //Extract column names
-        //search_against=data[1];
-        var node = $.parseHTML(data[1]);
-        var search_against = '';
-        node = $(node).attr('data-content');
-        $(node).find('li').each(function(){
-          search_against += $(this).text() + ' ';
-        });
-        search_against = search_against.trim();
-        criteria = $.fn.dataTable.ext.internal._fnFilterCreateSearch(columnsSearchTerm, 
-                    settings.oPreviousSearch.bRegex, settings.oPreviousSearch.bSmart, settings.oPreviousSearch.bCaseInsensitive);
-        columnsFilterFlag = (criteria.test(search_against))
-      }
-      return (schemaTableFilterFlag && columnsFilterFlag);
+	  if($('#'+tableId).dataTable().fnSettings().customInit != true)
+	    return true;
+
+	  var columnsSearchTerm = $('#'+tableId+'_columns_filter').val();
+	  var tableSearchTerm = $('#'+tableId+'_tables_filter').val();
+	  var schemaTableFilterFlag = false;
+	  var columnsFilterFlag = false;
+	  //try schema/table level match
+	  if (tableSearchTerm == ""){
+	    schemaTableFilterFlag = true;
+	  }
+	  else{
+	  	try{
+		    var criteria = null;
+		    var searchable_data = "";
+		    var regex = new RegExp('<a .*>(.*)</a>');
+		    var value = regex.exec(data[1]);
+		    var extractedData = (value != null && value.length >= 2)?value[1]:data[1];
+		    searchable_data = data[0]+"."+extractedData;
+		    //Internal method used to create search regex which datatables use.
+		    //This internal method does not modify any namespace variables or global variables and hence is safe to use
+		    // Datatable version - DataTables 1.10.7.
+		    criteria = $.fn.dataTable.ext.internal._fnFilterCreateSearch(tableSearchTerm, 
+		                false, settings.oPreviousSearch.bSmart, settings.oPreviousSearch.bCaseInsensitive);
+		    schemaTableFilterFlag = criteria.test(searchable_data);
+	    }catch(error){
+	    	//Dont let corrupted row crash the entire search process. Silently filter the row and let the search process continue
+	    	//for other rows
+	    	schemaTableFilterFlag=false;
+	    }
+	  }
+	  //Now do column level filtering
+	  if (columnsSearchTerm == ""){
+	    columnsFilterFlag = true;
+	  }
+	  else{
+	  	try{
+		    //Extract column names which are stored as dynamic HTML content in data-content attribute
+		    var node = $.parseHTML(data[1]);
+		    var search_against = '';
+		    node = $.parseHTML($(node).attr('data-content'));
+		    var dataContent  = $(node).find('li');
+		    if(dataContent != null && dataContent.length >0 ){
+		        dataContent.each(function( ){
+		          search_against += $(this).text() + ' ';
+		        });
+		    }
+		    else{
+		    	search_against = 'None';
+		    }
+		    //Internal method used to create search regex which datatables use.
+		    //This internal method does not modify any namespace variables or global variables and hence is safe to use
+		    // Datatable version - DataTables 1.10.7.
+		    criteria = $.fn.dataTable.ext.internal._fnFilterCreateSearch(columnsSearchTerm, 
+		                    settings.oPreviousSearch.bRegex, settings.oPreviousSearch.bSmart, settings.oPreviousSearch.bCaseInsensitive);
+		    columnsFilterFlag = (criteria.test(search_against))
+		}catch(error){
+			//Dont let corrupted row crash the entire search process. Silently filter the row and let the search process continue
+	    	//for other rows
+			columnsFilterFlag=false;
+		}
+	  }
+	  return (schemaTableFilterFlag && columnsFilterFlag);
     }
     return true;
 }
@@ -75,11 +100,25 @@ function customTableReportsArchivesInit(table, options){
   if (filterFunctions.indexOf(customFilter)==-1){
     $.fn.dataTable.ext.search.push(customFilter);
   }
-  tableSearchBox.on('keyup click', function () {
-        $(table).DataTable().draw();
-      });
-  columnsSearchBox.on('keyup click', function () {
-        $(table).DataTable().draw();
+  tableSearchBox.on('keyup paste', function () {
+  		clearTimeout(tableSearchBoxTimer);
+  		tableSearchBoxTimer = setTimeout(function(){
+  			tableSearchBox.addClass('spinner');
+  			setTimeout(function(){
+	  			$(table).DataTable().draw();		
+	  			tableSearchBox.removeClass('spinner');
+	  		},0);
+  		},600);
+    });
+  columnsSearchBox.on('keyup paste', function () {
+  		clearTimeout(columnsSearchBoxTimer);
+  		columnsSearchBoxTimer = setTimeout(function(){
+  			columnsSearchBox.addClass('spinner');
+  			setTimeout(function(){
+	  			$(table).DataTable().draw();		
+	  			columnsSearchBox.removeClass('spinner');
+	  		},0);
+  		},600);
       });
 }
 
@@ -94,7 +133,7 @@ $(document).ready(function() {
     $("[data-toggle=popover]").popover();
   });
   //Search box auto focus
-  var searchBox = $('div.dataTables_filter input');
+  var searchBox = $('#tablereports_tables_filter');
   searchBox.focus();
   // show relative or absolute date of last data update
   var last_update_container = $('#last_update');
