@@ -24,7 +24,7 @@
           <h4 class="modal-title" id="commentLabel">Edit Comment</h4>
         </div>
         <div class="modal-body">
-          <input type="textarea" multiple class="form-control" id="inputComment" name="comment" value="">
+          <textarea data-autoresize class="form-control" id="inputComment" rows="2"></textarea>
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
@@ -378,7 +378,8 @@
             end %>
             <a tabindex='0' data-toggle='popover' data-placement='auto' data-container='body' data-html='true' data-trigger='focus' data-content='<%=content%>'><%=row['table_name']%></a><small class='secondary'>(<%=row['table_id']%>)</small>
               <% if row['comment'] %>
-                <span data-toggle='tooltip' data-placement='top' title="<%= row['comment'] %>">
+                <span data-toggle='tooltip' data-placement='top'
+                      title="<%= row['comment'].length > 200 ? row['comment'][0..200] + '...' : row['comment'] %>">
                   <i class="db_comment fa fa-comment" data-toggle="modal" data-target="#comment_modal" id="comment_<%= i %>"
                      data-id="<%= i %>" data-schema-name="<%= row['schema_name'] %>" data-table-name="<%= row['table_name'] %>" data-comment="<%= row['comment'] %>"></i>
                 </span>
