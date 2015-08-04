@@ -303,7 +303,7 @@ $(document).ready(function() {
     var schema = $button.attr('data-schema-name');
     var table = $button.attr('data-table-name');
     var comment = $button.attr('data-comment');
-    var $comment = $(this).find('input[name=comment]');
+    var $comment = $('#inputComment');
     var $submit = $('#comment_submit');
     var $label = $('#commentLabel');
     $submit.attr('data-id', id);
@@ -317,6 +317,11 @@ $(document).ready(function() {
       $label.text("New Comment for " + schema + "." + table);
       $submit.text("Confirm Add");
     }
+  });
+  $('#comment_modal').on('shown.bs.modal', function() {
+    var $comment = $('#inputComment');
+    $comment.trigger('input');
+    $comment.focus();
   });
   $('#comment_submit').on('click', function(e) {
     var row_id = $(e.target).attr("data-id");
@@ -364,6 +369,16 @@ $(document).ready(function() {
     });
     $('#comment_modal').modal('hide');
     return false;
+  });
+  // Auto-resize comment field:
+  // http://stephanwagner.me/auto-resizing-textarea
+  jQuery.each(jQuery('textarea[data-autoresize]'), function() {
+    var offset = this.offsetHeight - this.clientHeight;
+
+    var resizeTextarea = function(el) {
+      jQuery(el).css('height', 'auto').css('height', el.scrollHeight + offset);
+    };
+    jQuery(this).on('keyup input propertychange', function() { resizeTextarea(this); }).removeAttr('data-autoresize');
   });
 
   // Common code for modal submit forms. Should only be called from form elements.

@@ -24,6 +24,11 @@ i.db_comment {
   cursor: pointer;
 }
 
+/* Auto-resizing textarea. */
+textarea#inputComment {
+    resize: none;
+}
+
 .CodeRay div {
     overflow-y: auto;
     max-width: 400px;
