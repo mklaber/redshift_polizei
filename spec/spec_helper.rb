@@ -63,7 +63,7 @@ RSpec.configure { |c|
     # create a test user & group
     o = [('a'..'z'), ('A'..'Z'), ('0'..'9')].map { |i| i.to_a }.flatten
     rndm_password = (0...63).map { o[rand(o.length)] }.join
-    @test_group = 'polizei_test_group'
+    @test_group = "polizei_test_group_#{rand(1024)}"
     @test_user  = "polizei_test_user_#{rand(1024)}"
     @conn.exec("CREATE USER #{@test_user} WITH PASSWORD '#{rndm_password}'")
     @conn.exec("CREATE GROUP #{@test_group} WITH USER #{@test_user}")
