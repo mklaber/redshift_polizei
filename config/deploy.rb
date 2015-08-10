@@ -38,7 +38,7 @@ set :yaml_files,      ['database', 'polizei']
 set :use_sudo,        false 
 default_run_options[:pty] = true
 set :ssh_options, {:forward_agent => true,
-                   :keys => [File.join(ENV["HOME"], ".ssh", "id_rsa")]}
+                   :keys => [File.join(ENV["HOME"], ".ssh", "id_amg")]}
 
 task :production do
   set :rails_env, "production"

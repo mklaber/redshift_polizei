@@ -8,7 +8,7 @@ GIT
 
 GIT
   remote: git@github.com:AnalyticsMediaGroup/desmond.git
-  revision: 539723664bd0913d2b6b51067ad2bad839a1b203
+  revision: df4e9c88d949ac53871245f817eae08677ba0254
   specs:
     desmond (0.2.0)
       activerecord (~> 4.2)
