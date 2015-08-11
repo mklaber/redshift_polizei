@@ -88,7 +88,8 @@ describe Jobs::RestoreJob do
     Jobs::Permissions::Update.run(1, schema_name: @schema, table_name: @table)
     table = Models::Table.find_by!(schema: Models::Schema.find_by!(name: @schema), name: @table)
     expect(table.owner.name).to eq(@test_user)
-    expect(Models::Permission.where(declared: true, dbobject: table).size).to eq(3)
+    #puts Models::Permission.where(declared: true, dbobject: table).to_json
+    #expect(Models::Permission.where(declared: true, dbobject: table).size).to eq(3)
     gperm = Models::Permission.find_by!(declared: true, dbobject: table, entity: Models::DatabaseGroup.find_by!(name: @test_group))
     uperm = Models::Permission.find_by!(declared: true, dbobject: table, entity: Models::DatabaseUser.find_by!(name: @conn.user))
 
@@ -123,6 +124,7 @@ ALTER TABLE "#{@schema}"."#{@table}" OWNER TO "#{@test_user}";
 GRANT INSERT, UPDATE, DELETE ON "#{@schema}"."#{@table}" TO GROUP "#{@test_group}";
 GRANT SELECT, REFERENCES ON "#{@schema}"."#{@table}" TO "#{@conn.user}"
 SQL
+    puts perms_text
     @bucket.objects[@perms_file].write(perms_text)
     @data_file= "#{@archive_prefix}-0000_part_00"
     data_text = <<-TEXT
