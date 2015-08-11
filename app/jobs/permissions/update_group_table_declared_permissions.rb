@@ -22,6 +22,7 @@ module Jobs
           end
           tmp
         end
+        p results
 
         now = Time.now.utc
         # update or touch everything we found
