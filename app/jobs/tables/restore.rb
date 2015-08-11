@@ -96,6 +96,8 @@ module Jobs
           CREDENTIALS 'aws_access_key_id=#{access_key};aws_secret_access_key=#{secret_key}'
           MANIFEST #{copy_options};
       SQL
+      p 'copy_sql'
+      p copy_sql
       RSPool.with do |conn|
         conn.exec(copy_sql)
       end
