@@ -88,7 +88,7 @@ describe Jobs::RestoreJob do
     Jobs::Permissions::Update.run(1, schema_name: @schema, table_name: @table)
     table = Models::Table.find_by!(schema: Models::Schema.find_by!(name: @schema), name: @table)
     expect(table.owner.name).to eq(@test_user)
-    #puts Models::Permission.where(declared: true, dbobject: table).to_json
+    puts Models::Permission.where(declared: true, dbobject: table).to_json
     #expect(Models::Permission.where(declared: true, dbobject: table).size).to eq(3)
     gperm = Models::Permission.find_by!(declared: true, dbobject: table, entity: Models::DatabaseGroup.find_by!(name: @test_group))
     uperm = Models::Permission.find_by!(declared: true, dbobject: table, entity: Models::DatabaseUser.find_by!(name: @conn.user))
