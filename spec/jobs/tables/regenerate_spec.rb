@@ -15,7 +15,7 @@ describe Jobs::RegenerateTableJob do
   def merge_options(options={})
     return {
         db: {
-            connection_id: @connection_id,
+            connection_id: $connection_id,
             username: @config[:rs_user],
             password: @config[:rs_password],
             schema: @config[:schema],
@@ -50,7 +50,7 @@ describe Jobs::RegenerateTableJob do
                             })
     result = run_regenerate(options)
     expect(result.failed?).to(eq(false), "Error: #{result.error}")
-    expect(TableUtils.has_column_encodings(@conn, {schema_name: @schema, table_name: @table})).to eq({})
+    expect(TableUtils.has_column_encodings($conn, {schema_name: @schema, table_name: @table})).to eq({})
   end
 
   it 'should succeed in adding a new dist key' do
@@ -67,7 +67,7 @@ describe Jobs::RegenerateTableJob do
                             })
     result = run_regenerate(options)
     expect(result.failed?).to(eq(false), "Error: #{result.error}")
-    keys = TableUtils.get_sort_and_dist_keys(@conn, {schema_name: @schema, table_name: @table})[@full_table_name]
+    keys = TableUtils.get_sort_and_dist_keys($conn, {schema_name: @schema, table_name: @table})[@full_table_name]
     expect(keys['dist_key']).to eq(dist_key)
   end
 
@@ -85,7 +85,7 @@ describe Jobs::RegenerateTableJob do
                             })
     result = run_regenerate(options)
     expect(result.failed?).to(eq(false), "Error: #{result.error}")
-    keys = TableUtils.get_sort_and_dist_keys(@conn, {schema_name: @schema, table_name: @table})[@full_table_name]
+    keys = TableUtils.get_sort_and_dist_keys($conn, {schema_name: @schema, table_name: @table})[@full_table_name]
     expect(keys['sort_keys']).to eq(sort_keys)
   end
 
@@ -124,19 +124,15 @@ describe Jobs::RegenerateTableJob do
   end
 
   before(:each) do
-    @connection_id = 'redshift_test'
     @schema = @config[:schema]
     @table = "encoding_test_#{Time.now.to_i}_#{rand(1024)}"
     @full_table_name = "#{@schema}.#{@table}"
     @archive_prefix = "test/#{@full_table_name}"
-    @conn = RSUtil.dedicated_connection(connection_id: @connection_id,
-                                        username: @config[:rs_user],
-                                        password: @config[:rs_password])
     create_sql = <<-SQL
         CREATE TABLE #{@full_table_name}(id INT ENCODE LZO, txt VARCHAR ENCODE LZO);
         INSERT INTO #{@full_table_name} VALUES (0, 'hello'), (1, 'privyet'), (2, null);
     SQL
-    @conn.exec(create_sql)
+    $conn.exec(create_sql)
     @bucket = AWS::S3.new.buckets[@config[:bucket]]
   end
 
@@ -148,7 +144,7 @@ describe Jobs::RegenerateTableJob do
     tbl = Models::TableReport.find_by(schema_name: @schema, table_name: @table)
     tbl.destroy unless tbl.nil?
     # Drop test redshift table.
-    @conn.exec("DROP TABLE IF EXISTS #{@full_table_name}")
+    $conn.exec("DROP TABLE IF EXISTS #{@full_table_name}")
     # Clean up S3 archive files.
     @bucket.objects.with_prefix(@archive_prefix).delete_all
   end

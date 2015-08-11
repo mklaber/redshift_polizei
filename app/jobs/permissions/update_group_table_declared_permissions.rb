@@ -12,9 +12,6 @@ module Jobs
 
         # retrieve group table permissions from RedShift
         results =  RSPool.with do |connection|
-          p SQL.execute_raw(connection, "select * from pg_user").to_a
-          p SQL.execute_raw(connection, "select * from pg_group").to_a
-          p SQL.execute_raw(connection, "select * from pg_class where relname = '#{filters['table_name']}'").to_a unless filters['table_name'].nil?
           tmp  = self.class.make_boolean(SQL.execute(connection,
             'permissions/tables_for_groups_declared', filters: filters)).to_a.each do |perm|
                 perm['group'] = perm['grantee']
@@ -25,7 +22,6 @@ module Jobs
           end
           tmp
         end
-        p results
 
         now = Time.now.utc
         # update or touch everything we found

@@ -9,7 +9,7 @@ describe Jobs::RestoreJob do
     return Jobs::RestoreJob.enqueue('UserId',
                                     {
                                         db: {
-                                            connection_id: @connection_id,
+                                            connection_id: $connection_id,
                                             username: @config[:rs_user],
                                             password: @config[:rs_password],
                                             schema: @config[:schema],
@@ -64,10 +64,10 @@ describe Jobs::RestoreJob do
 
     # Ensure restored table exists in Redshift.
     # Ensure redshift table was dropped.
-    res = @conn.exec("SELECT * FROM information_schema.tables WHERE table_schema = '#{@schema}' AND table_name = '#{@table}'")
+    res = $conn.exec("SELECT * FROM information_schema.tables WHERE table_schema = '#{@schema}' AND table_name = '#{@table}'")
     expect(res.ntuples).to eq(1)
     # Ensure restored table holds the archived data.
-    res = @conn.exec("SELECT * FROM #{@full_table_name} ORDER BY id")
+    res = $conn.exec("SELECT * FROM #{@full_table_name} ORDER BY id")
     expect(res.ntuples).to eq(4)
     expect(res[0]['id']).to eq('0')
     expect(res[0]['txt']).to eq('hello')
@@ -87,11 +87,10 @@ describe Jobs::RestoreJob do
     expect(r.failed?).to(eq(false), "Error: #{r.error}")
     Jobs::Permissions::Update.run(1, schema_name: @schema, table_name: @table)
     table = Models::Table.find_by!(schema: Models::Schema.find_by!(name: @schema), name: @table)
-    expect(table.owner.name).to eq(@test_user)
-    puts Models::Permission.where(declared: true, dbobject: table).to_json
-    #expect(Models::Permission.where(declared: true, dbobject: table).size).to eq(3)
-    gperm = Models::Permission.find_by!(declared: true, dbobject: table, entity: Models::DatabaseGroup.find_by!(name: @test_group))
-    uperm = Models::Permission.find_by!(declared: true, dbobject: table, entity: Models::DatabaseUser.find_by!(name: @conn.user))
+    expect(table.owner.name).to eq($test_user)
+    expect(Models::Permission.where(declared: true, dbobject: table).size).to eq(3)
+    gperm = Models::Permission.find_by!(declared: true, dbobject: table, entity: Models::DatabaseGroup.find_by!(name: $test_group))
+    uperm = Models::Permission.find_by!(declared: true, dbobject: table, entity: Models::DatabaseUser.find_by!(name: $conn.user))
 
     expect(gperm.has_select).to eq(false)
     expect(gperm.has_insert).to eq(true)
@@ -120,11 +119,10 @@ describe Jobs::RestoreJob do
     @bucket.objects[@ddl_file].write(ddl_text)
     @perms_file = "#{@archive_prefix}permissions.sql"
     perms_text = <<-SQL
-ALTER TABLE "#{@schema}"."#{@table}" OWNER TO "#{@test_user}";
-GRANT INSERT, UPDATE, DELETE ON "#{@schema}"."#{@table}" TO GROUP "#{@test_group}";
-GRANT SELECT, REFERENCES ON "#{@schema}"."#{@table}" TO "#{@conn.user}"
+ALTER TABLE "#{@schema}"."#{@table}" OWNER TO "#{$test_user}";
+GRANT INSERT, UPDATE, DELETE ON "#{@schema}"."#{@table}" TO GROUP "#{$test_group}";
+GRANT SELECT, REFERENCES ON "#{@schema}"."#{@table}" TO "#{$conn.user}"
 SQL
-    puts perms_text
     @bucket.objects[@perms_file].write(perms_text)
     @data_file= "#{@archive_prefix}-0000_part_00"
     data_text = <<-TEXT
@@ -156,7 +154,7 @@ SQL
     tbl = Models::TableReport.find_by(schema_name: @schema, table_name: @table)
     tbl.destroy unless tbl.nil?
     # Drop test redshift table.
-    @conn.exec("DROP TABLE IF EXISTS #{@full_table_name}")
+    $conn.exec("DROP TABLE IF EXISTS #{@full_table_name}")
     # Clean up S3 files.
     @bucket.objects.with_prefix(@archive_prefix).delete_all
   end

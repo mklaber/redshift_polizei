@@ -30,7 +30,7 @@ describe Jobs::ArchiveJob do
     expect(Models::TableArchive.find_by(schema_name: schema, table_name: table)).not_to be_nil
 
     # Ensure redshift table was preserved or dropped depending on skip_drop option
-    res = @conn.exec("SELECT * FROM information_schema.tables WHERE table_schema = '#{schema}' AND table_name = '#{table}'")
+    res = $conn.exec("SELECT * FROM information_schema.tables WHERE table_schema = '#{schema}' AND table_name = '#{table}'")
     expect(res.ntuples).to eq(options[:db][:skip_drop] ? 1 : 0)
   end
 
@@ -40,7 +40,7 @@ describe Jobs::ArchiveJob do
   def merge_options(options={})
     return {
         db: {
-            connection_id: @connection_id,
+            connection_id: $connection_id,
             username: @config[:rs_user],
             password: @config[:rs_password],
             schema: @config[:schema],
@@ -101,7 +101,7 @@ describe Jobs::ArchiveJob do
         ALTER TABLE #{@full_table_name}
           ADD FOREIGN KEY(id) REFERENCES #{full_table_name2}(id);
     SQL
-    @conn.exec(extra_sql)
+    $conn.exec(extra_sql)
     options = merge_options({db: {table: @table, auto_encode: true},
                              s3: {prefix: @archive_prefix}})
     check_success(run_archive(options), options)
@@ -115,19 +115,19 @@ describe Jobs::ArchiveJob do
           (id INT REFERENCES #{@full_table_name}(id));
         INSERT INTO #{@full_table_name2} VALUES (0), (1), (2);
     SQL
-    @conn.exec(extra_sql)
+    $conn.exec(extra_sql)
     options = merge_options({db: {table: @table, auto_encode: true}, s3: {prefix: @archive_prefix}})
     check_success(run_archive(options), options)
   end
 
   it 'should archive permissions correctly' do
     # change permissions
-    change_owner_sql = "ALTER TABLE #{@full_table_name} OWNER TO \"#{@test_user}\""
-    grant_group_sql = "GRANT INSERT, UPDATE, DELETE ON #{@full_table_name} TO GROUP \"#{@test_group}\""
-    grant_user_sql = "GRANT SELECT, REFERENCES ON #{@full_table_name} TO \"#{@conn.user}\""
-    @conn.exec(change_owner_sql)
-    @conn.exec(grant_group_sql)
-    @conn.exec(grant_user_sql)
+    change_owner_sql = "ALTER TABLE #{@full_table_name} OWNER TO \"#{$test_user}\""
+    grant_group_sql = "GRANT INSERT, UPDATE, DELETE ON #{@full_table_name} TO GROUP \"#{$test_group}\""
+    grant_user_sql = "GRANT SELECT, REFERENCES ON #{@full_table_name} TO \"#{$conn.user}\""
+    $conn.exec(change_owner_sql)
+    $conn.exec(grant_group_sql)
+    $conn.exec(grant_user_sql)
     # run archive
     options = merge_options({db: {table: @table},
                              s3: {prefix: @archive_prefix}})
@@ -136,13 +136,13 @@ describe Jobs::ArchiveJob do
     sqls = AWS::S3.new.buckets[@config[:bucket]].objects[@permissions_file].read.split(";\n")
     expect(sqls).to match_array([
       change_owner_sql, grant_group_sql, grant_user_sql,
-      "GRANT SELECT, INSERT, UPDATE, DELETE, REFERENCES ON \"#{@schema}\".\"#{@table}\" TO \"#{@test_user}\""
+      "GRANT SELECT, INSERT, UPDATE, DELETE, REFERENCES ON \"#{@schema}\".\"#{@table}\" TO \"#{$test_user}\""
     ])
   end
 
   it 'should archive table comments successfully' do
     add_cmt_sql = "COMMENT ON TABLE #{@full_table_name} IS 'test_comment_#{rand(1024)}'"
-    @conn.exec(add_cmt_sql)
+    $conn.exec(add_cmt_sql)
     options = merge_options({db: {table: @table, auto_encode: true}, s3: {prefix: @archive_prefix}})
     check_success(run_archive(options), options)
     # ensure ddl file contains the comment
@@ -162,7 +162,7 @@ describe Jobs::ArchiveJob do
         CREATE TABLE #{@full_table_name}(id INT PRIMARY KEY, txt VARCHAR);
         INSERT INTO #{@full_table_name} VALUES (0, 'hello'), (1, 'privyet'), (2, null);
     SQL
-    @conn.exec(create_sql)
+    $conn.exec(create_sql)
     @bucket = AWS::S3.new.buckets[@config[:bucket]]
   end
 
@@ -171,7 +171,7 @@ describe Jobs::ArchiveJob do
     tbl = Models::TableArchive.find_by(schema_name: @schema, table_name: @table)
     tbl.destroy unless tbl.nil?
     # Drop test redshift table.
-    @conn.exec("DROP TABLE IF EXISTS #{@full_table_name} CASCADE; DROP TABLE IF EXISTS #{@full_table_name2} CASCADE;")
+    $conn.exec("DROP TABLE IF EXISTS #{@full_table_name} CASCADE; DROP TABLE IF EXISTS #{@full_table_name2} CASCADE;")
     # Clean up S3 archive files.
     @bucket.objects.with_prefix(@archive_prefix).delete_all
   end
