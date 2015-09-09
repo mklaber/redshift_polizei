@@ -2,7 +2,7 @@ source 'https://rubygems.org'
 
 gem 'rake'
 gem 'sinatra'
-gem 'omniauth-google-oauth2'
+gem 'omniauth-oauth2'
 gem 'mail' # mail address parsing
 gem 'rack_csrf'
 gem 'erubis'

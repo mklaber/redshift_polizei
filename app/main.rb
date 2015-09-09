@@ -3,13 +3,16 @@ $: << File.join(File.dirname(__FILE__), '../lib')
 require 'rubygems'
 require 'bundler/setup'
 
+require 'global_config'
+GlobalConfig.load_config_file(:polizei, 'config/polizei.yml')
+
 require 'sinatra'
 require 'sinatra/assetpack'
 require 'sinatra/activerecord'
 require 'sinatra/aws'
 require 'sinatra/mail'
 require 'omniauth'
-require 'omniauth/strategies/google_oauth2'
+require 'omniauth_oauth2_strategy'
 require 'mail'
 require 'erubis'
 require 'coderay'

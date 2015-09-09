@@ -1,7 +1,5 @@
 <h2>Login</h2>
 
-<div style="text-align: center;">
-  <form action="<%= url '/auth/google_oauth2' %>" method="get">
-    <button class="btn btn-xlarge btn-google-plus" autofocus><i class="fa fa-google"></i> | Login with Google</button>
-  </form>
+<div style="text-align: center; width: 50%; margin: 0 auto;">
+  <a class="btn btn-primary btn-lg btn-block" href="<%= url '/auth/' + GlobalConfig.polizei('auth_name') %>">Sign In through Sentry</a>
 </div>

@@ -55,11 +55,7 @@ class Polizei < Sinatra::Application
     use Rack::Session::Cookie, :key => 'rack.session',
         :expire_after => 86400 * 7, # sec
         :secret => GlobalConfig.polizei('cookie_secret')
-    use OmniAuth::Builder do
-      provider GlobalConfig.polizei('auth_provider'),
-        GlobalConfig.polizei('auth_client_id'),
-        GlobalConfig.polizei('auth_client_secret')
-    end
+    use OmniAuth::Strategies::GenericOauth2
   end
 
   # configure asset pipeline
@@ -124,19 +120,19 @@ class Polizei < Sinatra::Application
     redirect to('/login')
   end
 
-  get '/auth/google_oauth2/callback' do
+  get "/auth/#{GlobalConfig.polizei('auth_name')}/callback" do
     # recover site visited before login, so we can redirect there afterwards
     previous_site = session[:prev_login_site] || '/'
     session[:prev_login_site] = nil
     # get auth data from google
     auth_hash = request.env['omniauth.auth']
-    google_email = auth_hash['info']['email']
+    email = auth_hash['info']['user']['email']
     # make sure only valid domains can login
-    parsed_google_email = Mail::Address.new(google_email)
-    error 403 if not GlobalConfig.polizei('auth_valid_domains').member?(parsed_google_email.domain)
+    parsed_email = Mail::Address.new(email)
+    error 403, 'invalid email' if not GlobalConfig.polizei('auth_valid_domains').member?(parsed_email.domain)
     # successfully logged in, make sure we have user in the database
-    user = Models::User.find_or_initialize_by(google_id: auth_hash['uid'])
-    user.update!(email: parsed_google_email.address)
+    user = Models::User.find_or_initialize_by(email: parsed_email.address)
+    user.update!(google_id: auth_hash['uid'])
     # save user id in session
     session[:uid] = user.id
     # redirect to root site
