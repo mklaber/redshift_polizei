@@ -38,7 +38,6 @@ class SQL
   # execute the given +query+ using +connection+
   #
   def self.execute_raw(connection, query)
-    ActiveRecord::Base.logger.debug query
     if connection.respond_to?(:execute) # ActiveRecord connection
       connection.execute(query)
     elsif connection.respond_to?(:exec) # PG connection
