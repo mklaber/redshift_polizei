@@ -1,4 +1,5 @@
 require 'active_support'
+require 'yaml'
 
 class GlobalConfig
   ENVS = %w[test production staging development]
