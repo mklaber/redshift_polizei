@@ -1,5 +1,7 @@
 development:
-  auth_provider: GoogleOauth2 # for Google: GoogleOauth2, otherwise refer to OmniAuth documentation
+  auth_name: sentry # name of OAuth2 provider, needs to be lowercase!
+  auth_url: http://localhost:3030 # host of OAuth2 provider
+  auth_user_url: /api/v1/users/me.json # path for additional user info request
   auth_client_id: client_id # client id from e.g. Google developer console
   auth_client_secret: client_secret # client secret from e.g. Google developer console
   auth_valid_domains: ['amg.tv', 'analyticsmediagroup.com'] # domains of email addresses which are allowed to log in
@@ -31,6 +33,7 @@ development:
   deploy_server_path: /apps/polizei # path on the server to use for deployment
 
 test:
+  auth_name: sentry # name of OAuth2 provider, needs to be lowercase!
   aws_access_key_id: access_key # aws access key to use for requests
   aws_secret_access_key: secret_key # aws secret key to use for requests
   aws_cluster_identifier: redshift_cluster_id # id of the redshift cluster, needs to be in sync with database.yml
