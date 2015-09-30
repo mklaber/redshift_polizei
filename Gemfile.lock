@@ -8,9 +8,9 @@ GIT
 
 GIT
   remote: git@github.com:AnalyticsMediaGroup/desmond.git
-  revision: 450c01512ef336fb6b156ddf67b7d42499353c25
+  revision: b37ce397c415c76623433ff6cf9bdef500e6379d
   specs:
-    desmond (0.2.0)
+    desmond (0.2.1)
       activerecord (~> 4.2)
       activesupport (~> 4.2)
       aws-sdk-v1 (~> 1)
