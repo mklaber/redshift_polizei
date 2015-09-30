@@ -8,7 +8,7 @@ GIT
 
 GIT
   remote: git@github.com:AnalyticsMediaGroup/desmond.git
-  revision: df4e9c88d949ac53871245f817eae08677ba0254
+  revision: 450c01512ef336fb6b156ddf67b7d42499353c25
   specs:
     desmond (0.2.0)
       activerecord (~> 4.2)
@@ -60,20 +60,25 @@ GEM
       thread_safe (~> 0.3, >= 0.3.4)
       tzinfo (~> 1.1)
     addressable (2.3.8)
-    arel (6.0.2)
-    aws-sdk-v1 (1.64.0)
+    arel (6.0.3)
+    aws-sdk-v1 (1.66.0)
       json (~> 1.4)
       nokogiri (>= 1.4.4)
     bond (0.5.1)
     builder (3.2.2)
-    capistrano (2.15.5)
-      highline
-      net-scp (>= 1.0.0)
-      net-sftp (>= 2.0.0)
-      net-ssh (>= 2.0.14)
-      net-ssh-gateway (>= 1.1.0)
+    capistrano (3.4.0)
+      i18n
+      rake (>= 10.0.0)
+      sshkit (~> 1.3)
+    capistrano-bundler (1.1.4)
+      capistrano (~> 3.1)
+      sshkit (~> 1.2)
+    capistrano-rvm (0.1.2)
+      capistrano (~> 3.0)
+      sshkit (~> 1.2)
     chronic (0.10.2)
     coderay (1.1.0)
+    colorize (0.7.7)
     connection_pool (2.2.0)
     coveralls (0.8.2)
       json (~> 1.8)
@@ -99,7 +104,6 @@ GEM
     globalid (0.3.5)
       activesupport (>= 4.1.0)
     hashie (3.4.2)
-    highline (1.7.2)
     http-cookie (1.0.2)
       domain_name (~> 0.5)
     i18n (0.7.0)
@@ -114,17 +118,13 @@ GEM
       mime-types (>= 1.16, < 3)
     mime-types (2.6.1)
     mini_portile (0.6.2)
-    minitest (5.7.0)
+    minitest (5.8.1)
     multi_json (1.11.2)
     multi_xml (0.5.5)
     multipart-post (2.0.0)
     net-scp (1.2.1)
       net-ssh (>= 2.6.5)
-    net-sftp (2.1.2)
-      net-ssh (>= 2.6.5)
-    net-ssh (2.9.2)
-    net-ssh-gateway (1.2.0)
-      net-ssh (>= 2.6.5)
+    net-ssh (3.0.1)
     netrc (0.10.3)
     nokogiri (1.6.6.2)
       mini_portile (~> 0.6.0)
@@ -143,11 +143,11 @@ GEM
     passenger (5.0.14)
       rack
       rake (>= 0.8.1)
-    pg (0.18.2)
+    pg (0.18.3)
     pony (1.11)
       mail (>= 2.0)
     puma (2.12.0)
-    que (0.10.0)
+    que (0.11.2)
     rack (1.6.4)
     rack-protection (1.5.3)
       rack
@@ -190,8 +190,6 @@ GEM
       rspec-support (~> 3.3.0)
     rspec-support (3.3.0)
     ruby-prof (0.15.8)
-    rvm-capistrano (1.5.6)
-      capistrano (~> 2.15.4)
     shotgun (0.9.1)
       rack (>= 1.0)
     simplecov (0.10.0)
@@ -211,6 +209,10 @@ GEM
       rack-test
       sinatra
       tilt (>= 1.3.0, < 2.0)
+    sshkit (1.7.1)
+      colorize (>= 0.7.0)
+      net-scp (>= 1.1.2)
+      net-ssh (>= 2.8.0)
     term-ansicolor (1.3.2)
       tins (~> 1.0)
     thor (0.19.1)
@@ -241,7 +243,9 @@ DEPENDENCIES
   activerecord-import
   activerecord4-redshift-adapter!
   aws-sdk-v1
-  capistrano (~> 2.15.5)
+  capistrano (~> 3.0)
+  capistrano-bundler
+  capistrano-rvm
   coderay
   connection_pool
   coveralls
@@ -260,7 +264,6 @@ DEPENDENCIES
   rake
   rspec
   ruby-prof
-  rvm-capistrano
   shotgun
   sinatra
   sinatra-activerecord

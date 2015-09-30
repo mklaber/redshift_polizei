@@ -30,8 +30,9 @@ group :development do
   gem 'shotgun'
   gem 'puma'
   gem 'tux'
-  gem 'capistrano', '~> 2.15.5' # syntax has totally changed from 2.x to 3.x
-  gem 'rvm-capistrano'
+  gem 'capistrano', '~> 3.0', require: false
+  gem 'capistrano-rvm', require: false
+  gem 'capistrano-bundler', require: false
   gem 'ruby-prof'
 end
 

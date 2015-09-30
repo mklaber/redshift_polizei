@@ -1,5 +1,5 @@
-require 'bundler'
-Bundler.require
+require 'rubygems'
+require 'bundler/setup'
 # activerecord tasks
 require "sinatra/activerecord/rake"
 
