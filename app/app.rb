@@ -94,6 +94,8 @@ class Polizei < Sinatra::Application
   end
 
   before '/*' do
+    @cluster_identifier = GlobalConfig.polizei('aws_cluster_identifier')
+
     is_login_site = (request.path_info == '/login')
     is_auth_site = request.path_info.start_with?('/auth')
     is_asset = (request.path_info.start_with?('/assets') ||
