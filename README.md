@@ -84,4 +84,4 @@ Make sure the deploy configuration options are set in `config/polizei.yml` (`dep
 
 View at
 ---------------------
-http://localhost:9393/
+http://localhost:9999/
