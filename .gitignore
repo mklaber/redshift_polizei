@@ -52,6 +52,7 @@ config/tests.yml
 log/*
 
 public/*
+!public/favicon.ico
 profile/*
 
 *.pid
