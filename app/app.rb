@@ -5,6 +5,7 @@ class Polizei < Sinatra::Application
   POLIZEI_CONFIG_FILE = 'config/polizei.yml'
   JOB_WAIT_TIMEOUT = 30
   ARCHIVE_NULL_VALUE = '<<<NULL>>>'
+  RECENT_QUERIES_MAX_TIMESPAN = (86400 / 4)
 
   set :root, File.dirname(__FILE__)
   set :views, "#{settings.root}/views"
@@ -183,8 +184,13 @@ class Polizei < Sinatra::Application
   get '/queries/recent' do
     # get date from where to retrieve recent queries
     audit_log_newest_query = Models::Query.order('record_time DESC').first
-    audit_log_date = 0
-    audit_log_date = audit_log_newest_query.record_time unless audit_log_newest_query.nil?
+    audit_log_date = Time.now - RECENT_QUERIES_MAX_TIMESPAN
+    if !audit_log_newest_query.nil? && Time.at(audit_log_newest_query.record_time) > audit_log_date
+      audit_log_date = Time.at(audit_log_newest_query.record_time)
+    else
+      # TODO enable this with rate limiting
+      #ExceptionNotifier.notify_exception(Exception.new('Audit Log entries getting old'), env: env) if Object.const_defined?('ExceptionNotifier')
+    end
 
     queries = Jobs::Queries::Recent.run(current_user.id, date: Time.at(audit_log_date))
     # We want to strip out block comments before passing it on to the view
