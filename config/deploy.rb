@@ -62,6 +62,7 @@ set :whenever_roles, [:cron]
 # Deployment process
 after 'deploy:finished', 'deploy:restart'
 after 'deploy:restart' , 'desmond:restart'
+after 'deploy:restart' , 'assets:precompile'
 
 # Tagging the repo
 after 'deploy:finished', 'git:tag_last_deploy'
