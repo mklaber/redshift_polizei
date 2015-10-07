@@ -87,8 +87,7 @@ class Polizei < Sinatra::Application
       '/stylesheets/lib/font-awesome.min.css',
       '/stylesheets/lib/dataTables.bootstrap.css',
       '/stylesheets/lib/animations.css',
-      '/stylesheets/screen.css',
-      '/stylesheets/social-buttons.css'
+      '/stylesheets/screen.css'
     ]
     prebuild false
     js_compression :uglify # jsmin is unmantained and fails, yui needs java, closeure didn't try, this works
@@ -470,7 +469,7 @@ class Polizei < Sinatra::Application
 
   get '/export/?:id?' do
     if params['id'].nil?
-      @form = { 'export_options' => {} }
+      @form = { 'public' => true, 'export_options' => {} }
     else
       @form = Models::ExportJob.find(params['id'].to_i).attributes
       halt 404 if @form['user_id'] != session[:uid] and not(@form['public'])

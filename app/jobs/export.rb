@@ -44,6 +44,11 @@ The following error description might be helpful: '#{job_run.error}'"
         cc: GlobalConfig.polizei('job_failure_cc'),
         bcc: GlobalConfig.polizei('job_failure_bcc')
       }.merge(options.fetch('mail', {}))
+      # if the user query had a syntax error, we won't notify engineering
+      if job_run.error_type == PG::SyntaxError
+        mail_options[:cc]  = nil
+        mail_options[:bcc] = nil
+      end
       to  = Models::User.find(user_id).email
       to += ", #{export_job.failure_email}" unless export_job.failure_email.nil?
       mail(to, subject, body, mail_options)

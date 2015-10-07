@@ -8,7 +8,7 @@ GIT
 
 GIT
   remote: git@github.com:AnalyticsMediaGroup/desmond.git
-  revision: db5fe44f7ac0c650a1b0ecf8b1677aa18d4dcfc2
+  revision: 93f06e0111b383cf062d2488066d52ba0c4ec584
   specs:
     desmond (0.2.2)
       activerecord (~> 4.2)
@@ -118,7 +118,7 @@ GEM
       mime-types (>= 1.16, < 3)
     mime-types (2.6.1)
     mini_portile (0.6.2)
-    minitest (5.8.1)
+    minitest (5.8.2)
     multi_json (1.11.2)
     multi_xml (0.5.5)
     multipart-post (2.0.0)
