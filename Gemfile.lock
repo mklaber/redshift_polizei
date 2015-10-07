@@ -8,7 +8,7 @@ GIT
 
 GIT
   remote: git@github.com:AnalyticsMediaGroup/desmond.git
-  revision: 3abf219e5850cb4e6829805377883db73ea20e4c
+  revision: 040c082d59023eec7bc3cfb3c25a4f286ea5c0ec
   branch: export_extravaganza
   specs:
     desmond (0.2.2)
