@@ -9,4 +9,6 @@ namespace :db do
       end
     end
   end
+
+  after 'deploy:finished' , 'db:migrate'
 end
