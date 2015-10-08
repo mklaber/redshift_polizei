@@ -25,6 +25,24 @@ class ColorBlindLogFile
   end
 end
 
+class MultiIO
+  def initialize(*targets)
+     @targets = targets
+  end
+
+  def write(*args)
+    @targets.each {|t| t.write(*args)}
+  end
+
+  def close
+    @targets.each(&:close)
+  end
+
+  def flush
+    @targets.each { |t| t.flush if t.respond_to?(:flush) }
+  end
+end
+
 #
 # common Logger for Sinatra, ActiveRecord and everything else
 #
@@ -55,7 +73,7 @@ class PolizeiLogger < Logger
         logfile = "#{logdirectory}/#{env}#{(name.empty?) ? '' : '_' + name }.log"
         # open environment log file while removing color coding from messages
         f = File.expand_path(logfile, File.dirname(__FILE__ ))
-        @_logger_hash[name] = self.new(ColorBlindLogFile.new(f), shift_age='daily')
+        @_logger_hash[name] = self.new(MultiIO.new(STDOUT, ColorBlindLogFile.new(f)), shift_age='daily')
       end
       # set up logger settings
       @_logger_hash[name].level = Logger::DEBUG
