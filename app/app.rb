@@ -87,8 +87,7 @@ class Polizei < Sinatra::Application
       '/stylesheets/lib/font-awesome.min.css',
       '/stylesheets/lib/dataTables.bootstrap.css',
       '/stylesheets/lib/animations.css',
-      '/stylesheets/screen.css',
-      '/stylesheets/social-buttons.css'
+      '/stylesheets/screen.css'
     ]
     prebuild false
     js_compression :uglify # jsmin is unmantained and fails, yui needs java, closeure didn't try, this works
