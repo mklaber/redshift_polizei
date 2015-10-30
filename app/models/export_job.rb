@@ -77,6 +77,8 @@ module Models
       end
 
     class ExportJobRun
+      attr_reader :run
+
       def initialize(desmond_run)
         @run = desmond_run
         @datetime_format = '%F %T UTC'

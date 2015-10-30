@@ -5,6 +5,8 @@ module Jobs
   # Job retrieving reports about RedShift tables
   #
   class TableReports < Desmond::BaseJob # TODO doesn't need job id
+    TABLE_REPORTS_RETRIES = 1
+
     def self.logger
       @logger ||= PolizeiLogger.logger('tablereports')
     end
@@ -21,6 +23,7 @@ module Jobs
     # returns false if table does not exist anymore, true otherwise
     #
     def execute(job_id, user_id, options={})
+      tries ||= TABLE_REPORTS_RETRIES
       schema_name = options[:schema_name] || nil
       table_name  = options[:table_name] || nil
       table = { schema_name: schema_name, table_name: table_name } unless schema_name.nil? || table_name.nil?
@@ -44,6 +47,10 @@ module Jobs
         end
       end
       still_exists
+    rescue PG::UndefinedTable
+      tries -= 1
+      retry if tries >= 0
+      raise
     end
 
     private
