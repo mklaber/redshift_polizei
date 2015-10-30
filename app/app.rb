@@ -470,7 +470,7 @@ class Polizei < Sinatra::Application
 
   get '/export/?:id?' do
     if params['id'].nil?
-      @form = { 'export_options' => {} }
+      @form = { 'public' => true, 'export_options' => {} }
     else
       @form = Models::ExportJob.find(params['id'].to_i).attributes
       halt 404 if @form['user_id'] != session[:uid] and not(@form['public'])
