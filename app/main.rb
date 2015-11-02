@@ -27,6 +27,8 @@ require 'sql/sql'
 
 require 'redshift/pool'
 
+require 'rack/force_chunked_response'
+
 require './app/monkey_patches'
 require './app/helpers'
 require './app/caches'

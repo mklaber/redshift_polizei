@@ -13,6 +13,9 @@ class Polizei < Sinatra::Application
   register Sinatra::AssetPack
   register Sinatra::AWSExtension
   register Sinatra::PonyMailExtension
+  # temporary workaround so that Content-Length isn't messed with
+  use Rack::ForceChunkedResponse
+  use Rack::Chunked
 
   # setup the custom logger
   configure do
