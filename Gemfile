@@ -26,10 +26,11 @@ gem 'connection_pool' # for background jobs connections
 
 gem 'activerecord-import'
 
+gem 'tux'
+
 group :development do
   gem 'shotgun'
   gem 'puma'
-  gem 'tux'
   gem 'capistrano', '~> 3.0', require: false
   gem 'capistrano-rvm', require: false
   gem 'capistrano-bundler', require: false
