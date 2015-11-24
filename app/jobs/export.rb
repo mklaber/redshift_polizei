@@ -45,7 +45,7 @@ The following error description might be helpful: '#{job_run.error}'"
         bcc: GlobalConfig.polizei('job_failure_bcc')
       }.merge(options.fetch('mail', {}))
       # if the user query had a syntax error, we won't notify engineering
-      if job_run.error_type == PG::SyntaxError
+      if job_run.error_type <= PG::SyntaxErrorOrAccessRuleViolation
         mail_options[:cc]  = nil
         mail_options[:bcc] = nil
       end
@@ -55,6 +55,10 @@ The following error description might be helpful: '#{job_run.error}'"
     end
 
     private
+
+    def exception_filter(e)
+      e.is_a?(PG::SyntaxErrorOrAccessRuleViolation)
+    end
 
     ##
     # common sending code

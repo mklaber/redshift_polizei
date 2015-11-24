@@ -8,9 +8,9 @@ GIT
 
 GIT
   remote: git@github.com:AnalyticsMediaGroup/desmond.git
-  revision: 07228509e563fae8b8f37f70da9c211a4635ad8d
+  revision: 031ee052deb2173396ff788c585d96aa5feda932
   specs:
-    desmond (0.2.2)
+    desmond (0.2.4)
       activerecord (~> 4.2)
       activesupport (~> 4.2)
       aws-sdk-v1 (~> 1)
@@ -118,7 +118,7 @@ GEM
       mime-types (>= 1.16, < 3)
     mime-types (2.6.1)
     mini_portile (0.6.2)
-    minitest (5.8.2)
+    minitest (5.8.3)
     multi_json (1.11.2)
     multi_xml (0.5.5)
     multipart-post (2.0.0)
@@ -126,7 +126,7 @@ GEM
       net-ssh (>= 2.6.5)
     net-ssh (3.0.1)
     netrc (0.10.3)
-    nokogiri (1.6.6.2)
+    nokogiri (1.6.6.4)
       mini_portile (~> 0.6.0)
     oauth2 (1.0.0)
       faraday (>= 0.8, < 0.10)
@@ -143,7 +143,7 @@ GEM
     passenger (5.0.14)
       rack
       rake (>= 0.8.1)
-    pg (0.18.3)
+    pg (0.18.4)
     pony (1.11)
       mail (>= 2.0)
     puma (2.12.0)
