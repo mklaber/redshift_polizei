@@ -20,6 +20,7 @@ require 'sinatra/activerecord/rake'
 require 'rack/test'
 
 # recreate test database from migrations
+DesmondConfig.logger = nil
 #DesmondConfig.logger = Logger.new STDOUT
 ActiveRecord::Base.logger = DesmondConfig.logger
 ActiveRecord::Schema.verbose = false # no output for migrations
