@@ -2,7 +2,7 @@ source 'https://rubygems.org'
 
 gem 'rake'
 gem 'sinatra'
-gem 'omniauth-oauth2'
+gem 'omniauth-oauth2', '~> 1.3.0' # newer version seem to be incompatible with sentry
 gem 'mail' # mail address parsing
 gem 'rack_csrf'
 gem 'erubis'
