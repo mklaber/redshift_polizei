@@ -3,7 +3,7 @@ select
   q.pid,
   q.starttime as start_time,
   q.endtime as end_time,
-  q.text as query,
+  trim(q.text, 2048) as query,
   q.sequence,
   trim(u.usename) as username
 -- svl_statementtext contains all queries (including ddl and utility) untruncated
