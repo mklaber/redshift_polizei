@@ -33,7 +33,7 @@ class Polizei < Sinatra::Application
     if Object.const_defined?('ExceptionNotification')
       exp_notifier_options = { :email => {
         :email_prefix => "[POLIZEI] ",
-        :sender_address => GlobalConfig.polizei('mail')['from'],
+        :sender_address => GlobalConfig.polizei('mail').fetch('from', nil),
         :exception_recipients => GlobalConfig.polizei('exception_mail_to'),
         :smtp_settings => Pony.options[:via_options]
       }}
