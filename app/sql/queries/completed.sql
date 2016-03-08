@@ -16,6 +16,7 @@ and q.label <> 'metrics'
 and q.label <> 'health'
 -- filter out queries we will never care about
 and q.text not ilike 'set client_encoding to \'%\''
+and q.text not ilike 'set datestyle to \'%\''
 and q.text not ilike 'show time zone'
 and q.text not ilike 'show search_path'
 and q.text not ilike 'commit'
