@@ -5,7 +5,7 @@ class Polizei < Sinatra::Application
   POLIZEI_CONFIG_FILE = 'config/polizei.yml'
   JOB_WAIT_TIMEOUT = 30
   ARCHIVE_NULL_VALUE = '<<<NULL>>>'
-  RECENT_QUERIES_MAX_TIMESPAN = (86400 / 4)
+  RECENT_QUERIES_MAX_TIMESPAN = (86400 / 8)
 
   set :root, File.dirname(__FILE__)
   set :views, "#{settings.root}/views"

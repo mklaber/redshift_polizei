@@ -4,7 +4,7 @@ select
   q.pid,
   q.starttime as start_time,
   q.suspended,
-  left(q.text, 2048) as query,
+  left(q.text, 1024) as query,
   q.sequence,
   trim(u.usename) as username
 -- using svv_query_inflight instead of alternatives because
