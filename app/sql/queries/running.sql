@@ -14,10 +14,10 @@ join pg_user u on q.userid = u.usesysid
 where trim(u.usename) <> 'rdsdb' -- database internal user
 and trim(u.usename) <> ? -- filter our own user
 -- filter out queries we will never care about
-and lower(q.text) not like 'set client_encoding to \'%\''
-and lower(q.text) <> 'show time zone'
-and lower(q.text) <> 'show search_path'
-and lower(q.text) <> 'commit'
+and q.text not ilike 'set client_encoding to \'%\''
+and q.text not ilike 'show time zone'
+and q.text not ilike 'show search_path'
+and q.text not ilike 'commit'
 -- this sorting is important to be able to join the sequences again.
 -- first by start_time to seperate the obviously different queries.
 -- then by pid, to seperate queries which might have started at the same time.
