@@ -15,11 +15,11 @@ and trim(u.usename) <> ? -- filter our own user
 and q.label <> 'metrics'
 and q.label <> 'health'
 -- filter out queries we will never care about
-and q.text not ilike 'set client_encoding to \'%\''
-and q.text not ilike 'set datestyle to \'%\''
-and q.text not ilike 'show time zone'
-and q.text not ilike 'show search_path'
-and q.text not ilike 'commit'
+and trim(q.text) not ilike 'set client_encoding to \'%\''
+and trim(q.text) not ilike 'set datestyle to \'%\''
+and trim(q.text) not ilike 'show time zone'
+and trim(q.text) not ilike 'show search_path'
+and trim(q.text) not ilike 'commit'
 and timestamp_cmp(q.starttime, ?) >= 0
 -- this sorting is important to be able to join the sequences again.
 -- first by start_time to seperate the obviously different queries.
