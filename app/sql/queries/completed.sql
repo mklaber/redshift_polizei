@@ -17,6 +17,7 @@ and q.label <> 'health'
 -- filter out queries we will never care about
 and trim(q.text) not ilike 'set client_encoding to \'%\''
 and trim(q.text) not ilike 'set datestyle to \'%\''
+and trim(q.text) not ilike 'analyze compression phase%'
 and trim(q.text) not ilike 'show time zone'
 and trim(q.text) not ilike 'show search_path'
 and trim(q.text) not ilike 'commit'
