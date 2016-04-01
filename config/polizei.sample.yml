@@ -8,6 +8,7 @@ development:
 
   aws_access_key_id: access_key # aws access key to use for requests
   aws_secret_access_key: secret_key # aws secret key to use for requests
+  aws_region: us-east-1 # aws region of the cluster
   aws_cluster_identifier: redshift_cluster_id # id of the redshift cluster, needs to be in sync with database.yml
   aws_redshift_audit_log_bucket: redshift-auditlog-bucket # name of the bucket containing the RedShift audit logs
   aws_export_bucket: export-bucket # aws bucket to be used for exports

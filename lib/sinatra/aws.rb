@@ -18,7 +18,8 @@ module Sinatra
       if c.has_key?('aws_access_key_id') && c.has_key?('aws_secret_access_key')
         AWS.config({
           access_key_id: c['aws_access_key_id'],
-          secret_access_key: c['aws_secret_access_key']
+          secret_access_key: c['aws_secret_access_key'],
+          region: c['aws_region'],
         })
       end
     end
