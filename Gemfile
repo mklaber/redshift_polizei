@@ -18,7 +18,7 @@ gem 'aws-sdk-v1' # redshift, cloudwatch, dynamodb, v2 is incompatible
 
 gem 'whenever', :require => false # cronjobs
 
-gem 'desmond', git: 'git@github.com:AnalyticsMediaGroup/desmond.git' # sql exporting
+gem 'desmond', git: 'https://github.com/AnalyticsMediaGroup/desmond.git' # sql exporting
 
 gem 'pony' # sending emails
 

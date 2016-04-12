@@ -7,7 +7,7 @@ GIT
       pg
 
 GIT
-  remote: git@github.com:AnalyticsMediaGroup/desmond.git
+  remote: https://github.com/AnalyticsMediaGroup/desmond.git
   revision: 9ba08588602e34a259d9ca446b0bd222d9d3afcd
   specs:
     desmond (0.2.5)
@@ -149,7 +149,7 @@ GEM
     pony (1.11)
       mail (>= 2.0)
     puma (2.16.0)
-    que (0.11.2)
+    que (0.11.4)
     rack (1.6.4)
     rack-protection (1.5.3)
       rack

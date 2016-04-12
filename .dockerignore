@@ -1,0 +1,11 @@
+.git
+**/.DS_Store
+config/database.yml
+config/cache.yml
+config/deploy.yml
+config/auth.yml
+config/shards.yml
+config/aws.yml
+config/mail.yml
+config/polizei.yml
+config/tests.yml
