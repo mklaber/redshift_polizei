@@ -93,6 +93,6 @@ You will need to create the `polizei.yml` and `database.yml` config files prior 
 ```
 git clone https://github.com/AnalyticsMediaGroup/redshift_polizei
 cd redshift_polizei
-docker build -t AnalyticsMediaGroup/redshift_polizei .
-docker run -d -v $PWD/config/polizei.yml:/apps/polizei/config/polizei.yml -v $PWD/config/database.yml:/apps/polizei/config/database.yml -p 9999:9999 -name redshift_polizei AnalyticsMediaGroup/redshift_polizei
+docker build -t amg/redshift_polizei .
+docker run -d -v $PWD/config/polizei.yml:/apps/polizei/config/polizei.yml -v $PWD/config/database.yml:/apps/polizei/config/database.yml -p 9999:9999 --name redshift_polizei amg/redshift_polizei
 ```
