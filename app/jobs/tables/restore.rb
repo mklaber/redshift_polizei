@@ -94,7 +94,7 @@ module Jobs
           COPY #{full_table_name}
           FROM 's3://#{archive_bucket}/#{manifest_file}'
           CREDENTIALS 'aws_access_key_id=#{access_key};aws_secret_access_key=#{secret_key}'
-          MANIFEST #{copy_options};
+          MANIFEST EXPLICIT_IDS #{copy_options};
       SQL
       RSPool.with do |conn|
         conn.exec(copy_sql)
