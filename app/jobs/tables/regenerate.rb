@@ -3,7 +3,7 @@ require_relative '../../main'
 module Jobs
 
   ##
-  # job to recompute column encodings for Redshift tables
+  # job to recompute column encodings for Redshift tables (encoding = compression type)
   #
   # Please see `BaseJob` class documentation on how to run
   # any job using its general interface.
@@ -53,7 +53,7 @@ module Jobs
       end unless sort_keys.nil?
 
       # set up common options for archiving and restoring
-      options = options.deep_merge({db: {skip_drop: false} })
+      options = options.deep_merge({db: {skip_drop: true, truncate: true} })
       unless options[:redshift].nil?
         quotes = options[:redshift][:quotes]
         unload_options = {addquotes: quotes}.merge(options[:redshift])
@@ -65,9 +65,52 @@ module Jobs
       # archive
       Jobs::ArchiveJob.run(job_id, user_id, options.merge({email: nil}))
 
-      # restore
-      Jobs::RestoreJob.run(job_id, user_id, options.merge({email: nil}))
-    end
+      # file paths
+      archive_bucket = options[:s3][:bucket]
+      fail 'Empty archive_bucket!' if archive_bucket.nil? || archive_bucket.empty?
+      archive_prefix = options[:s3][:prefix]
+      fail 'Empty archive_prefix!' if archive_prefix.nil? || archive_prefix.empty?
+      manifest_file = "#{archive_prefix}manifest"
+      s3_bucket = AWS::S3.new.buckets[archive_bucket]
+      manifest_obj = s3_bucket.objects[manifest_file]
+      fail "S3 manifest_file #{archive_bucket}/#{manifest_file} does not exist!" unless manifest_obj.exists?
+
+      lock_sql =  "LOCK #{full_table_name} IN ACCESS EXCLUSIVE MODE;"
+
+      copy_sql = <<-SQL
+          COPY #{full_table_name}
+          FROM 's3://#{archive_bucket}/#{manifest_file}'
+          CREDENTIALS 'aws_access_key_id=#{access_key};aws_secret_access_key=#{secret_key}'
+          MANIFEST EXPLICIT_IDS #{copy_options}
+          COMPUPDATE ON;
+      SQL
+
+      conn = Desmond::PGUtil.dedicated_connection(options[:db])
+      conn.transaction do
+        conn.exec(lock_sql)
+        conn.exec(copy_sql)
+      end
+
+
+
+
+
+
+
+
+
+
+
+
+
+      # delete s3 archive files [one line]
+      s3_bucket.objects.with_prefix(archive_prefix).delete_all
+
+
+
+
+
+    end  # def execute
 
     ##
     # in case of success

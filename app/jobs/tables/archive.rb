@@ -32,6 +32,7 @@ module Jobs
     #   - auto_encode: if true, will not store the current column encodings,
     #     letting them be analyzed automatically when table is restored. Defaults to false
     #   - <*_override> see TableStructureExportJob for info on options
+    #   - truncate: if true, will truncate the table after unloading. Defaults to false
     # - unload: options for the Redshift UNLOAD command
     #   - allowoverwrite: if true, will use the ALLOWOVERWRITE unload option
     #   - gzip: if true, will use the GZIP unload option
@@ -133,7 +134,12 @@ module Jobs
       query = "SELECT * FROM #{full_table_name}"
       Desmond::UnloadJob.run(user_id, options.deep_merge({db: {query: query}}))
 
-      # DROP the table
+      # TRUNCATE the table if necessary
+      if options[:db][:truncate]
+        conn.exec("TRUNCATE TABLE #{full_table_name}")
+      end
+
+      # DROP the table (unless skip_drop true)
       unless options[:db][:skip_drop]
         drop_sql = drop_constraints_sql + "DROP TABLE #{full_table_name};"
         conn.transaction do
