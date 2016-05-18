@@ -2,6 +2,7 @@ require './lib/global_config'
 GlobalConfig.load_config_file('deploy', 'config/polizei.yml')
 APP_NAME    = 'polizei'
 SERVER_PATH = GlobalConfig.deploy('deploy_server_path')
+fail ArgumentError, "You need to set 'deploy_server_path' in config/polizei.yml" if SERVER_PATH.blank?
 
 # config valid only for current version of Capistrano
 lock '3.4.0'
