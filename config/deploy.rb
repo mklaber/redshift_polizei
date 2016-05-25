@@ -36,7 +36,7 @@ set :keep_releases, 50
 set :bundle_without, 'development test'
 
 # RVM
-set :rvm_ruby_version, '2.3.0'
+set :rvm_ruby_version, '2.3.1'
 set :rvm_type, :system
 set :rvm_custom_path, '/usr/local/rvm'
 $:.unshift(File.expand_path('./lib', ENV['rvm_path']))
