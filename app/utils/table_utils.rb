@@ -1,9 +1,9 @@
 ##
 # all methods have an optional filter parameter +table+,
-# which take an hash containing:
+# which takes a hash containing:
 # - :schema_name
 # - :table_name
-# all mathods return a hash of this style:
+# all methods return a hash of this style:
 # - full_table_name_1: <value>, ...
 #
 class TableUtils
