@@ -1,3 +1,4 @@
+require './app/monkey_patches'
 require './lib/global_config'
 GlobalConfig.load_config_file('deploy', 'config/polizei.yml')
 APP_NAME    = 'polizei'
