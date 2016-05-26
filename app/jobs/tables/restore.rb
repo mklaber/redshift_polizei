@@ -87,9 +87,10 @@ module Jobs
           copy_options += " NULL AS '#{Desmond::PGUtil.escape_string(options[:copy][:null_as])}'"
         end
       end
-      create_table_sql = #{create_table_statement};
 
-      lock_sql = "LOCK #{full_table_name} IN ACCESS EXCLUSIVE MODE;"
+      create_table_sql = "#{create_table_statement};"
+
+      lock_sql = "LOCK #{full_table_name};"
 
       copy_sql = <<-SQL
           #{permissions_statements};
@@ -99,17 +100,11 @@ module Jobs
           MANIFEST EXPLICIT_IDS #{copy_options};
       SQL
 
-      Que.log level: :info, msg: "Starting to create table #{full_table_name}"
+      Que.log level: :info, msg: "Starting to create and copy table #{full_table_name}"
+
       RSPool.with do |conn|
         conn.transaction do
           conn.exec(create_table_sql)
-        end
-      end
-
-      Que.log level: :info, msg: "Done creating table #{full_table_name}. Now locking and copying. "
-
-      RSPool.with do |conn|
-        conn.transaction do
           conn.exec(lock_sql)
           conn.exec(copy_sql)
         end
