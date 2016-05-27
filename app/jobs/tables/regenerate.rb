@@ -52,12 +52,6 @@ module Jobs
         fail "Sort key #{key} not found. Keys Available: #{avail_keys}" unless avail_keys.include?(key)
       end unless sort_keys.nil?
 
-      # See if any views depend on this table
-      dependent_views = SQL.execute(conn, 'tables/dependent_views', parameters: [schema + '.' + table])
-      if dependent_views.ntuples().to_i > 0
-        fail "Cannot regenerate table #{schema}.#{table}, because one or more views depend on it."
-      end
-
       # set up common options for archiving and restoring
       options = options.deep_merge({db: {skip_drop: false} })
       unless options[:redshift].nil?
