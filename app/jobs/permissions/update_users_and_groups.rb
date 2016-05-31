@@ -4,7 +4,7 @@ module Jobs
     # Updates the local list of users and groups exisitng in RedShift
     #
     class UpdateUsersAndGroups < Desmond::BaseJobNoJobId
-      
+
       def execute(job_id, user_id, options={})
         # retrieve the current list of users and groups from RedShift
         results = RSPool.with do |connection|
@@ -52,6 +52,8 @@ module Jobs
             end
           end
         end
+        public_group = Models::DatabaseGroup.find_by(name: 'public')
+        public_group.touch
         # remove groups and users which were deleted (not touched by code above)
         Models::DatabaseUser.where('updated_at < ?', now).destroy_all
         Models::DatabaseGroup.where('updated_at < ?', now).destroy_all
