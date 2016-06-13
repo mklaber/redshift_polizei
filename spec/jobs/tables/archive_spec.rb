@@ -19,7 +19,7 @@ describe Jobs::ArchiveJob do
     expect(result.result['manifest_file']).to eq("s3://#{options[:s3][:bucket]}/#{manifest_s3_key}")
     expect(result.result['ddl_file']).to eq("s3://#{options[:s3][:bucket]}/#{ddl_s3_key}")
 
-    # Ensure S3 ddl and manifest files exist.
+    # Ensure S3 DDL and manifest files exist.
     bucket = AWS::S3.new.buckets[options[:s3][:bucket]]
     expect(bucket.objects[ddl_s3_key].exists?).to eq(true)
     expect(bucket.objects[manifest_s3_key].exists?).to eq(true)
@@ -29,13 +29,13 @@ describe Jobs::ArchiveJob do
     table = options[:db][:table]
     expect(Models::TableArchive.find_by(schema_name: schema, table_name: table)).not_to be_nil
 
-    # Ensure redshift table was preserved or dropped depending on skip_drop option
+    # Ensure Redshift table was preserved or dropped depending on skip_drop option
     res = $conn.exec("SELECT * FROM information_schema.tables WHERE table_schema = '#{schema}' AND table_name = '#{table}'")
     expect(res.ntuples).to eq(options[:db][:skip_drop] ? 1 : 0)
   end
 
   #
-  # helper function to keep track of what options where used
+  # helper function to keep track of what options were used
   #
   def merge_options(options={})
     return {
@@ -61,6 +61,33 @@ describe Jobs::ArchiveJob do
         },
         mail: {nomailer: true}
     }.deep_merge(options)
+  end
+
+  before(:each) do
+    @schema = @config[:schema]
+    @table = "archive_test_#{Time.now.to_i}_#{rand(1024)}"
+    @table_with_schema = "#{@schema}.#{@table}"
+    @full_table_name = "\"#{@schema}\".\"#{@table}\""
+    @archive_prefix = "test/#{@table_with_schema}"
+    @permissions_file = "#{@archive_prefix}permissions.sql"
+    @ddl_file = "#{@archive_prefix}ddl"
+
+    create_sql = <<-SQL
+        CREATE TABLE #{@full_table_name}(id INT PRIMARY KEY, txt VARCHAR);
+        INSERT INTO #{@full_table_name} VALUES (0, 'hello'), (1, 'privyet'), (2, null);
+    SQL
+    $conn.exec(create_sql)
+    @bucket = AWS::S3.new.buckets[@config[:bucket]]
+  end
+
+  after(:each) do
+    # Remove any TableArchive references.
+    tbl = Models::TableArchive.find_by(schema_name: @schema, table_name: @table)
+    tbl.destroy unless tbl.nil?
+    # Drop test redshift table.
+    $conn.exec("DROP TABLE IF EXISTS #{@full_table_name} CASCADE; DROP TABLE IF EXISTS #{@full_table_name2} CASCADE;")
+    # Clean up S3 archive files.
+    @bucket.objects.with_prefix(@archive_prefix).delete_all
   end
 
   it 'should fail if TableArchive entry already exists' do
@@ -120,6 +147,23 @@ describe Jobs::ArchiveJob do
     check_success(run_archive(options), options)
   end
 
+  it 'should fail if a view references this table' do
+    view = "archive_test_#{Time.now.to_i}_#{rand(1024)}"
+    full_view_name = "#{@schema}.#{view}"
+    view_sql = <<-SQL
+        CREATE VIEW #{full_view_name} AS
+        SELECT id, txt
+        FROM #{@full_table_name}
+        WHERE id = 1;
+    SQL
+    $conn.exec(view_sql)
+    options = merge_options({db: {table: @table, auto_encode: true},
+                             s3: {prefix: @archive_prefix}})
+    r = run_archive(options)
+    expect(r.failed?).to eq(true)
+    expect(r.error).to include('Cannot archive or regenerate table')
+  end
+
   it 'should archive permissions correctly' do
     # change permissions
     change_owner_sql = "ALTER TABLE #{@full_table_name} OWNER TO \"#{$test_user}\""
@@ -149,30 +193,4 @@ describe Jobs::ArchiveJob do
     expect(@bucket.objects[@ddl_file].read).to include(add_cmt_sql)
   end
 
-  before(:each) do
-    @schema = @config[:schema]
-    @table = "archive_test_#{Time.now.to_i}_#{rand(1024)}"
-    @table_with_schema = "#{@schema}.#{@table}"
-    @full_table_name = "\"#{@schema}\".\"#{@table}\""
-    @archive_prefix = "test/#{@table_with_schema}"
-    @permissions_file = "#{@archive_prefix}permissions.sql"
-    @ddl_file = "#{@archive_prefix}ddl"
-
-    create_sql = <<-SQL
-        CREATE TABLE #{@full_table_name}(id INT PRIMARY KEY, txt VARCHAR);
-        INSERT INTO #{@full_table_name} VALUES (0, 'hello'), (1, 'privyet'), (2, null);
-    SQL
-    $conn.exec(create_sql)
-    @bucket = AWS::S3.new.buckets[@config[:bucket]]
-  end
-
-  after(:each) do
-    # Remove any TableArchive references.
-    tbl = Models::TableArchive.find_by(schema_name: @schema, table_name: @table)
-    tbl.destroy unless tbl.nil?
-    # Drop test redshift table.
-    $conn.exec("DROP TABLE IF EXISTS #{@full_table_name} CASCADE; DROP TABLE IF EXISTS #{@full_table_name2} CASCADE;")
-    # Clean up S3 archive files.
-    @bucket.objects.with_prefix(@archive_prefix).delete_all
-  end
 end

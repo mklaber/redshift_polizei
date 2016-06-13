@@ -43,6 +43,26 @@ module Jobs
       fail 'No database options!' if options[:db].nil?
       fail 'No s3 options!' if options[:s3].nil?
 
+      # construct full escaped table name
+      schema_name = options[:db][:schema]
+      fail 'Empty schema name!' if schema_name.nil? || schema_name.empty?
+      table_name = options[:db][:table]
+      fail 'Empty table name!' if table_name.nil? || table_name.empty?
+      full_table_name = Desmond::PGUtil.get_escaped_table_name(options[:db], schema_name, table_name)
+      conn = Desmond::PGUtil.dedicated_connection(options[:db])
+
+      # See if any views depend on this table
+      unless options[:db][:skip_drop]
+        dependent_views = SQL.execute(conn, 'tables/dependent_views', parameters: [full_table_name])
+        if dependent_views.ntuples().to_i > 0
+          message = "Cannot archive or regenerate table #{full_table_name}, because the following view(s) depend on it:\n"
+          dependent_views.each do |row|
+            message += row['views'] + "\n"
+          end
+          fail message
+        end
+      end
+
       # S3 location to store unloaded data
       archive_bucket = options[:s3][:bucket]
       fail 'Empty bucket name!' if archive_bucket.nil? || archive_bucket.empty?
@@ -54,13 +74,6 @@ module Jobs
       fail 'Empty access key!' if access_key.nil? || access_key.empty?
       secret_key = options[:s3][:secret_access_key]
       fail 'Empty secret key!' if secret_key.nil? || secret_key.empty?
-
-      # construct full escaped table name
-      schema_name = options[:db][:schema]
-      fail 'Empty schema name!' if schema_name.nil? || schema_name.empty?
-      table_name = options[:db][:table]
-      fail 'Empty table name!' if table_name.nil? || table_name.empty?
-      full_table_name = Desmond::PGUtil.get_escaped_table_name(options[:db], schema_name, table_name)
 
       # get the latest info on the table for the later TableArchive creation
       Jobs::Permissions::Update.run(user_id, schema_name: schema_name, table_name: table_name)
@@ -107,7 +120,7 @@ module Jobs
       fail 'Too many DDL statements were exported!' if ddl_match.length > 1
 
       # drop any foreign key references that point to this table
-      conn = Desmond::PGUtil.dedicated_connection(options[:db])
+
       drop_constraints_sql = ''
       add_constraints_sql = ''
       dependent_tables = TableUtils.get_dependent_tables(conn, schema_name: schema_name, table_name: table_name)["#{schema_name}.#{table_name}"]
