@@ -3,7 +3,7 @@ require './app/main'
 class Polizei < Sinatra::Application
   #use Rack::RubyProf, :path => 'profile'
   POLIZEI_CONFIG_FILE = 'config/polizei.yml'
-  JOB_WAIT_TIMEOUT = 30
+  JOB_WAIT_TIMEOUT = 60
   ARCHIVE_NULL_VALUE = '<<<NULL>>>'
   RECENT_QUERIES_MAX_TIMESPAN = (86400 / 8)
 

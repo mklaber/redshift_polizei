@@ -27,7 +27,7 @@ function customFilter( settings, data, dataIndex ) {
 		    //Internal method used to create search regex which datatables use.
 		    //This internal method does not modify any namespace variables or global variables and hence is safe to use
 		    // Datatable version - DataTables 1.10.7.
-		    criteria = $.fn.dataTable.ext.internal._fnFilterCreateSearch(tableSearchTerm, 
+		    criteria = $.fn.dataTable.ext.internal._fnFilterCreateSearch(tableSearchTerm,
 		                false, settings.oPreviousSearch.bSmart, settings.oPreviousSearch.bCaseInsensitive);
 		    schemaTableFilterFlag = criteria.test(searchable_data);
 	    }catch(error){
@@ -58,7 +58,7 @@ function customFilter( settings, data, dataIndex ) {
 		    //Internal method used to create search regex which datatables use.
 		    //This internal method does not modify any namespace variables or global variables and hence is safe to use
 		    // Datatable version - DataTables 1.10.7.
-		    criteria = $.fn.dataTable.ext.internal._fnFilterCreateSearch(columnsSearchTerm, 
+		    criteria = $.fn.dataTable.ext.internal._fnFilterCreateSearch(columnsSearchTerm,
 		                    settings.oPreviousSearch.bRegex, settings.oPreviousSearch.bSmart, settings.oPreviousSearch.bCaseInsensitive);
 		    columnsFilterFlag = (criteria.test(search_against))
 		}catch(error){
@@ -105,7 +105,7 @@ function customTableReportsArchivesInit(table, options){
   		tableSearchBoxTimer = setTimeout(function(){
   			tableSearchBox.addClass('spinner');
   			setTimeout(function(){
-	  			$(table).DataTable().draw();		
+	  			$(table).DataTable().draw();
 	  			tableSearchBox.removeClass('spinner');
 	  		},0);
   		},600);
@@ -115,7 +115,7 @@ function customTableReportsArchivesInit(table, options){
   		columnsSearchBoxTimer = setTimeout(function(){
   			columnsSearchBox.addClass('spinner');
   			setTimeout(function(){
-	  			$(table).DataTable().draw();		
+	  			$(table).DataTable().draw();
 	  			columnsSearchBox.removeClass('spinner');
 	  		},0);
   		},600);
@@ -189,7 +189,7 @@ $(document).ready(function() {
       "data":     '',
       "dataType": "json",
       "cache":    false,
-      "timeout":  45000,
+      "timeout":  60000,
       "success":  function (json) {
         window.location.reload();
       },
