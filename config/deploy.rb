@@ -6,7 +6,7 @@ SERVER_PATH = GlobalConfig.deploy('deploy_server_path')
 fail ArgumentError, "You need to set 'deploy_server_path' in config/polizei.yml" if SERVER_PATH.blank?
 
 # config valid only for current version of Capistrano
-lock '3.4.0'
+lock '3.5'
 
 set :application, APP_NAME
 set :repo_url   , 'git@github.com:AnalyticsMediaGroup/redshift_polizei.git'
