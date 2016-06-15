@@ -13,6 +13,7 @@ require 'sinatra/aws'
 require 'sinatra/mail'
 require 'omniauth'
 require 'omniauth_oauth2_strategy'
+require 'omniauth-google-oauth2'
 require 'mail'
 require 'erubis'
 require 'coderay'
@@ -21,6 +22,9 @@ require 'desmond'
 require 'connection_pool'
 if Sinatra::Application.environment.to_sym == :staging || Sinatra::Application.environment.to_sym == :production
   require 'exception_notification'
+end
+if Sinatra::Application.environment.to_sym == :development
+  require 'byebug'
 end
 
 require 'sql/sql'

@@ -1,9 +1,15 @@
 development:
-  auth_name: sentry # name of OAuth2 provider, needs to be lowercase!
+  # AMG Sentry / Generic OAuth2 Provider
+  auth_name: sentry # name of OAuth2 provider
   auth_url: http://localhost:3030 # host of OAuth2 provider
   auth_user_url: /api/v1/users/me.json # path for additional user info request
-  auth_client_id: client_id # client id from e.g. Google developer console
-  auth_client_secret: client_secret # client secret from e.g. Google developer console
+  auth_client_id: client_id # client id from sentry
+  auth_client_secret: client_secret # client secret from sentry
+  auth_valid_domains: ['amg.tv', 'analyticsmediagroup.com'] # domains of email addresses which are allowed to log in
+  # Google OAuth
+  auth_name: google_oauth2 # name of OAuth2 provider
+  auth_client_id: client_id # client id from Google developer console
+  auth_client_secret: client_secret # client secret from Google developer console
   auth_valid_domains: ['amg.tv', 'analyticsmediagroup.com'] # domains of email addresses which are allowed to log in
 
   aws_access_key_id: access_key # aws access key to use for requests

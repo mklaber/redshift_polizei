@@ -1,5 +1,5 @@
 <h2>Login</h2>
 
 <div style="text-align: center; width: 50%; margin: 0 auto;">
-  <a class="btn btn-primary btn-lg btn-block" href="<%= url '/auth/' + GlobalConfig.polizei('auth_name') %>">Sign In through Sentry</a>
+  <a class="btn btn-primary btn-lg btn-block" href="<%= url '/auth/' + GlobalConfig.polizei('auth_name') %>">Sign In through <%= GlobalConfig.polizei('auth_name').titleize %></a>
 </div>

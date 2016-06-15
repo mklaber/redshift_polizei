@@ -3,6 +3,7 @@ source 'https://rubygems.org'
 gem 'rake'
 gem 'sinatra'
 gem 'omniauth-oauth2', '~> 1.3.0' # newer version seem to be incompatible with sentry
+gem 'omniauth-google-oauth2'
 gem 'mail' # mail address parsing
 gem 'rack_csrf'
 gem 'erubis'
@@ -35,6 +36,7 @@ group :development do
   gem 'capistrano-rvm', require: false
   gem 'capistrano-bundler', require: false
   gem 'ruby-prof'
+  gem 'byebug'
 end
 
 group :staging, :production do

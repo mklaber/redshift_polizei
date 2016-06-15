@@ -59,7 +59,13 @@ class Polizei < Sinatra::Application
     use Rack::Session::Cookie, :key => 'rack.session',
         :expire_after => 86400 * 7, # sec
         :secret => GlobalConfig.polizei('cookie_secret')
-    use OmniAuth::Strategies::GenericOauth2
+    if GlobalConfig.polizei('auth_name') == 'google_oauth2'
+      use OmniAuth::Builder do
+        provider :google_oauth2, GlobalConfig.polizei('auth_client_id'), GlobalConfig.polizei('auth_client_secret'), {}
+      end
+    else
+      use OmniAuth::Strategies::GenericOauth2
+    end
   end
 
   # configure asset pipeline
@@ -131,7 +137,7 @@ class Polizei < Sinatra::Application
     session[:prev_login_site] = nil
     # get auth data from google
     auth_hash = request.env['omniauth.auth']
-    email = auth_hash['info']['user']['email']
+    email = auth_hash['info'].fetch('user', {})['email'] || auth_hash['info']['email']
     # make sure only valid domains can login
     parsed_email = Mail::Address.new(email)
     error 403, 'invalid email' if not GlobalConfig.polizei('auth_valid_domains').member?(parsed_email.domain)
