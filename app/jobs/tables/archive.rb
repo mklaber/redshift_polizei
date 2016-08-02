@@ -51,6 +51,18 @@ module Jobs
       full_table_name = Desmond::PGUtil.get_escaped_table_name(options[:db], schema_name, table_name)
       conn = Desmond::PGUtil.dedicated_connection(options[:db])
 
+      #check permission before start archiving
+      user_name = options[:db][:username]
+      password = options[:db][:password]
+      unless options[:db][:skip_drop]
+        redshift_table = Models::Table.find_by!(schema: Models::Schema.find_by!(name: schema_name), name: table_name, owner: Models::DatabaseUser.find_by!(name: user_name))
+        fail "User doesn't have permission to drop the table" if redshift_table.nil?
+      end
+      db_user = Models::DatabaseUser.find_by!(name: user_name)
+      db_table = Models::Table.find_by!(schema: Models::Schema.find_by!(name: schema_name), name: table_name)
+      db_permission = Models::Permission.find_by!(dbobject: table, entity: user)
+      fail 'Permission Denied for archiving' if db_permission.nil? || db_permission.empty?
+
       # See if any views depend on this table
       unless options[:db][:skip_drop]
         dependent_views = SQL.execute(conn, 'tables/dependent_views', parameters: [full_table_name])
