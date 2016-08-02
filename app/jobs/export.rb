@@ -6,6 +6,8 @@ module Jobs
   # by inheriting from it
   #
   class PolizeiExportJob < Desmond::ExportJob
+    include JobHelpers
+
     ##
     # in case of success
     #
@@ -44,8 +46,8 @@ The following error description might be helpful: '#{job_run.error}'"
         cc: GlobalConfig.polizei('job_failure_cc'),
         bcc: GlobalConfig.polizei('job_failure_bcc')
       }.merge(options.fetch('mail', {}))
-      # if the user query had a syntax error, we won't notify engineering
-      if job_run.error_type <= PG::SyntaxErrorOrAccessRuleViolation
+      # if it's a filtered exception we won't notify engineering
+      if exception_filtered?(job_run.error, job_run.error_type)
         mail_options[:cc]  = nil
         mail_options[:bcc] = nil
       end
@@ -55,10 +57,6 @@ The following error description might be helpful: '#{job_run.error}'"
     end
 
     private
-
-    def exception_filter(e)
-      e.is_a?(PG::SyntaxErrorOrAccessRuleViolation)
-    end
 
     ##
     # common sending code

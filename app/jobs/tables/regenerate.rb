@@ -9,6 +9,8 @@ module Jobs
   # any job using its general interface.
   #
   class RegenerateTableJob < Desmond::BaseJobNoJobId
+    include JobHelpers
+
     ##
     # runs a job that recomputes the column encodings for a table
     #
@@ -90,6 +92,11 @@ The following error description might be helpful: '#{job_run.error}'"
           cc: GlobalConfig.polizei('job_failure_cc'),
           bcc: GlobalConfig.polizei('job_failure_bcc')
       }.merge(options.fetch('mail', {}))
+      # if it's a filtered exception we won't notify engineering
+      if exception_filtered?(job_run.error, job_run.error_type)
+        mail_options[:cc]  = nil
+        mail_options[:bcc] = nil
+      end
       mail(options[:email], subject, body, mail_options)
     end
 
