@@ -91,15 +91,18 @@ describe Jobs::ArchiveJob do
     @bucket.objects.with_prefix(@archive_prefix).delete_all
   end
 
-  it 'should fail if TableArchive entry already exists' do
+  it 'should override old TableArchive entry that already exists' do
     table_archive = Models::TableArchive.create(schema_name: @schema, table_name: @table,
                                                 archive_bucket: '',
                                                 archive_prefix: '')
     table_archive.save
     options = merge_options({db: {table: @table}, s3: {prefix: @archive_prefix}})
     r = run_archive(options)
-    expect(r.failed?).to eq(true)
-    expect(r.error).to eq('Archive entry already exists for this table!')
+    table_archive.reload
+    expect(r.done?).to eq(true)
+    check_success(r, options)
+    expect(table_archive.archive_bucket).not_to be_blank
+    expect(table_archive.archive_prefix).not_to be_blank
   end
 
   it 'should succeed with default settings' do

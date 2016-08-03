@@ -8,6 +8,8 @@ module Jobs
   # any job using its general interface.
   #
   class ArchiveJob < Desmond::BaseJobNoJobId
+    include JobHelpers
+
     ##
     # runs an archive
     # see `BaseJob` for information on arguments except +options+.
@@ -105,10 +107,6 @@ module Jobs
         table_info[:columns] = tbl.columns
       end
 
-      # check if archive already exists
-      fail 'Archive entry already exists for this table!' unless Models::TableArchive.find_by(schema_name: schema_name,
-                                                                                              table_name: table_name).nil?
-
       # run a TableStructureExportJob
       ddl_s3_key = "#{archive_prefix}ddl"
       structure_options = {
@@ -160,19 +158,27 @@ module Jobs
       query = "SELECT * FROM #{full_table_name}"
       Desmond::UnloadJob.run(user_id, options.deep_merge({db: {query: query}}))
 
-      # DROP the table
+      # find old archives of this table if they exist
+      existing_table_archive = Models::TableArchive.find_by(schema_name: schema_name, table_name: table_name)
+      if existing_table_archive.present? && existing_table_archive.archive_bucket.present? && existing_table_archive.archive_prefix.present?
+        # delete old archive files
+        old_s3_bucket = AWS::S3.new.buckets[existing_table_archive.archive_bucket]
+        old_s3_bucket.objects.with_prefix(existing_table_archive.archive_prefix).delete_all
+      end
+      # save archive in database
+      table_archive = Models::TableArchive.where(schema_name: schema_name, table_name: table_name).first_or_initialize
+      table_archive.update!(archive_bucket: archive_bucket, archive_prefix: archive_prefix)
+      table_archive.update!(table_info) unless table_info.empty?
+      table_archive.save
+
+      # DROP the table, once everything else is saved and completed successfully
       unless options[:db][:skip_drop]
         drop_sql = drop_constraints_sql + "DROP TABLE #{full_table_name};"
         conn.transaction do
           conn.exec(drop_sql)
         end
       end
-      # add new TableArchive database entry
-      table_archive = Models::TableArchive.create!(schema_name: schema_name, table_name: table_name,
-                                                   archive_bucket: archive_bucket,
-                                                   archive_prefix: archive_prefix)
-      table_archive.update!(table_info) unless table_info.empty?
-      table_archive.save
+
       # run TableReport to remove the reference to this dropped table
       Jobs::TableReports.run(job_id, user_id, schema_name: schema_name, table_name: table_name) unless options[:db][:skip_drop]
 
@@ -206,6 +212,11 @@ The following error description might be helpful: '#{job_run.error}'"
           cc: GlobalConfig.polizei('job_failure_cc'),
           bcc: GlobalConfig.polizei('job_failure_bcc')
       }.merge(options.fetch('mail', {}))
+      # if it's a filtered exception we won't notify engineering
+      if exception_filtered?(job_run.error, job_run.error_type)
+        mail_options[:cc]  = nil
+        mail_options[:bcc] = nil
+      end
       mail(options[:email], subject, body, mail_options) unless options[:email].nil?
     end
 
