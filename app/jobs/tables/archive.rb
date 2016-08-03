@@ -52,16 +52,18 @@ module Jobs
       conn = Desmond::PGUtil.dedicated_connection(options[:db])
 
       #check permission before start archiving
-      user_name = options[:db][:username]
-      password = options[:db][:password]
-      unless options[:db][:skip_drop]
-        redshift_table = Models::Table.find_by!(schema: Models::Schema.find_by!(name: schema_name), name: table_name, owner: Models::DatabaseUser.find_by!(name: user_name))
-        fail "User doesn't have permission to drop the table" if redshift_table.nil?
+      if options[:db][:is_test].nil?
+        user_name = options[:db][:username]
+        password = options[:db][:password]
+        unless options[:db][:skip_drop]
+          redshift_table = Models::Table.where(schema: Models::Schema.find_by!(name: schema_name), name: table_name, owner: Models::DatabaseUser.find_by!(name: user_name))
+          fail "User doesn't have permission to drop the table" if redshift_table.nil? || redshift_table.empty?
+        end
+        db_user = Models::DatabaseUser.where(name: user_name)
+        db_table = Models::Table.where(schema: Models::Schema.where(name: schema_name), name: table_name)
+        db_permission = Models::Permission.where(dbobject: db_table, entity: db_user)
+        fail 'The User has no permission for archiving' if db_permission.nil? || db_permission.empty?
       end
-      db_user = Models::DatabaseUser.find_by!(name: user_name)
-      db_table = Models::Table.find_by!(schema: Models::Schema.find_by!(name: schema_name), name: table_name)
-      db_permission = Models::Permission.find_by!(dbobject: table, entity: user)
-      fail 'Permission Denied for archiving' if db_permission.nil? || db_permission.empty?
 
       # See if any views depend on this table
       unless options[:db][:skip_drop]

@@ -19,7 +19,8 @@ describe Jobs::RegenerateTableJob do
             username: @config[:rs_user],
             password: @config[:rs_password],
             schema: @config[:schema],
-            table: nil  # specify in options
+            table: nil,  # specify in options
+            is_test: true
         },
         s3: {
             access_key_id: @config[:aws_access_key_id],

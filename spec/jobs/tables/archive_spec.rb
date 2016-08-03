@@ -44,7 +44,8 @@ describe Jobs::ArchiveJob do
             username: @config[:rs_user],
             password: @config[:rs_password],
             schema: @config[:schema],
-            table: nil
+            table: nil,
+            is_test: true
         },
         s3: {
             access_key_id: @config[:aws_access_key_id],
