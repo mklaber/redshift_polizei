@@ -66,7 +66,7 @@ The cron jobs are configured using 'whenever' in `config/schedule.rb` and update
 
 Running
 ---------------------
-`shotgun` for the webserver. `desmond run` for the background processes.
+`shotgun` for the webserver. `bundle exec desmond run` for the background processes.
 <br>You may need to build and install the [desmond](https://github.com/AnalyticsMediaGroup/desmond) gem.
 <br>If you get SSL issues try running `rvm osx-ssl-certs update all`
 
